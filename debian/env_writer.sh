@@ -72,17 +72,3 @@ EOT
 
     echo "Environment variables for $serviceName have been written and sourced."
 }
-
-# Example usage:
-env_writer \
---service 'exampleService' \
---content '
-# Filepaths
-export base="/root"
-export scripts="/root/scripts"
-export logs="/var/log"
-
-# Support Functions
-export FUNC_SUPPORT=/root/opt/support.sh
-source $FUNC_SUPPORT
-'
