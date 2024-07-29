@@ -20,7 +20,7 @@ GIT_SERVER=""
 GIT_USER=""
 
 SECURE_USER_ID="1000"
-SECURE_USER="$(id -nu "$SECURE_USER_UID")"
+SECURE_USER="$(id -nu "$SECURE_USER_UID" 2>/dev/null || echo "user")"
 
 BASE="/root/"
 SCRIPTS="$BASE/scripts/"
@@ -70,8 +70,8 @@ env_writer \
 --service 'Network' \
 --content '
 # System 
-export DOMAIN      = lan                          # Referenced by scripts that need to know the local or remote domain extension
-export FIREWALL    = iptables                     # Referenced by scripts that need to know what, if any firewall is intended to be used
+export DOMAIN      = "lan"                        # Referenced by scripts that need to know the local or remote domain extension
+export FIREWALL    = "iptables"                   # Referenced by scripts that need to know what, if any firewall is intended to be used
 export REV_PROXY   = "172.27.0.1"                 # Local Reverse Proxy IP (if used)
 
 # Trusted Subnets
