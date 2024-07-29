@@ -10,7 +10,7 @@ if getent passwd $(id -nu $SECURE_USER_UID) > /dev/null 2>&1; then
   echo "$(id -nu $SECURE_USER_UID):$new_password" | chpasswd
 else
   echo "No, $(id -nu $SECURE_USER_UID) does not exist"
-  useradd $(id -nu $SECURE_USER_UID) -s /bin/bash
+  useradd $(id -nu $SECURE_USER_UID) -s$SHELL
   echo "$(id -nu $SECURE_USER_UID):$new_password" | chpasswd
 fi
 read -p "[debsec] up.sh, $HOST_NAME, Username: $(id -nu $SECURE_USER_UID), Password: $new_password , press [ENTER] to continue."

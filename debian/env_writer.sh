@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO if not --source then don't use export?
+
 env_writer() {
     local serviceName=""
     local configContent=""

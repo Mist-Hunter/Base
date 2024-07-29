@@ -10,7 +10,7 @@
 #   ├── global.env
 #   ├── docker.env
 #   ├── smtp.env
-#   ├── snmp.w
+#   ├── snmp.env
 #   └── git.env
 
 # Variables and Prep ------------------------------------------------------------------------------
@@ -18,6 +18,9 @@
 GIT_PROTOCOL=""
 GIT_SERVER=""
 GIT_USER=""
+
+SECURE_USER_ID="1000"
+SECURE_USER="$(id -nu "$SECURE_USER_UID")"
 
 BASE="/root/"
 SCRIPTS="$BASE/scripts/"
@@ -95,20 +98,20 @@ export RFC1918     = "192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"
 env_writer \
 --service 'SMTP' \
 --content '
-export ADMIN_EMAIL=""
-export SMTP_USER=""
-export SMTP_PASS=""
-export SMTP_SERVER=""
-export SMTP_PORT="587"
+export ADMIN_EMAIL  =""
+export SMTP_USER    =""
+export SMTP_PASS    =""
+export SMTP_SERVER  =""
+export SMTP_PORT    ="587"
 '
 
 # SNMP
 env_writer \
 --service 'SNMP' \
 --content '
-export SNMP_AGENT_PORT="161"
-export SNMP_POLLER=""
-export SNMP_LOCATION=""
+export SNMP_AGENT_PORT  ="161"
+export SNMP_POLLER      =""
+export SNMP_LOCATION    =""
 '
 
 # Docker -----------------------------------------------------------------------------------------
@@ -117,17 +120,17 @@ env_writer \
 --service 'Docker' \
 --content '
 # Paths
-export DOCKER_ROOT_DIR=/var/lib/docker
-export DOCKER_MOUNTS="$DOCKER_ROOT_DIR/mounts"
-export DOCKER_VOLUMES="$DOCKER_ROOT_DIR/volumes"
-export DOCKER_CONFIGS="$CONFIGS/containers"
+export DOCKER_ROOT_DIR          =/var/lib/docker
+export DOCKER_MOUNTS            ="$DOCKER_ROOT_DIR/mounts"
+export DOCKER_VOLUMES           ="$DOCKER_ROOT_DIR/volumes"
+export DOCKER_CONFIGS           ="$CONFIGS/containers"
 
 # Docker
-export DOCKER_REGISTRY_MIRROR=""
+export DOCKER_REGISTRY_MIRROR   =""
 
 # Portainer
-export PORTAINER_SERVER=""
-export PORTAINER_HOST=""
+export PORTAINER_SERVER         =""
+export PORTAINER_HOST           =""
 '
 
 # Restic Info
@@ -135,17 +138,17 @@ env_writer \
 --service 'Restic' \
 --content '
 # Server Details, REST: https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#rest-server
-RESTIC_SERVER_URL=""
-RESTIC_SERVER_PORT="443"
-RESTIC_SERVER_TYPE="Rest"
+export RESTIC_SERVER_URL            =""
+export RESTIC_SERVER_PORT           ="443"
+export RESTIC_SERVER_TYPE           ="Rest"
 
 # Server User Credentials
-RESTIC_SERVER_USER_NAME=""
-RESTIC_SERVER_USER_PASSWORD=""
-RESTIC_SERVER_BASE_REPO_URL="rest:https://$RESTIC_SERVER_USER_NAME:$RESTIC_SERVER_USER_PASSWORD@$RESTIC_SERVER_URL"  #/$RESTIC_SERVER_USER_NAME-$LABEL
+export RESTIC_SERVER_USER_NAME      =""
+export RESTIC_SERVER_USER_PASSWORD  =""
+export RESTIC_SERVER_BASE_REPO_URL  ="rest:https://$RESTIC_SERVER_USER_NAME:$RESTIC_SERVER_USER_PASSWORD@$RESTIC_SERVER_URL"  #/$RESTIC_SERVER_USER_NAME-$LABEL
 
 # Default Repo Password
-RESTIC_REPO_DEFAULT_PASSWORD=""
+export RESTIC_REPO_DEFAULT_PASSWORD =""
 '
 
 # Git -----------------------------------------------------------------------------------------------
@@ -153,12 +156,12 @@ env_writer \
 --service 'GIT' \
 --content "
 # Git
-export GIT_SERVER=$GIT_SERVER
-export GIT_USER=$GIT_USER
+export GIT_SERVER       =$GIT_SERVER
+export GIT_USER         =$GIT_USER
 
 # Specific Repo SSH aliases
-export GIT_APT_URL="git@$GIT_SERVER-Apt:/$GIT_USER"
-export GIT_DOCKER_URL="git@$GIT_SERVER-Docker:/$GIT_USER"
+export GIT_APT_URL      =git@$GIT_SERVER-Apt:/$GIT_USER
+export GIT_DOCKER_URL   =git@$GIT_SERVER-Docker:/$GIT_USER
 "
 
 ### Identity Files
@@ -194,8 +197,8 @@ git clone $GIT_APT_URL/Apt.git $SCRIPTS/apt
 cat <<EOT >> /root/.bashrc
 
 # Non-Root user, from preseed.cfg
-export SECURE_USER=user
-export SECURE_USER_UID=1000
+export SECURE_USER_UID=$SECURE_USER_ID
+export SECURE_USER=$$SECURE_USER
 export SECURE_USER_GROUP=users
 
 # Environmental Variables Global list
@@ -208,6 +211,7 @@ update=$SCRIPTS/base/debian/update.sh
 clean=$SCRIPTS/base/clean.sh
 
 EOT
+
 # Reload .bashrc
 . ~/.bashrc
 
