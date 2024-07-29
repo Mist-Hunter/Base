@@ -4,6 +4,7 @@
 ## - fire off initial configuration including sysctl configuration
 
 # /etc/environment
+# /root/.ssh
 # /root/.bashrc
 # /root/.config/
 #   ├── global.env
@@ -12,33 +13,27 @@
 #   ├── snmp.w
 #   └── git.env
 
-# Phase 1 ===============================================
+# Variables and Prep ------------------------------------------------------------------------------
 
 GIT_PROTOCOL=""
 GIT_SERVER=""
 GIT_USER=""
+
+BASE="/root/"
+SCRIPTS="$BASE/scripts/"
+CONFIGS="$BASE/.config/"
+ENV_GLOBAL="$CONFIGS/global.env"
+ssh_path="/root/.ssh"
+
+mkdir -p $SCRIPTS $CONFIGS $ssh_path
 
 apt update
-apt install wget -y
+apt install wget git openssh-client -y
 
-# Prep-CT
-# source <(wget -O - $GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Systems/raw/branch/master/debian-base/prepCT.sh)
-
-# Prep-VM
-source <(wget -O - $GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Systems/raw/branch/master/debian-base/prepVM.sh)
-
-# Phase 2 ===============================================
-
-GIT_PROTOCOL=""
-GIT_SERVER=""
-GIT_USER=""
+git clone $GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Base.git $SCRIPTS/base
 
 # Helper script(s)
-source <(wget -O -  https://gist.githubusercontent.com/$GIT_USER/610e3b5451a4970964cb21bf796541b7/raw/bcdf7aec3a80ea615b26d18d56a798413150f2d4/env_writer.sh)
-
-ENV_PATH="/root/.config"
-ENV_GLOBAL="$ENV_PATH/global.env"
-mkdir -p $ENV_PATH
+source $SCRIPTS/base/debian/env_writer.sh
 
 # System Variables -------------------------------------------------------------------------------
 cat <<EOT > /etc/environment
@@ -59,13 +54,13 @@ EOT
 # User Variables -------------------------------------------------------------------------------
 env_writer \
 --service 'Global' \
---content '
+--content "
 # Filepaths
-export BASE="/root"
-export SCRIPTS="/root/scripts"
-export CONFIGS="/root/.config"
-export LOGS="/var/log"
-'
+export BASE=$BASE
+export SCRIPTS=$SCRIPTS
+export CONFIGS=$CONFIGS
+export LOGS=/var/log
+"
 
 # IP Tables / Network
 env_writer \
@@ -111,7 +106,7 @@ export SMTP_PORT="587"
 env_writer \
 --service 'SNMP' \
 --content '
-export SNMP_AGENT_PORT="161"                        
+export SNMP_AGENT_PORT="161"
 export SNMP_POLLER=""
 export SNMP_LOCATION=""
 '
@@ -125,7 +120,7 @@ env_writer \
 export DOCKER_ROOT_DIR=/var/lib/docker
 export DOCKER_MOUNTS="$DOCKER_ROOT_DIR/mounts"
 export DOCKER_VOLUMES="$DOCKER_ROOT_DIR/volumes"
-export DOCKER_CONFIGS="/etc/docker/containers"
+export DOCKER_CONFIGS="$CONFIGS/containers"
 
 # Docker
 export DOCKER_REGISTRY_MIRROR=""
@@ -141,7 +136,7 @@ env_writer \
 --content '
 # Server Details, REST: https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#rest-server
 RESTIC_SERVER_URL=""
-RESTIC_SERVER_PORT=443
+RESTIC_SERVER_PORT="443"
 RESTIC_SERVER_TYPE="Rest"
 
 # Server User Credentials
@@ -166,17 +161,13 @@ export GIT_APT_URL="git@$GIT_SERVER-Apt:/$GIT_USER"
 export GIT_DOCKER_URL="git@$GIT_SERVER-Docker:/$GIT_USER"
 "
 
-# SSH Path (for GIT aliases)
-SSH_PATH="/root/.ssh"
-mkdir -p $SSH_PATH
-
 ### Identity Files
-cat <<EOT > $SSH_PATH/gitRepo-Apt-deploy.key
+cat <<EOT > $ssh_path/gitRepo-Apt-deploy.key
 -----BEGIN OPENSSH PRIVATE KEY-----
 -----END OPENSSH PRIVATE KEY-----
 EOT
 
-cat <<EOT > $SSH_PATH/gitRepo-Docker-deploy.key
+cat <<EOT > $ssh_path/gitRepo-Docker-deploy.key
 -----BEGIN OPENSSH PRIVATE KEY-----
 -----END OPENSSH PRIVATE KEY-----
 EOT
@@ -186,19 +177,16 @@ cat <<EOT >> /root/.ssh/config
 # Github SSH Server Aliases ------------------------------------
 Host $GIT_SERVER-Apt
     Hostname $GIT_SERVER
-    IdentityFile=$SSH_PATH/gitRepo-Apt-deploy.key
+    IdentityFile=$ssh_path/gitRepo-Apt-deploy.key
 
 Host $GIT_SERVER-Docker
     Hostname $GIT_SERVER
-    IdentityFile=$SSH_PATH/gitRepo-Docker-deploy.key
+    IdentityFile=$ssh_path/gitRepo-Docker-deploy.key
 
 EOT
 
 # Fix permission all all the keys and config above
-chmod -R 700 $SSH_PATH
-
-# First time Git Setup on Clients
-apt install git openssh-client -y
+chmod -R 700 $ssh_path
 
 git clone $GIT_APT_URL/Apt.git $SCRIPTS/apt
 
@@ -223,5 +211,8 @@ EOT
 # Reload .bashrc
 . ~/.bashrc
 
-# Debian Base, don't clone !! Systems !!
-source <(wget -O - $GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Systems/raw/branch/master/debian-base/up.sh)
+# Prep-VM
+. $SCRIPTS/base/prepVM.sh
+
+# Debian Base
+. $SCRIPTS/base/up.sh

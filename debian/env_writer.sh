@@ -1,39 +1,39 @@
 #!/bin/bash
 
 env_writer() {
-    local service_name=""
-    local config_content=""
-    local add_source=false
-    local ENV_GLOBAL="${ENV_PATH}/global.env"
+    local serviceName=""
+    local configContent=""
+    local caddSource=false
+    local ENV_GLOBAL="${CONFIGS}/global.env"
 
     # Function to display usage
     usage() {
-        echo "Usage: $0 [--source] --service <service_name> --content <config_content>"
+        echo "Usage: $0 [--source] --service <serviceName> --content <configContent>"
         exit 1
     }
 
     # Parse command line arguments
     while [[ "$#" -gt 0 ]]; do
         case $1 in
-            --source) add_source=true ;;
-            --service) service_name="$2"; shift ;;
-            --content) config_content="$2"; shift ;;
+            --source) caddSource=true ;;
+            --service) serviceName="$2"; shift ;;
+            --content) configContent="$2"; shift ;;
             *) usage ;;
         esac
         shift
     done
 
     # Validate required arguments
-    if [[ -z "$service_name" ]] || [[ -z "$config_content" ]]; then
+    if [[ -z "$serviceName" ]] || [[ -z "$configContent" ]]; then
         usage
     fi
 
     # Generate file paths and names
-    local service_env="${ENV_PATH}/$(echo "$service_name" | tr '[:upper:]' '[:lower:]').env"
-    local env_var_name="${service_name^^}"  # Uppercase version
+    local serviceEnv="${CONFIGS}/$(echo "$serviceName" | tr '[:upper:]' '[:lower:]').env"
+    local envVarName="${serviceName^^}"  # Uppercase version
 
     # Create the configuration directory if it doesn't exist
-    mkdir -p "$(dirname "$service_env")"
+    mkdir -p "$(dirname "$serviceEnv")"
 
     # Check if the global environment file exists
     if [[ ! -f "$ENV_GLOBAL" ]]; then
@@ -43,32 +43,32 @@ env_writer() {
     fi
 
     # Write the environment variables to the service-specific file
-    echo "Writing environment variables for service: $service_name"
-    cat <<EOT > "$service_env"
-${config_content}
+    echo "Writing environment variables for service: $serviceName"
+    cat <<EOT > "$serviceEnv"
+${configContent}
 EOT
-    chmod 600 "$service_env"
+    chmod 600 "$serviceEnv"
 
-    # Check if service_name is not 'GLOBAL'
-    if [[ "$service_name" != "GLOBAL" ]]; then
+    # Check if serviceName is not 'GLOBAL'
+    if [[ "$serviceName" != "GLOBAL" ]]; then
         # Update the global environment file to source the service-specific environment file
-        if ! grep -q "^export ENV_${env_var_name}=" "$ENV_GLOBAL"; then
-            echo "# $service_name" >> "$ENV_GLOBAL"
-            echo "export ENV_${env_var_name}=\"$service_env\"" >> "$ENV_GLOBAL"
-            if $add_source; then
-                echo "source $service_env" >> "$ENV_GLOBAL"
+        if ! grep -q "^export ENV_${envVarName}=" "$ENV_GLOBAL"; then
+            echo "# $serviceName" >> "$ENV_GLOBAL"
+            echo "export ENV_${envVarName}=\"$serviceEnv\"" >> "$ENV_GLOBAL"
+            if $caddSource; then
+                echo "source $serviceEnv" >> "$ENV_GLOBAL"
             fi
             echo "" >> "$ENV_GLOBAL"
             echo "Updated global environment file: $ENV_GLOBAL"
         else
-            echo "The global environment file already includes settings for $service_name."
+            echo "The global environment file already includes settings for $serviceName."
         fi
     fi
 
     # Source the file
-    source "$service_env"
+    source "$serviceEnv"
 
-    echo "Environment variables for $service_name have been written and sourced."
+    echo "Environment variables for $serviceName have been written and sourced."
 }
 
 # Example usage:

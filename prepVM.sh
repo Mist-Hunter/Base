@@ -23,7 +23,6 @@ else
   fi
 fi
 
-
 # Check if the user already exists
 if id -u "$SECURE_USER" >/dev/null 2>&1; then
   echo "User '$SECURE_USER' already exists."
@@ -464,7 +463,7 @@ else
     echo "ssh.service does not exist or is not enabled."
 fi
 
-sleep="5s"
-echo "systems, debian-base, prepVM.sh: rebooting in $sleep seconds"
-sleep $sleep
-reboot
+# sleep="5s"
+# echo "systems, debian-base, prepVM.sh: rebooting in $sleep seconds"
+# sleep $sleep
+# reboot
