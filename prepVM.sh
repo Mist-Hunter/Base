@@ -253,7 +253,8 @@ apt install needrestart --no-install-recommends -y              # <--- 1 Point. 
 # Goal: Password protect editing GRUB, but allow normal booting. https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Password_protection_of_GRUB_menu
 #                                   # <--- 1 Point
 
-#!/bin/bash
+# Lynis set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122]
+# Goal: Password protect editing GRUB, but allow normal booting. https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Password_protection_of_GRUB_menu
 
 # Update GRUB configuration to allow unrestricted booting
 sed -i 's|--class os"|--class os --unrestricted"|g' /etc/grub.d/10_linux
@@ -262,15 +263,11 @@ sed -i 's|--class os"|--class os --unrestricted"|g' /etc/grub.d/10_linux
 grub_cfg="/etc/grub.d/40_custom"
 
 # Generate a random password
-random_password=$(openssl rand -base64 12)
+new_password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32;)
 
 # Generate the password hash
 echo "Generating a GRUB password..."
-password_output=$(echo -e "$random_password\n$random_password" | grub-mkpasswd-pbkdf2)
-password_hash=$(echo "$password_output" | awk '/grub.pbkdf2.sha512/{print $NF}')
-
-# Output the generated password
-echo "Generated GRUB password: $random_password"
+password_hash=$(echo -e "$new_password\n$new_password" | grub-mkpasswd-pbkdf2 | awk '/grub.pbkdf2.sha512/{print $NF}')
 
 # Create or update the GRUB custom configuration file
 cat <<EOT > $grub_cfg
@@ -299,8 +296,8 @@ chmod o-r $grub_cfg
 
 echo "GRUB configuration updated successfully."
 
-# Display the password again and wait for user acknowledgment
-read -p "Systems, debian-base, prepVM, Root, Password: $random_password, press [ENTER] to continue."
+# Display the password and wait for user acknowledgment
+read -p "Systems, debian-base, prepVM, Root, Password: $new_password , press [ENTER] to continue."
 
 # From: lsmod | awk '{print $1}'
 # WARNING: This list is very aggressive, removing USB support and many inputs. Only for headless installs. dccp, sctp, rds, tipc, usb-storage, firewire-core, were all recommended off by Lynis.
