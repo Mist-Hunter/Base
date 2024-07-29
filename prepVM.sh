@@ -7,8 +7,7 @@ source /etc/default/grub
 apt update && apt upgrade -y
 apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
 
-# Check if users group exits
-j# Check if the group exists
+# Check if the group exists
 if getent group "$SECURE_USER_GROUP" >/dev/null; then
   echo "Group $SECURE_USER_GROUP exists."
 else
