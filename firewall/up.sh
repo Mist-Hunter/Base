@@ -21,7 +21,7 @@ echo "[up.sh] script starting."
 #Dietpi check ipset / iptables
 apt install iptables ipset -y
 
-. $SCRIPTS/apt/firewall/get_gateway.sh
+. $SCRIPTS/base/firewall/get_gateway.sh
 
 # IPSet Refference http://web-tech.ga-usa.com/2011/09/linux-geoip-firewall-via-iptables-using-ipset/index.html
 # more: https://www.linuxjournal.com/content/advanced-firewall-configurations-ipset
@@ -85,7 +85,7 @@ iptables -P INPUT DROP
 #https://serverfault.com/questions/927673/iptables-restore-sometimes-fails-on-reboot
 #https://askubuntu.com/questions/41400/how-do-i-make-the-script-to-run-automatically-when-tun0-interface-up-down-events
 #iptables-save > /etc/iptables.up.rules
-. $SCRIPTS/apt/firewall/save.sh
+. $SCRIPTS/base/firewall/save.sh
 
 # In LXC's for some reason this directory is missing.
 if [ ! -d "/etc/network/if-pre-up.d" ]; then
@@ -143,7 +143,7 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   # SNMP Setup
-  . $SCRIPTS/apt/firewall/anti-scan.sh
+  . $SCRIPTS/base/firewall/anti-scan.sh
 fi
 
 echo "[up.sh] script complete."

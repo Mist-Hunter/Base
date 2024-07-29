@@ -8,5 +8,5 @@ read -p "Current hostname is '$(hostname)', Set default template hostname to '$t
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-  . $SCRIPTS/apt/hostname/newhost.sh "$template_name"
+  . $SCRIPTS/base/hostname/newhost.sh "$template_name"
 fi

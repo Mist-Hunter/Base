@@ -15,7 +15,7 @@ fi
 
 echoheader="apt, firewall, anti-scan.sh:"
 
-. $SCRIPTS/apt/firewall/get_gateway.sh
+. $SCRIPTS/base/firewall/get_gateway.sh
 
 # Make sure that crowdsec-blacklists is in /etc/network/if-pre-up.d/iptables script, or things will go haywire (rules fail to load)
 if (! $(cat /etc/network/if-pre-up.d/iptables | grep -q "port_scanners")); then
@@ -39,4 +39,4 @@ iptables -A INPUT -m conntrack --ctstate NEW -m set ! --match-set scanned_ports 
 iptables -A INPUT -m conntrack --ctstate NEW -m set --match-set port_scanners src -m set ! --match-set whitelisted src -m comment --comment "$echoheader Drop packets from port_scanner members" -j DROP
 iptables -A INPUT -m conntrack --ctstate NEW -m comment --comment "$echoheader Add scanner ports to scanned_ports" -j SET --add-set scanned_ports src,dst
 
-. $SCRIPTS/apt/firewall/save.sh
+. $SCRIPTS/base/firewall/save.sh

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Remove added rules
-. $SCRIPTS/apt/firewall/remgrep.sh "anti-scan.sh"
+. $SCRIPTS/base/firewall/remgrep.sh "anti-scan.sh"
 
 # Flush ipsets
 ipset flush scanned_ports
@@ -14,6 +14,6 @@ sed -i '/anti-scan.sh/d' /etc/network/if-pre-up.d/iptables
 cat /etc/network/if-pre-up.d/iptables 
 
 # Reload firewall 
-. $SCRIPTS/apt/firewall/save.sh
+. $SCRIPTS/base/firewall/save.sh
 
 echo "Reverted firewall changes"

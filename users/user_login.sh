@@ -1,17 +1,17 @@
 #!/bin/bash
 
-read -p "Create secure user password? " -n 1 -r
+read -p "Create $SECURE_USER password? " -n 1 -r
 echo    # (optional) move to a new line
-if [[ $REPLY =~ ^[Yy]$ ]]
+if [[ $reply =~ ^[Yy]$ ]]
 then
-NEW_PASSWORD=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32;)
-if getent passwd $(id -nu 1000) > /dev/null 2>&1; then
-  echo "yes $(id -nu 1000) exists"
-  echo "$(id -nu 1000):$NEW_PASSWORD" | chpasswd
+new_password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32;)
+if getent passwd $(id -nu $SECURE_USER_UID) > /dev/null 2>&1; then
+  echo "yes $(id -nu $SECURE_USER_UID) exists"
+  echo "$(id -nu $SECURE_USER_UID):$new_password" | chpasswd
 else
-  echo "No, $(id -nu 1000) does not exist"
-  useradd $(id -nu 1000) -s /bin/bash
-  echo "$(id -nu 1000):$NEW_PASSWORD" | chpasswd
+  echo "No, $(id -nu $SECURE_USER_UID) does not exist"
+  useradd $(id -nu $SECURE_USER_UID) -s /bin/bash
+  echo "$(id -nu $SECURE_USER_UID):$new_password" | chpasswd
 fi
-read -p "[debsec] up.sh, $HOST_NAME, Username: $(id -nu 1000), Password: $NEW_PASSWORD , press [ENTER] to continue."
+read -p "[debsec] up.sh, $HOST_NAME, Username: $(id -nu $SECURE_USER_UID), Password: $new_password , press [ENTER] to continue."
 fi

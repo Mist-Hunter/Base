@@ -33,7 +33,7 @@ fi
 
 # Setup Firewall
 # NOTE: Multiple SCRIPTS rely on this script completing, keep early in the install sequence.
-. $SCRIPTS/apt/firewall/up.sh
+. $SCRIPTS/base/firewall/up.sh
 
 # Install GIT
 # TODO is this needed?
@@ -63,13 +63,13 @@ if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
 cat <<EOT >> ~/.bashrc
 
 #Aliases
-alias aptUp="$SCRIPTS/apt/debian/update.sh && dietpi-update"
+alias aptUp="$SCRIPTS/base/debian/update.sh && dietpi-update"
 EOT
 else
 cat <<EOT >> ~/.bashrc
 
 #Aliases
-alias aptUp="$SCRIPTS/apt/debian/update.sh"
+alias aptUp="$SCRIPTS/base/debian/update.sh"
 EOT
 fi
 
@@ -80,7 +80,7 @@ fi
 . $SCRIPTS/apt/neofetch/up.sh
 
 # Setup Update Service
-. $SCRIPTS/apt/debian/updaterservice.sh
+. $SCRIPTS/base/debian/updaterservice.sh
 
 # Btop
 . $SCRIPTS/apt/btop/up.sh
@@ -89,7 +89,7 @@ fi
 . $SCRIPTS/apt/ps_mem/up.sh
 
 # Lynis Add a legal banner to /etc/issue, to warn unauthorized users [BANN-7126], Add legal banner to /etc/issue.net, to warn unauthorized users [BANN-7130]
-. $SCRIPTS/apt/debian/warning.sh    # <--- 1 Point. 
+. $SCRIPTS/base/debian/warning.sh    # <--- 1 Point. 
 
 if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
 
@@ -102,10 +102,10 @@ if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
   . $SCRIPTS/apt/sshd/up.sh
 
    # Because Crowdsec won't work, install anti-scan rules
-  . $SCRIPTS/apt/firewall/anti-scan.sh
+  . $SCRIPTS/base/firewall/anti-scan.sh
 
     #iptables-save > /etc/iptables.up.rules
-  . $SCRIPTS/apt/firewall/save.sh  
+  . $SCRIPTS/base/firewall/save.sh  
 
   # Install Blinkt *** Needs to be last, because it interupts.
   # . $SCRIPTS/apt/blinkt/up.sh
@@ -116,10 +116,10 @@ fi
 . $SCRIPTS/base/hostname/default.sh
 
 # Root Login
-. $SCRIPTS/apt/users/root_login.sh
+. $SCRIPTS/base/users/root_login.sh
 
 # Secure User Login
-. $SCRIPTS/apt/users/user_login.sh
+. $SCRIPTS/base/users/user_login.sh
 
 read -p "Install Docker? " -n 1 -r
 echo    # (optional) move to a new line

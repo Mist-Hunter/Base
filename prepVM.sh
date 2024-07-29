@@ -8,23 +8,31 @@ apt update && apt upgrade -y
 apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
 
 # Check if users group exits
-if getent group users >/dev/null; then
-  echo "Group 'users' exists."
+j# Check if the group exists
+if getent group "$SECURE_USER_GROUP" >/dev/null; then
+  echo "Group $SECURE_USER_GROUP exists."
 else
-  echo "Group 'users' does not exist."
+  echo "Group $SECURE_USER_GROUP does not exist."
+  
+  # Create the group with the specified GID
+  if groupadd -g "$SECURE_USER_ID" "$SECURE_USER_GROUP"; then
+    echo "Group $SECURE_USER_GROUP created with GID $SECURE_USER_ID."
+  else
+    echo "Failed to create group $SECURE_USER_GROUP with GID $SECURE_USER_ID."
+    exit 1  # Exit with a non-zero status code to indicate an error
+  fi
 fi
 
+
 # Check if the user already exists
-# TODO this should be in preseed.
-username="User"
-if id -u "$username" >/dev/null 2>&1; then
-  echo "User '$username' already exists."
+if id -u "$SECURE_USER" >/dev/null 2>&1; then
+  echo "User '$SECURE_USER' already exists."
 else
   # Create the user
-  useradd -m -s /bin/bash -G "users" "$username"
+  useradd -m -s /bin/bash -G "$SECURE_USER_GROUP" "$SECURE_USER"
 
   # Print the user creation details
-  echo "User '$username' created successfully."
+  echo "User '$SECURE_USER' created successfully."
 fi
 
 # Related to debian cloud
@@ -104,7 +112,6 @@ wget -O /etc/sysctl.d/99-virtual-docker-host.conf https://git.11t.one/Zuckuss/Sy
 # fi
 
 sysctl --system
-
 
 # Lynis if not required, consider explicit disabling of core dump in /etc/security/limits.conf file [KRNL-5820] 
 cat <<EOT >> /etc/security/limits.conf

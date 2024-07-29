@@ -8,35 +8,35 @@
 
 read -p "Create a secure root password? " -n 1 -r
 echo # (optional) move to a new line
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    NEW_PASSWORD=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32;)
-    echo "root:$NEW_PASSWORD" | chpasswd
-    read -p "Systems, debian-base, prepVM, Root, Password: $NEW_PASSWORD , press [ENTER] to continue."
+if [[ $reply =~ ^[Yy]$ ]]; then
+    new_password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32;)
+    echo "root:$new_password" | chpasswd
+    read -p "Systems, debian-base, prepVM, Root, Password: $new_password , press [ENTER] to continue."
 
     # Autologin for the current terminal
-    TTY_DEV=$(ps hotty $$)
-    mkdir -p "/etc/systemd/system/serial-getty@${TTY_DEV}.service.d"
-    cat <<EOT >"/etc/systemd/system/serial-getty@${TTY_DEV}.service.d/autologin.conf"
-# Autologin configuration for current terminal ($TTY_DEV)
+    tty_dev=$(ps hotty $$)
+    mkdir -p "/etc/systemd/system/serial-getty@${tty_dev}.service.d"
+    cat <<EOT >"/etc/systemd/system/serial-getty@${tty_dev}.service.d/autologin.conf"
+# Autologin configuration for current terminal ($tty_dev)
 [Service]
 ExecStart=
 ExecStart=-/sbin/agetty --autologin root --noclear %I $TERM
 EOT
 
-    echo "Autologin enabled for current terminal ($TTY_DEV)."
+    echo "Autologin enabled for current terminal ($tty_dev)."
 
     # Check if the physical video console is available
-    TTY_DEV="tty1"
-    if [ -e /dev/$TTY_DEV ]; then
-        mkdir -p "/etc/systemd/system/getty@${TTY_DEV}.service.d"
-        cat <<EOT >"/etc/systemd/system/getty@${TTY_DEV}.service.d/autologin.conf"
-# Autologin configuration for /dev/$TTY_DEV (physical video console)
+    tty_dev="tty1"
+    if [ -e /dev/$tty_dev ]; then
+        mkdir -p "/etc/systemd/system/getty@${tty_dev}.service.d"
+        cat <<EOT >"/etc/systemd/system/getty@${tty_dev}.service.d/autologin.conf"
+# Autologin configuration for /dev/$tty_dev (physical video console)
 [Service]
 ExecStart=
 ExecStart=-/sbin/agetty --autologin root --noclear %I $TERM
 EOT
 
-        echo "Autologin enabled for /dev/$TTY_DEV(physical video console)."
+        echo "Autologin enabled for /dev/$tty_dev(physical video console)."
     fi
 fi
 

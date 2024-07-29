@@ -205,14 +205,19 @@ git clone $GIT_APT_URL/Apt.git $SCRIPTS/apt
 # Bash RC -----------------------------------------------------------------------------------------------
 cat <<EOT >> /root/.bashrc
 
+# Non-Root user, from preseed.cfg
+export SECURE_USER=user
+export SECURE_USER_UID=1000
+export SECURE_USER_GROUP=users
+
 # Environmental Variables Global list
 export ENV_GLOBAL="$ENV_GLOBAL"
 source $ENV_GLOBAL
 
 # APT aliases
-aptUP=$SCRIPTS/debian/update.sh
-update=$SCRIPTS/debian/update.sh
-clean=$SCRIPTS/clean.sh
+aptUP=$SCRIPTS/base/debian/update.sh
+update=$SCRIPTS/base/debian/update.sh
+clean=$SCRIPTS/base/clean.sh
 
 EOT
 # Reload .bashrc

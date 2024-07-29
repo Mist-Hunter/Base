@@ -36,7 +36,7 @@ Description=APT updater services
 After=local-fs.target
 
 [Service]
-ExecStart=$SCRIPTS/apt/debian/update.sh
+ExecStart=$SCRIPTS/base/debian/update.sh
 Type=oneshot
 EOT
 

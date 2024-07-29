@@ -7,7 +7,7 @@ if [[ "$FIREWALL" == "none" ]]; then
 fi
 
 # added by $(whoami) on $(date +"%Y-%m-%d @ %H:%M:%S")"
-. $SCRIPTS/apt/firewall/ipt-dedup.sh
+. $SCRIPTS/base/firewall/ipt-dedup.sh
 touch $LOGS/firewall.log
 echo -e "# scripts, apt, firewall, save: added by $(whoami) on $(date +"%Y-%m-%d @ %H:%M:%S")---------------------------------------" | tee -a $LOGS/firewall.log
 iptables-save >> $LOGS/firewall.log
