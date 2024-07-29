@@ -4,8 +4,12 @@
 
 source /etc/default/grub
 
-apt update && apt upgrade -y
-apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
+apt update
+
+# Build Mirror List
+apt install netselect-apt -y
+netselect-apt
+apt upgrade -y
 
 # Check if the group exists
 if getent group "$SECURE_USER_GROUP" >/dev/null; then
@@ -51,6 +55,7 @@ echo "$TZ" > /etc/timezone
 timedatectl
 
 # Permanently record DEV_TYPE
+apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
 DEV_TYPE=$(virt-what)
 if [[ $DEV_TYPE = "" ]]; then
     # If physical, replace with Proc architecture
@@ -71,7 +76,7 @@ if [[ $DEV_TYPE = "kvm" ]]; then
     #apt remove acpid -y
     
     # Disk Resize
-    source <(wget -O - https://$GIT_SERVER/$GIT_USER/Apt/raw/branch/master/mount/autoexp.sh)
+    source $scripts/apt/mount/autoexp.sh
 fi
 
 # Remove dhcp6 from dhclient.conf. This doesn't seem to affect ram consumption.
@@ -93,7 +98,18 @@ sed -i "s|TTY_DEV|$(tty)|g" ~/.bashrc
 modprobe tcp_bbr
 echo "tcp_bbr" > /etc/modules-load.d/bbr.conf
 
-wget -O /etc/sysctl.d/99-virtual-docker-host.conf https://git.11t.one/Zuckuss/Systems/raw/branch/master/debian-base/sysctl_vm.conf  
+# Lynis if not required, consider explicit disabling of core dump in /etc/security/limits.conf file [KRNL-5820] 
+cat <<EOT >> /etc/security/limits.conf
+* hard core 0
+* soft core 0
+EOT
+cat <<EOT >> /etc/sysctl.d/9999-disable-core-dump.conf
+fs.suid_dumpable=0
+kernel.core_pattern=|/bin/false
+EOT
+sysctl -p /etc/sysctl.d/9999-disable-core-dump.conf
+
+cp $SCRIPTS/base/sysctl_vm.conf /etc/sysctl.d/99-virtual-docker-host.conf
 
 # TODO: Check if swap partition / file exists, if not, turn swapiness to 0
 # Check if swapon -s has no output
@@ -110,17 +126,6 @@ wget -O /etc/sysctl.d/99-virtual-docker-host.conf https://git.11t.one/Zuckuss/Sy
 # fi
 
 sysctl --system
-
-# Lynis if not required, consider explicit disabling of core dump in /etc/security/limits.conf file [KRNL-5820] 
-cat <<EOT >> /etc/security/limits.conf
-* hard core 0
-* soft core 0
-EOT
-cat <<EOT >> /etc/sysctl.d/9999-disable-core-dump.conf
-fs.suid_dumpable=0
-kernel.core_pattern=|/bin/false
-EOT
-sysctl -p /etc/sysctl.d/9999-disable-core-dump.conf
 
 # Lynis Configure password hashing rounds in /etc/login.defs [AUTH-9230] 
 #                                   <--- 0 Points

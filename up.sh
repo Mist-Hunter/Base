@@ -5,10 +5,6 @@
 # NOTE: This script now presumes .$SCRIPTS/apt & .$SCRIPTS/systems exist already (from kick)
 apt update
 
-# Build Mirror List
-apt install netselect-apt -y
-netselect-apt
-
 # Favorite Apps
 apt install -y \
   `# dnsutils - includes tools like nslookup and dig for DNS troubleshooting` \
