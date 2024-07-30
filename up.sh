@@ -29,7 +29,6 @@ fi
 
 # Setup Firewall
 # NOTE: Multiple SCRIPTS rely on this script completing, keep early in the install sequence.
-# Check if FIREWALL is set to "none"
 if [[ "$FIREWALL" == "iptables" ]]; then
   . $SCRIPTS/base/firewall/up.sh
 fi
