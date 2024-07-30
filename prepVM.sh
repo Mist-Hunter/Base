@@ -134,8 +134,7 @@ sysctl --system
 sed -i 's|# SHA_CRYPT_|SHA_CRYPT_|g' /etc/login.defs 
 
 # Lynis Install a PAM module for password strength testing like pam_cracklib or pam_passwdqc [AUTH-9262] #TODO: Neither are present in Debian 12?
-# FIXME Unable to locate package libpam-cracklib on Debian 12
-apt install libpam-cracklib --no-install-recommends -y      # <-- 1 point from Lynis, but not relevant to my generated passwords. 
+apt install libpam-passwdqc --no-install-recommends -y      # <-- 1 point from Lynis, but not relevant to my generated passwords. 
 
 # Lynis Default umask in /etc/login.defs could be more strict like 027 [AUTH-9328] 
 sed -i '/UMASK/s/022/027/g' /etc/login.defs
