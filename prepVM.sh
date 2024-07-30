@@ -37,7 +37,7 @@ else
   echo "User '$SECURE_USER' created successfully."
 fi
 
-# Related to debian cloud
+# Setup Locale 
 if ! locale -a 2>/dev/null | grep -qF "en_US"; then
     # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
     echo "Locale '$LANG' is not set."
