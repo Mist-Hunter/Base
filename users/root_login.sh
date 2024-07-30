@@ -3,8 +3,6 @@
 # Autologin, Random Root Password---------------------------------------------------------------------------------------------------
 # agetty Auto-Login, ref: https://wiki.archlinux.org/title/Getty#Automatic_login_to_virtual_console , https://man7.org/linux/man-pages/man8/agetty.8.html
 
-# FIXME when running under sudo, ttyS0 becomes pts/0
-
 read -p "Create a secure root password? " -n 1 -r
 echo # (optional) move to a new line
 if [[ $reply =~ ^[Yy]$ ]]; then
@@ -25,14 +23,12 @@ EOT
     echo "Autologin enabled for current terminal ($tty_dev)."
 
 # Check if the physical video console is available
-# FIXME tty1 will always exist
-
-# Run the command and check if it produces any output or errors
 if ! ls /dev/fb* > /dev/null 2>&1; then
     echo "No framebuffer devices found."
 else
     echo "Framebuffer devices found:"
     ls /dev/fb*
+    # FIXME tty1 will always exist
     tty_dev="tty1"
     if [ -e /dev/$tty_dev ]; then
         mkdir -p "/etc/systemd/system/getty@${tty_dev}.service.d"
@@ -45,7 +41,4 @@ EOT
 
         echo "Autologin enabled for /dev/$tty_dev(physical video console)."
     fi
-fi
-
-
 fi
