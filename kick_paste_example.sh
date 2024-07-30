@@ -28,7 +28,9 @@ SECURE_USER_ID="1000"
 SECURE_USER="$(id -nu "$SECURE_USER_ID" 2>/dev/null || echo "user")"
 
 BASE="/root/"
+base=$BASE                  # TODO Deprecate
 SCRIPTS="$BASE/scripts/"
+scripts=$SCRIPTS            # TODO Deprecate
 CONFIGS="$BASE/.config/"
 ENV_GLOBAL="$CONFIGS/global.env"
 ssh_path="/root/.ssh"
