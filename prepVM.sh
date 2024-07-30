@@ -48,6 +48,13 @@ if ! locale -a 2>/dev/null | grep -qF "en_US"; then
 else
     echo "Locale '$lang_locale' is set."
 fi
+# Pre-configure localepurge to keep only the desired locale
+apt install localepurge --no-install-recommends -y 
+echo "localepurge locales-to-remove string all" | debconf-set-selections
+echo "localepurge locales-to-keep string $LANG" | debconf-set-selections
+echo "localepurge no-locales boolean false" | debconf-set-selections
+localepurge
+apt remove --purge localepurge -y
 
 # Set Timezone
 timedatectl set-timezone $TZ
@@ -454,10 +461,6 @@ update-initramfs -u
 # Remove foregn man pages
 rm -rf /usr/share/man/??
 rm -rf /usr/share/man/??_*
-
-# Remove uneeded Locales # /usr/share/locale
-# rm -rd /usr/share/locale
-# apt install localepurge -y # https://sleeplessbeastie.eu/2018/09/03/how-to-remove-useless-localizations/
 
 # Remove Graphics related packages TODO: Most of the packages I'd want to remove are in support of Xterm and Neofetch.
 # https://unix.stackexchange.com/questions/424969/how-can-i-remove-all-packages-related-to-gui-in-debian
