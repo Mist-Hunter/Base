@@ -48,6 +48,7 @@ else
     echo "Locale '$LANG' is set."
 fi
 # Pre-configure localepurge to keep only the desired locale
+# https://raw.githubusercontent.com/szepeviktor/debian-server-tools/master/debian-setup/packages/localepurge
 apt install localepurge --no-install-recommends -y 
 echo "localepurge locales-to-remove string all" | debconf-set-selections
 echo "localepurge locales-to-keep string $LANG" | debconf-set-selections

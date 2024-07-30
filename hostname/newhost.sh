@@ -3,73 +3,86 @@
 # DietPi: https://github.com/MichaIng/DietPi/blob/dev/dietpi/func/change_hostname
 # Usage ./newhost.sh <NEW HOSTNAME>
 
-# Default Hostname
+set -e
 
 current_host=$(hostname)
 
-# Prompt if not parameters passed.
-if [ $# -eq 0 ]; then
-   read -p "apt, hostname, newhost.sh: No hostname provided, Please enter new hostname: " hostname
-   new_host=$hostname
+# Prompt if no parameters passed
+if [[ $# -eq 0 ]]; then
+   read -p "apt, hostname, newhost.sh: No hostname provided. Please enter new hostname: " new_host
 else
    new_host=$1
-   echo "apt, hostname, newhost.sh: Recieved $new_host from CLI parameter"   
+   echo "apt, hostname, newhost.sh: Received $new_host from CLI parameter"  
 fi
 
-# Check character count and re-offer if too long, was set to 16, ChatGPT claims 63 is fine
+# Check character count and re-prompt if too long
 while true; do
-  if [ ${#new_host} -le 63 ]; then
+  if [[ ${#new_host} -le 63 ]]; then
     break
   else
-    echo "The hostname must be less than or equal to 16 characters, try again."
-    read -p "apt, hostname, newhost.sh: The hostname must be less than or equal to 16 characters, Please enter new hostname: " hostname
+    echo "The hostname must be 63 characters or less, try again."
+    read -p "apt, hostname, newhost.sh: Please enter a new hostname (63 characters or less): " new_host
   fi
 done
 
-#TODO: check hostname in postfix config
-#TODO: Remove hostname edit in bashrc
-#TODO: write to /etc/environment
-
-if grep -q "$new_host" /etc/hosts
-then
-   echo "apt, hostname, newhost.sh: current hostname in localhosts, replacing"
-   sed -i "s/$current_host/$new_host/g" /etc/hosts
+ Check and update postfix config if present
+if [[ -f /etc/postfix/sasl_passwd ]]; then
+  if grep -q "mydestination = .*$current_host" /etc/postfix/sasl_passwd; then
+    sed -i "s/mydestination = .*$current_host/mydestination = $new_host, localhost.lan, localhost/" /etc/postfix/sasl_passwd
+    echo "apt, hostname, newhost.sh: Updated postfix configuration in /etc/postfix/sasl_passwd"
+  elif grep -q "mydestination = " /etc/postfix/sasl_passwd; then
+    sed -i "s/mydestination = .*/mydestination = $new_host, localhost.lan, localhost/" /etc/postfix/sasl_passwd
+    echo "apt, hostname, newhost.sh: Updated postfix configuration in /etc/postfix/sasl_passwd"
+  else
+    echo "mydestination = $new_host, localhost.lan, localhost" >> /etc/postfix/sasl_passwd
+    echo "apt, hostname, newhost.sh: Added mydestination to /etc/postfix/sasl_passwd"
+  fi
 else
-echo "apt, hostname, newhost.sh: current hostname NOT in localhosts, adding"
-#https://stackoverflow.com/questions/35444122/append-output-of-hostname-command-to-etc-hosts
-sed -i "1s/$/ $(echo $new_host | tr '\n' ' ')/" /etc/hosts
-sed -i "s|export HOST_NAME=$(hostname)|export HOST_NAME=$new_host|g" /root/.bashrc
+  echo "apt, hostname, newhost.sh: /etc/postfix/sasl_passwd not found, skipping postfix configuration"
+fi
 
-# Touch file in /root so that disk owner is apparent when mounting through a different OS (Example: Eset Live Scan)
-disk_dev=$(df -P . | sed -n '$s/[[:blank:]].*//p') 
-disk_label="$new_host" # Adding the date makes the name too long. "-$(printf '%(%Y%m%d)T\n' -1)""
+# Update /etc/environment
+if grep -q "export HOST_NAME=" /etc/environment; then
+   sed -i "s/export HOST_NAME=.*/export HOST_NAME=$new_host/" /etc/environment
+else
+   echo "# Hostname"
+   echo "export HOST_NAME=$new_host" >> /etc/environment
+fi
+echo "apt, hostname, newhost.sh: Updated /etc/environment"
 
-#DEBUG
-echo "$disk_dev and $disk_label"
+# Update /etc/hosts
+if grep -q "$current_host" /etc/hosts; then
+  sed -i "s/$current_host/$new_host/g" /etc/hosts
+  echo "apt, hostname, newhost.sh: Replaced current hostname in /etc/hosts"
+else
+  sed -i "1s/$/ $new_host/" /etc/hosts
+  echo "apt, hostname, newhost.sh: Added new hostname to /etc/hosts"
+fi
 
-e2label $disk_dev $disk_label # "-root"-$(echo $disk_dev | cut -c 6-) <--- Can't fit. Label is too short. 16 characters max
+# Set new hostname
+hostnamectl set-hostname "$new_host"
 
-cat <<"EOT" > /"Disk-$disk_label.md"
+# Create disk label file
+disk_dev=$(df -P . | sed -n '$s/[[:blank:]].*//p')
+disk_label="$new_host"
+echo "Disk device: $disk_dev, Label: $disk_label"
+e2label "$disk_dev" "$disk_label"
+
+# Create info file
+cat <<EOT > "/Disk-$disk_label.md"
 $(date)
-
 # Hostname
 **$(hostname)**
-
 # Disks
 $(lsblk)
-
 EOT
-fi
-hostnamectl set-hostname $new_host
-# lsblk -o name,mountpoint,label,size
 
-# cat /etc/hosts | grep $new_host
+# Verify hostname change
+ping -c 3 "$new_host"
 
-ping -c 3 $new_host
-if cat /etc/hosts | grep -q $new_host
-then
-   echo "OK";
+if grep -q "$new_host" /etc/hosts; then
+   echo "Hostname change successful";
 else
-   echo "NOT OK";
+   echo "Hostname change unsuccessful";
    echo "127.0.0.1       $(hostname)" >> /etc/hosts
 fi
