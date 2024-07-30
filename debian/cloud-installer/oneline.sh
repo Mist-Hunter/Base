@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source $ENV_GIT
+# FIXME can't user github.com /raw/ anymore?
 GIT_SERVER="raw.githubusercontent.com"
 
 # Systems/cloud-ubuntu/prepOracleVM.sh
