@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Handles hardware tuning and base security settings.
+
+export DEBIAN_FRONTEND=noninteractive
 source /etc/default/grub
 
 apt update
