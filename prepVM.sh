@@ -39,23 +39,7 @@ else
 fi
 
 # Setup Locale 
-# https://salsa.debian.org/elmig-guest/localepurge
-# https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
-# https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
-# NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
-echo "Purging unnecessary locales..."
-cat <<EOT > /etc/locale.nopurge
-    # USE_DPKG keeps apt from installing unneed locales in the first place
-    USE_DPKG
-    MANDELETE
-    DONTBOTHERNEWLOCALE
-    SHOWFREEDSPACE
-    VERBOSE
-    en
-    $LANG
-EOT
-apt-get install -y localepurge
-if ! locale -a 2>/dev/null | grep -qF "en_US"; then
+if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
     # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
     echo "Locale '$LANG' is not set."
     apt install locales --no-install-recommends -y # 20.7 MB
@@ -64,6 +48,21 @@ if ! locale -a 2>/dev/null | grep -qF "en_US"; then
 else
     echo "Locale '$LANG' is set."
 fi
+# https://salsa.debian.org/elmig-guest/localepurge
+# https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
+# https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
+# NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
+echo "Purging unnecessary locales..."
+apt-get install localepurge --no-install-recommends -y
+cat <<EOT > /etc/locale.nopurge
+    MANDELETE
+    DONTBOTHERNEWLOCALE
+    SHOWFREEDSPACE
+    VERBOSE
+    $lang_prefix
+    $LANG
+EOT
+localpurge
 apt-get remove --purge -y localepurge
 echo "Locale setup and purge completed."
 
