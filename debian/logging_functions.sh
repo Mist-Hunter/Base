@@ -84,7 +84,35 @@ log_stdout() {
 
 }
 
+present_secrets() {
+    # Example: present_secrets "Root Password:p@ssw0rd123" "GRUB Password:grub123" "SSH Key:ssh-rsa AAAAB3NzaC1yc2E..."
+    # TODO include caller function and file path like log()
+
+    local secrets=("$@")
+    local term_width=$(tput cols)
+    local separator_line=""
+    local padding=2  # Padding on each side of the content
+
+    # Create separator line
+    separator_line=$(printf '%*s' "$term_width" | tr ' ' '-')
+
+    # Print the ASCII block
+    echo "$separator_line"
+    for secret in "${secrets[@]}"; do
+        IFS=':' read -r label value <<< "$secret"
+        local content="$label: $value"
+        local content_length=${#content}
+        local spaces=$((term_width - content_length - padding * 2 - 2))  # -2 for the '|' characters
+        printf "| %-*s%*s |\n" "$((padding + content_length))" "$content" "$((spaces + padding))" ""
+    done
+    echo "$separator_line"
+
+    # Wait for user to press ENTER
+    read -p "Press [ENTER] to continue."
+}
+
 log() {
+    # TODO support non-date prepended syntax via flag --no-dates, add flag --content
 
     local caller_function="${FUNCNAME[1]}"
     local line="$1"

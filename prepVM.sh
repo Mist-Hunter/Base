@@ -298,7 +298,7 @@ chmod o-r $grub_cfg
 echo "GRUB configuration updated successfully."
 
 # Display the password and wait for user acknowledgment
-read -p "Systems, debian-base, prepVM, GRUB, Password: $new_password , press [ENTER] to continue."
+present_secrets "GRUB Password:$new_password"
 
 # From: lsmod | awk '{print $1}'
 # WARNING: This list is very aggressive, removing USB support and many inputs. Only for headless installs. dccp, sctp, rds, tipc, usb-storage, firewire-core, were all recommended off by Lynis.

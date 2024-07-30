@@ -28,6 +28,5 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   fi
 
   # Provide feedback to the user
-  echo "[debsec] up.sh, $HOST_NAME, Username: $username, Password: $new_password"
-  read -p "Press [ENTER] to continue."
+  present_secrets "User:$SECURE_USER" "Password:$new_password"
 fi

@@ -9,7 +9,7 @@ echo # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     new_password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32)
     echo "root:$new_password" | chpasswd
-    read -p "Systems, debian-base, prepVM, Root, Password: $new_password , press [ENTER] to continue."
+    present_secrets "User:root" "Password:$new_password"
 
     # Autologin for the current terminal
     tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial)  # NOTE > $(ps hotty $$) doesn't work under sudo bash.
