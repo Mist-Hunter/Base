@@ -413,25 +413,37 @@ echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.t
 echo "" >> $MOD_BLACKLIST 
 
 for i in "${!block_modules[@]}"; do
-    echo "begining module $i"
+    echo "beginning module $i"
+
+    # Check if the module exists
     if ! modinfo -n "${block_modules[$i]}" >/dev/null 2>&1; then
         echo "${block_modules[$i]} module not found, skipping."
         continue
     fi
+
+    # Check if the module is built-in
     if modinfo -F builtin "${block_modules[$i]}" | grep -q "^y$"; then
         echo "${block_modules[$i]} is a built-in module, skipping."
+        continue
+    fi
+
+    # Check if the module is already blacklisted
+    if [ -n "$MOD_BLACKLIST" ] && grep -qw "${block_modules[$i]}" "$MOD_BLACKLIST"; then
+        echo "${block_modules[$i]} already in $MOD_BLACKLIST"
     else
-        if grep -qw "${block_modules[$i]}" "$MOD_BLACKLIST"; then
-            echo "${block_modules[$i]} already in $MOD_BLACKLIST"
-        else
-            modprobe -r "${block_modules[$i]}"
-            echo "# ${module_description[$i]}" >> "$MOD_BLACKLIST"
-            echo "blacklist ${block_modules[$i]}" >> "$MOD_BLACKLIST"
-            echo "install ${block_modules[$i]} /bin/true" >> "$MOD_BLACKLIST"
-            echo "" >> "$MOD_BLACKLIST"
-        fi
+        # Remove the module if it is not built-in and not blacklisted
+        modprobe -r "${block_modules[$i]}" 2>/dev/null
+
+        # Add the module to the blacklist
+        echo "# ${module_description[$i]}" >> "$MOD_BLACKLIST"
+        echo "blacklist ${block_modules[$i]}" >> "$MOD_BLACKLIST"
+        echo "install ${block_modules[$i]} /bin/true" >> "$MOD_BLACKLIST"
+        echo "" >> "$MOD_BLACKLIST"
+
+        echo "${block_modules[$i]} has been blacklisted."
     fi
 done
+
 
 echo "$MOD_BLACKLIST contents:"
 cat $MOD_BLACKLIST
