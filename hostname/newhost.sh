@@ -25,7 +25,7 @@ while true; do
   fi
 done
 
- Check and update postfix config if present
+# Check and update postfix config if present
 if [[ -f /etc/postfix/sasl_passwd ]]; then
   if grep -q "mydestination = .*$current_host" /etc/postfix/sasl_passwd; then
     sed -i "s/mydestination = .*$current_host/mydestination = $new_host, localhost.lan, localhost/" /etc/postfix/sasl_passwd
