@@ -45,8 +45,9 @@ fi
 if grep -q "export HOST_NAME=" /etc/environment; then
    sed -i "s/export HOST_NAME=.*/export HOST_NAME=$new_host/" /etc/environment
 else
-   echo "# Hostname"
+   echo "# Hostname"  >> /etc/environment
    echo "export HOST_NAME=$new_host" >> /etc/environment
+   echo
 fi
 echo "apt, hostname, newhost.sh: Updated /etc/environment"
 
@@ -86,3 +87,5 @@ else
    echo "Hostname change unsuccessful";
    echo "127.0.0.1       $(hostname)" >> /etc/hosts
 fi
+
+export HOST_NAME=$new_host
