@@ -87,9 +87,8 @@ log_stdout() {
 present_secrets() {
     # Example: present_secrets "Root Password:p@ssw0rd123" "GRUB Password:grub123" "SSH Key:ssh-rsa AAAAB3NzaC1yc2E..."
     # TODO include caller function and file path like log()
-
     local secrets=("$@")
-    local term_width=$(tput cols)
+    local term_width=$(($(tput cols) - 5))  # Subtract 5 for the scrollbar
     local separator_line=""
     local padding=2  # Padding on each side of the content
 
@@ -103,7 +102,7 @@ present_secrets() {
         local content="$label: $value"
         local content_length=${#content}
         local spaces=$((term_width - content_length - padding * 2 - 2))  # -2 for the '|' characters
-        printf "| %-*s%*s |\n" "$((padding + content_length))" "$content" "$((spaces + padding))" ""
+        printf "|%*s%-*s%*s |\n" "$padding" "" "$content_length" "$content" "$((spaces + padding))" ""
     done
     echo "$separator_line"
 
