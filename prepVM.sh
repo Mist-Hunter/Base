@@ -52,7 +52,7 @@ apt install localepurge --no-install-recommends -y
 echo "localepurge locales-to-remove string all" | debconf-set-selections
 echo "localepurge locales-to-keep string $LANG" | debconf-set-selections
 echo "localepurge no-locales boolean false" | debconf-set-selections
-localepurge
+dpkg-reconfigure -f noninteractive localepurge
 apt remove --purge localepurge -y
 
 # Set Timezone
