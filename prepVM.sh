@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Handles hardware tuning and base security settings.
-
-DEBIAN_FRONTEND=noninteractive
 source /etc/default/grub
 
 apt update
@@ -59,6 +57,7 @@ localepurge localepurge/dontbothernew boolean true
 localepurge localepurge/showfreedspace boolean true
 localepurge localepurge/quickndirtycalc boolean true
 EOF
+dpkg-reconfigure -f noninteractive localepurge
 localepurge
 apt-get remove --purge -y localepurge
 echo "Locale setup and purge completed."
