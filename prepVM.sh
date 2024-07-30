@@ -47,14 +47,20 @@ if ! locale -a 2>/dev/null | grep -qF "en_US"; then
 else
     echo "Locale '$LANG' is set."
 fi
-# Pre-configure localepurge to keep only the desired locale
-# https://raw.githubusercontent.com/szepeviktor/debian-server-tools/master/debian-setup/packages/localepurge
-apt install localepurge --no-install-recommends -y 
-echo "localepurge locales-to-remove string all" | debconf-set-selections
-echo "localepurge locales-to-keep string $LANG" | debconf-set-selections
-echo "localepurge no-locales boolean false" | debconf-set-selections
-dpkg-reconfigure -f noninteractive localepurge
-apt remove --purge localepurge -y
+echo "Purging unnecessary locales..."
+apt-get install -y --no-install-recommends localepurge
+cat << EOF | debconf-set-selections
+localepurge localepurge/nopurge multiselect $LANG
+localepurge localepurge/use-dpkg-feature boolean true
+localepurge localepurge/verbose boolean false
+localepurge localepurge/mandelete boolean true
+localepurge localepurge/dontbothernew boolean true
+localepurge localepurge/showfreedspace boolean true
+localepurge localepurge/quickndirtycalc boolean true
+EOF
+localepurge
+apt-get remove --purge -y localepurge
+echo "Locale setup and purge completed."
 
 # Set Timezone
 timedatectl set-timezone $TZ
