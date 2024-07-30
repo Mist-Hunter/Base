@@ -77,6 +77,7 @@ export LOGS=/var/log
 
 # IP Tables / Network
 env_writer \
+--source \
 --service 'Network' \
 --content '
 # System
