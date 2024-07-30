@@ -19,9 +19,6 @@
 
 # Variables and Prep ------------------------------------------------------------------------------
 
-# Resize terminal
-trap "resize >/dev/null" DEBUG
-export TERM=xterm-256color
 
 GIT_PROTOCOL=""
 GIT_SERVER=""
@@ -39,7 +36,11 @@ ssh_path="/root/.ssh"
 mkdir -p "$SCRIPTS" "$CONFIGS" "$ssh_path"
 
 apt update
-apt install wget git openssh-client -y
+apt install wget git openssh-client xterm -y
+
+# Resize terminal
+trap "resize >/dev/null" DEBUG
+export TERM=xterm-256color
 
 git clone "$GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Base.git" "$SCRIPTS/base"
 
@@ -61,6 +62,7 @@ export EDITOR="nano"
 export MOD_BLACKLIST="/etc/modprobe.d/blacklist.conf"
 
 EOT
+source /etc/environment
 
 # User Variables -------------------------------------------------------------------------------
 env_writer \

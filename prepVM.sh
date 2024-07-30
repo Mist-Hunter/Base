@@ -34,6 +34,7 @@ else
   useradd -m -s$SHELL -G "$SECURE_USER_GROUP" "$SECURE_USER"
 
   # Print the user creation details
+  # FIXME User '467SECURE_USER' created successfully.
   echo "User '$SECURE_USER' created successfully."
 fi
 
@@ -413,7 +414,7 @@ echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.t
 echo "" >> $MOD_BLACKLIST 
 
 for i in "${!block_modules[@]}"; do
-    echo "beginning module $i"
+    echo "beginning module $block_modules[$i]"
 
     # Check if the module exists
     if ! modinfo -n "${block_modules[$i]}" >/dev/null 2>&1; then
@@ -446,6 +447,7 @@ done
 
 
 echo "$MOD_BLACKLIST contents:"
+# FIXME $MODE_BLACKLIST empty, 
 cat $MOD_BLACKLIST
 echo "Updating initramfs"
 update-initramfs -u
