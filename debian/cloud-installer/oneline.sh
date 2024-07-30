@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source $ENV_GIT
+GIT_SERVER="raw.githubusercontent.com"
 
 # Systems/cloud-ubuntu/prepOracleVM.sh
 # https://github.com/bohanyang/debi?tab=readme-ov-file#available-options
@@ -8,7 +9,7 @@ source $ENV_GIT
 # NOTE !! Remove default GRUB password from systems/preVM.sh
 rm -f /etc/grub.d/40_custom && sed -i '/set superusers="root"/d' /etc/default/grub && sed -i '/password_pbkdf2 root/d' /etc/default/grub && update-grub
 
-curl -fLO https://$GIT_SERVER/$GIT_USER/Base/raw/branch/master/debian/cloud-installer/install.sh && chmod a+rx install.sh && \
+curl -fLO https://$GIT_SERVER/$GIT_USER/Base/main/debian/cloud-installer/install.sh && chmod a+rx install.sh && \
 ./install.sh \
 --ethx \
 --version 12 \
