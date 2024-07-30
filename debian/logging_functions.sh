@@ -1,3 +1,4 @@
+#!/bin/bash
 
 colorize() {
 
@@ -86,6 +87,7 @@ log_stdout() {
 
 present_secrets() {
     # Example: present_secrets "Root Password:p@ssw0rd123" "GRUB Password:grub123" "SSH Key:ssh-rsa AAAAB3NzaC1yc2E..."
+    # present_secrets "Root Password:p@ssw0rd123" "GRUB Password:grub123" "SSH Key:ssh-rsa AAAAB3NzaC1yc2E..."
     # TODO include caller function and file path like log()
     local secrets=("$@")
     local term_width=$(($(tput cols) - 5))  # Subtract 5 for the scrollbar
@@ -97,13 +99,23 @@ present_secrets() {
 
     # Print the ASCII block
     echo "$separator_line"
+    printf "|%*s|\n" $((term_width - 2)) "" # Empty line at the start
+
+    local first_pair=true
     for secret in "${secrets[@]}"; do
         IFS=':' read -r label value <<< "$secret"
-        local content="$label: $value"
-        local content_length=${#content}
-        local spaces=$((term_width - content_length - padding * 2 - 2))  # -2 for the '|' characters
-        printf "|%*s%-*s%*s |\n" "$padding" "" "$content_length" "$content" "$((spaces + padding))" ""
+        
+        if [ "$first_pair" = true ]; then
+            first_pair=false
+        else
+            printf "|%*s|\n" $((term_width - 2)) "" # Empty line between pairs
+        fi
+
+        printf "|%*s%-*s%*s|\n" "$padding" "" "$((term_width - padding * 2 - 2))" "$label:" "$padding" ""
+        printf "|%*s%-*s%*s|\n" "$padding" "" "$((term_width - padding * 2 - 2))" "$value" "$padding" ""
     done
+
+    printf "|%*s|\n" $((term_width - 2)) "" # Empty line at the end
     echo "$separator_line"
 
     # Wait for user to press ENTER

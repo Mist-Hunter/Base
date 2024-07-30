@@ -28,6 +28,7 @@ done
 
 #TODO: check hostname in postfix config
 #TODO: Remove hostname edit in bashrc
+#TODO: write to /etc/environment
 
 if grep -q "$new_host" /etc/hosts
 then
