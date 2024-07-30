@@ -31,7 +31,7 @@ if id -u "$SECURE_USER" >/dev/null 2>&1; then
   echo "User '$SECURE_USER' already exists."
 else
   # Create the user
-  useradd -m -s$SHELL -G "$SECURE_USER_GROUP" "$SECURE_USER"
+  useradd -m -s $SHELL -G "$SECURE_USER_GROUP" "$SECURE_USER"
 
   # Print the user creation details
   echo "User '$SECURE_USER' created successfully."
