@@ -10,6 +10,8 @@ GIT_SERVER="raw.githubusercontent.com"
 # NOTE !! Remove default GRUB password from systems/preVM.sh
 rm -f /etc/grub.d/40_custom && sed -i '/set superusers="root"/d' /etc/default/grub && sed -i '/password_pbkdf2 root/d' /etc/default/grub && update-grub
 
+# TODO create URL fork for local vrs. wan
+
 curl -fLO https://$GIT_SERVER/$GIT_USER/Base/main/debian/cloud-installer/install.sh && chmod a+rx install.sh && \
 ./install.sh \
 --ethx \
