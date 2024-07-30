@@ -60,15 +60,15 @@ DEV_TYPE=$(virt-what)
 if [[ $DEV_TYPE = "" ]]; then
     # If physical, replace with Proc architecture
     DEV_TYPE=$(uname -m)
-    
-    # Write to /etc/environment
-    echo "# Device type via 'virt-what'" >> /etc/environment
-    echo "export DEV_TYPE=$DEV_TYPE" >> /etc/environment
-    echo ""  >> /etc/environment
-    
-    # Uninstall virt-what
-    apt-get remove --purge -y virt-what
 fi
+# Write to /etc/environment
+echo "# Device type via 'virt-what'" >> /etc/environment
+echo "export DEV_TYPE=$DEV_TYPE" >> /etc/environment
+echo ""  >> /etc/environment
+
+# Uninstall virt-what
+apt-get remove --purge -y virt-what
+
 
 if [[ $DEV_TYPE = "kvm" ]]; then
     # Qemu-Guest-Agent
@@ -462,7 +462,7 @@ rm -rf /usr/share/man/??_*
 # dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -nr | less
 
 # Triming down before tempalting, only keep the current kernel
-bash -c "$(wget -O - $GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Apt/raw/branch/master/debian/kernelPurge.sh)"
+. $SCRIPTS/apt/debian/kernelPurge.sh
 
 # Clean up un-needed packages (Debian 12). Something above is adding exim4, unsure what.
 apt remove -y unattended-upgrades

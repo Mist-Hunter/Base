@@ -1,17 +1,33 @@
 #!/bin/bash
 
-read -p "Create $SECURE_USER password? " -n 1 -r
-echo    # (optional) move to a new line
-if [[ $reply =~ ^[Yy]$ ]]
-then
-new_password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32;)
-if getent passwd $(id -nu $SECURE_USER_UID) > /dev/null 2>&1; then
-  echo "yes $(id -nu $SECURE_USER_UID) exists"
-  echo "$(id -nu $SECURE_USER_UID):$new_password" | chpasswd
-else
-  echo "No, $(id -nu $SECURE_USER_UID) does not exist"
-  useradd $(id -nu $SECURE_USER_UID) -s$SHELL
-  echo "$(id -nu $SECURE_USER_UID):$new_password" | chpasswd
+# Ensure SECURE_USER_UID and SHELL are defined
+if [[ -z "$SECURE_USER_UID" ]] || [[ -z "$SHELL" ]]; then
+  echo "Error: SECURE_USER_UID or SHELL variable is not set."
+  exit 1
 fi
-read -p "[debsec] up.sh, $HOST_NAME, Username: $(id -nu $SECURE_USER_UID), Password: $new_password , press [ENTER] to continue."
+
+# Prompt to create a password
+read -p "Create password for user with UID $SECURE_USER_UID? (Y/n): " -n 1 -r
+echo # (optional) move to a new line
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  # Generate a new password
+  new_password=$(tr -dc _A-Z-a-z-0-9 </dev/urandom | head -c 32)
+
+  # Get the username for the given UID
+  username=$(id -nu "$SECURE_USER_UID")
+
+  # Check if user exists
+  if getent passwd "$username" > /dev/null 2>&1; then
+    echo "User $username exists."
+    echo "$username:$new_password" | chpasswd
+  else
+    echo "User $username does not exist. Creating user."
+    useradd "$username" -s "$SHELL"
+    echo "$username:$new_password" | chpasswd
+  fi
+
+  # Provide feedback to the user
+  echo "[debsec] up.sh, $HOST_NAME, Username: $username, Password: $new_password"
+  read -p "Press [ENTER] to continue."
 fi
