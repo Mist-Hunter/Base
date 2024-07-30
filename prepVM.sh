@@ -401,19 +401,19 @@ module_description=(
 )
 
 # Empty the blacklist
-echo "Current $MOD_BLACKLIST contains the following which will be emptied!"
-cat $MOD_BLACKLIST
-cat <<EOT > $MOD_BLACKLIST
-EOT
+# FIXME odd hangup here
 
-if [ ! -f $MOD_BLACKLIST ]
-then
-    touch $MOD_BLACKLIST
-    echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.txt , https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/blacklisting_a_module" >> $MOD_BLACKLIST 
-    echo "" >> $MOD_BLACKLIST 
+if [ -f $MOD_BLACKLIST ]
+    mv "$MOD_BLACKLIST" "${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak" 
+    echo "Moved $MOD_BLACKLIST to ${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak"
 fi
 
+touch $MOD_BLACKLIST
+echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.txt , https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/blacklisting_a_module" >> $MOD_BLACKLIST 
+echo "" >> $MOD_BLACKLIST 
+
 for i in "${!block_modules[@]}"; do
+    echo "begining module blocking"
     if ! modinfo -n "${block_modules[$i]}" >/dev/null 2>&1; then
         echo "${block_modules[$i]} module not found, skipping."
         continue
