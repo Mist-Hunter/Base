@@ -11,7 +11,7 @@ if [[ $reply =~ ^[Yy]$ ]]; then
     read -p "Systems, debian-base, prepVM, Root, Password: $new_password , press [ENTER] to continue."
 
     # Autologin for the current terminal
-    tty_dev= $(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial)  # NOTE > $(ps hotty $$) doesn't work under sudo bash.
+    tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial)  # NOTE > $(ps hotty $$) doesn't work under sudo bash.
     mkdir -p "/etc/systemd/system/serial-getty@${tty_dev}.service.d"
     cat <<EOT >"/etc/systemd/system/serial-getty@${tty_dev}.service.d/autologin.conf"
 # Autologin configuration for current terminal ($tty_dev)
