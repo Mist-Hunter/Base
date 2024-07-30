@@ -28,8 +28,8 @@ if [[ $DEV_TYPE = "xen xen-hvm aws" ]]; then
 fi
 
 # Setup Firewall
-# NOTE: Multiple SCRIPTS rely on this script completing, keep early in the install sequence.
 if [[ "$FIREWALL" == "iptables" ]]; then
+  # NOTE: Multiple SCRIPTS rely on this script completing, keep early in the install sequence.
   . $SCRIPTS/base/firewall/up.sh
 
     # Install GIT Firewall Rules
