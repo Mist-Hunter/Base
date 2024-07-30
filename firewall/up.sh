@@ -11,7 +11,6 @@
 # Return name of second network interface per ip -o link show
 
 # Check if FIREWALL is set to "none"
-# FIXME still getting prompted to install scanner (bottom) when set to none
 if [[ "$FIREWALL" == "none" ]]; then
     echo "FIREWALL is set to none. Exiting script."
     exit 1  # Exit with status code 1 (or any other status code you choose)
