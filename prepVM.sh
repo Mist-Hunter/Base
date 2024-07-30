@@ -39,6 +39,22 @@ else
 fi
 
 # Setup Locale 
+# https://salsa.debian.org/elmig-guest/localepurge
+# https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
+# https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
+# NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
+echo "Purging unnecessary locales..."
+cat <<EOT > /etc/locale.nopurge
+    # USE_DPKG keeps apt from installing unneed locales in the first place
+    USE_DPKG
+    MANDELETE
+    DONTBOTHERNEWLOCALE
+    SHOWFREEDSPACE
+    VERBOSE
+    en
+    $LANG
+EOT
+apt-get install -y localepurge
 if ! locale -a 2>/dev/null | grep -qF "en_US"; then
     # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
     echo "Locale '$LANG' is not set."
@@ -48,23 +64,6 @@ if ! locale -a 2>/dev/null | grep -qF "en_US"; then
 else
     echo "Locale '$LANG' is set."
 fi
-# https://salsa.debian.org/elmig-guest/localepurge
-# https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
-# NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
-echo "Purging unnecessary locales..."
-cat << EOF | debconf-set-selections
-localepurge localepurge/nopurge multiselect $LANG
-localepurge localepurge/use-dpkg-feature boolean false
-localepurge localepurge/verbose boolean false
-localepurge localepurge/mandelete boolean true
-localepurge localepurge/dontbothernew boolean true
-localepurge localepurge/showfreedspace boolean true
-localepurge localepurge/quickndirtycalc boolean true
-localepurge localepurge/none_selected boolean false
-EOF
-apt-get install -y --no-install-recommends localepurge
-echo "$LANG" > /etc/locale.nopurge
-localepurge
 apt-get remove --purge -y localepurge
 echo "Locale setup and purge completed."
 
