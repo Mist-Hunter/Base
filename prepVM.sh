@@ -2,6 +2,7 @@
 
 # Handles hardware tuning and base security settings.
 
+DEBIAN_FRONTEND=noninteractive
 source /etc/default/grub
 
 apt update
