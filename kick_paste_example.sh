@@ -19,6 +19,10 @@
 
 # Variables and Prep ------------------------------------------------------------------------------
 
+# Resize terminal
+trap "resize >/dev/null" DEBUG
+export TERM=xterm-256color
+
 GIT_PROTOCOL=""
 GIT_SERVER=""
 GIT_USER=""
