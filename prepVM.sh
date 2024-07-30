@@ -298,7 +298,7 @@ chmod o-r $grub_cfg
 echo "GRUB configuration updated successfully."
 
 # Display the password and wait for user acknowledgment
-read -p "Systems, debian-base, prepVM, Root, Password: $new_password , press [ENTER] to continue."
+read -p "Systems, debian-base, prepVM, GRUB, Password: $new_password , press [ENTER] to continue."
 
 # From: lsmod | awk '{print $1}'
 # WARNING: This list is very aggressive, removing USB support and many inputs. Only for headless installs. dccp, sctp, rds, tipc, usb-storage, firewire-core, were all recommended off by Lynis.
@@ -401,9 +401,8 @@ module_description=(
 "usd: handles support for USB Devices"
 )
 
+# FIXME bad log output, hangs after usd
 # Empty the blacklist
-# FIXME odd hangup here
-
 if [ -f $MOD_BLACKLIST ]; then
     mv "$MOD_BLACKLIST" "${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak" 
     echo "Moved $MOD_BLACKLIST to ${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak"
@@ -414,7 +413,7 @@ echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.t
 echo "" >> $MOD_BLACKLIST 
 
 for i in "${!block_modules[@]}"; do
-    echo "begining module blocking"
+    echo "begining module $i"
     if ! modinfo -n "${block_modules[$i]}" >/dev/null 2>&1; then
         echo "${block_modules[$i]} module not found, skipping."
         continue
@@ -434,7 +433,9 @@ for i in "${!block_modules[@]}"; do
     fi
 done
 
+echo "$MOD_BLACKLIST contents:"
 cat $MOD_BLACKLIST
+echo "Updating initramfs"
 update-initramfs -u
 
 ### Clean up 
