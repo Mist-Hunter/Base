@@ -466,7 +466,7 @@ rm -rf /usr/share/man/??_*
 # dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -nr | less
 
 # Triming down before tempalting, only keep the current kernel
-. $SCRIPTS/apt/debian/kernelPurge.sh
+. $SCRIPTS/base/debian/kernelPurge.sh
 
 # Clean up un-needed packages (Debian 12). Something above is adding exim4, unsure what.
 apt remove -y unattended-upgrades
