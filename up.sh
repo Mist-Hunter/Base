@@ -125,7 +125,6 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   # Install Docker
-  # FIXME a series of script will fire after this that needs a non-template, final hostname
   cd $SCRIPTS
   source $ENV_GIT
   git clone $GIT_DOCKER_URL/Docker.git $SCRIPTS/docker
