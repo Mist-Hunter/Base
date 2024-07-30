@@ -205,8 +205,6 @@ EOT
 # Fix permission all all the keys and config above
 chmod -R 700 "$ssh_path"
 
-git clone "$GIT_APT_URL/Apt.git" "$SCRIPTS/apt"
-
 # Bash RC -----------------------------------------------------------------------------------------------
 cat <<EOT >> /root/.bashrc
 
@@ -228,6 +226,10 @@ EOT
 
 # Reload .bashrc
 . ~/.bashrc
+
+# Clone Apt, don't ask about new fingerprints
+export GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no'
+git clone "$GIT_APT_URL/Apt.git" "$SCRIPTS/apt"
 
 # Prep-VM
 . "$SCRIPTS/base/prepVM.sh"
