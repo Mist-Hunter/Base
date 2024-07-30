@@ -88,9 +88,10 @@ apt install xterm --no-install-recommends -y # 12.9 MB
 cat <<'EOT' >> ~/.bashrc
 
 # Auto-Resize for Xterm.js / Serial Terminals # https://dannyda.com/2020/06/14/how-to-fix-proxmox-ve-pve-virtual-machine-xterm-js-cant-resize-window-and-no-color/
-if [ $(tty) == 'TTY_DEV' ]; then
-trap "resize >/dev/null" DEBUG
-export TERM=xterm-256color
+# If any active terminal is serial, resize
+if [[ "$(w)" == *"TTY_DEV* ]]; then
+    trap "resize >/dev/null" DEBUG
+    export TERM=xterm-256color
 fi
 EOT
 sed -i "s|TTY_DEV|$tty_dev|g" ~/.bashrc
