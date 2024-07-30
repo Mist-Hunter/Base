@@ -38,15 +38,14 @@ else
 fi
 
 # Related to debian cloud
-lang_locale=$LANG
 if ! locale -a 2>/dev/null | grep -qF "en_US"; then
     # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
-    echo "Locale '$lang_locale' is not set."
+    echo "Locale '$LANG' is not set."
     apt install locales --no-install-recommends -y # 20.7 MB
-    sed -i "s/^# $lang_locale UTF-8/$lang_locale UTF-8/" /etc/locale.gen
-    locale-gen # Manual > dpkg-reconfigure locales NOTE: local-gen $lang_locale doesn't work. Only works with sed.
+    sed -i "s/^# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
+    locale-gen # Manual > dpkg-reconfigure locales NOTE: local-gen $LANG doesn't work. Only works with sed.
 else
-    echo "Locale '$lang_locale' is set."
+    echo "Locale '$LANG' is set."
 fi
 # Pre-configure localepurge to keep only the desired locale
 apt install localepurge --no-install-recommends -y 
