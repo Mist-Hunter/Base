@@ -229,6 +229,7 @@ apt install rkhunter --no-install-recommends -y                 # <--- 1 Point. 
 apt install debsecan --no-install-recommends -y                 # <--- 1 Point. Is adding exim4-* via recommends
 
 # Lynis install apt-listbugs to display a list of critical bugs prior to each APT installation. [DEB-0810]
+export DEBIAN_FRONTEND=noninteractive # Allow skipping of bugs during this seesion
 apt install apt-listbugs --no-install-recommends -y             # <--- 1 Point
 
 # Lynis Install debsums for the verification of installed package files against MD5 checksums. [DEB-0875]
