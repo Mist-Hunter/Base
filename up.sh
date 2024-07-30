@@ -112,6 +112,7 @@ fi
 
 # Default Hostname
 . $SCRIPTS/base/hostname/default.sh
+. $SCRIPTS/base/hostname/newhost.sh $(hostname) # <-- Populate hostname to various locations
 
 # Root Login
 . $SCRIPTS/base/users/root_login.sh
