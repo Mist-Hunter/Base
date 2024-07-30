@@ -83,6 +83,7 @@ fi
 # sed 's/dhcp6\.[a-z-]\+\(, \)\?//g' /etc/dhcp/dhclient.conf
 
 # Add Auto-Resize Terminal & set to Xterm 
+tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial) 
 apt install xterm --no-install-recommends -y # 12.9 MB
 cat <<'EOT' >> ~/.bashrc
 
@@ -92,7 +93,7 @@ trap "resize >/dev/null" DEBUG
 export TERM=xterm-256color
 fi
 EOT
-sed -i "s|TTY_DEV|$(tty)|g" ~/.bashrc
+sed -i "s|TTY_DEV|$tty_dev|g" ~/.bashrc
 
 # Load TCP BBR congestion control module and ensure it loads on boot
 modprobe tcp_bbr
