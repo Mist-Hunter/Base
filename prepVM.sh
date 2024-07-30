@@ -34,7 +34,6 @@ else
   useradd -m -s$SHELL -G "$SECURE_USER_GROUP" "$SECURE_USER"
 
   # Print the user creation details
-  # FIXME User '467SECURE_USER' created successfully.
   echo "User '$SECURE_USER' created successfully."
 fi
 
@@ -402,7 +401,6 @@ module_description=(
 "usd: handles support for USB Devices"
 )
 
-# FIXME bad log output, hangs after usd
 # Empty the blacklist
 if [ -f $MOD_BLACKLIST ]; then
     mv "$MOD_BLACKLIST" "${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak" 
@@ -445,9 +443,7 @@ for i in "${!block_modules[@]}"; do
     fi
 done
 
-
 echo "$MOD_BLACKLIST contents:"
-# FIXME $MODE_BLACKLIST empty, 
 cat $MOD_BLACKLIST
 echo "Updating initramfs"
 update-initramfs -u
