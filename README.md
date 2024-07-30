@@ -15,3 +15,4 @@
 SCREAMING_SNAKE_CASE for environmental variables
 snake_case for local script variables
 camelCase for function variables
+
