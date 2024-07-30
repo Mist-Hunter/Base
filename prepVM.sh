@@ -48,18 +48,22 @@ if ! locale -a 2>/dev/null | grep -qF "en_US"; then
 else
     echo "Locale '$LANG' is set."
 fi
+# https://salsa.debian.org/elmig-guest/localepurge
+# https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
+# NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
 echo "Purging unnecessary locales..."
-apt-get install -y --no-install-recommends localepurge
 cat << EOF | debconf-set-selections
 localepurge localepurge/nopurge multiselect $LANG
-localepurge localepurge/use-dpkg-feature boolean true
+localepurge localepurge/use-dpkg-feature boolean false
 localepurge localepurge/verbose boolean false
 localepurge localepurge/mandelete boolean true
 localepurge localepurge/dontbothernew boolean true
 localepurge localepurge/showfreedspace boolean true
 localepurge localepurge/quickndirtycalc boolean true
+localepurge localepurge/none_selected boolean false
 EOF
-dpkg-reconfigure -f noninteractive localepurge
+apt-get install -y --no-install-recommends localepurge
+echo "$LANG" > /etc/locale.nopurge
 localepurge
 apt-get remove --purge -y localepurge
 echo "Locale setup and purge completed."
