@@ -89,7 +89,7 @@ cat <<'EOT' >> ~/.bashrc
 
 # Auto-Resize for Xterm.js / Serial Terminals # https://dannyda.com/2020/06/14/how-to-fix-proxmox-ve-pve-virtual-machine-xterm-js-cant-resize-window-and-no-color/
 # If any active terminal is serial, resize
-if [[ "$(w)" == *"TTY_DEV* ]]; then
+if [[ "$(w)" == *"TTY_DEV"* ]]; then
     trap "resize >/dev/null" DEBUG
     export TERM=xterm-256color
 fi
@@ -228,7 +228,7 @@ apt install rkhunter --no-install-recommends -y                 # <--- 1 Point. 
 apt install debsecan --no-install-recommends -y                 # <--- 1 Point. Is adding exim4-* via recommends
 
 # Lynis install apt-listbugs to display a list of critical bugs prior to each APT installation. [DEB-0810]
-export DEBIAN_FRONTEND=noninteractive # Allow skipping of bugs during this seesion
+export APT_LISTBUGS_FRONTEND=none # Allow skipping of bugs during this seesion > https://salsa.debian.org/frx-guest/apt-listbugs/blob/master/FAQ.md#how-can-i-use-apt-listbugs-in-unattended-installationsupgrades
 apt install apt-listbugs --no-install-recommends -y             # <--- 1 Point
 
 # Lynis Install debsums for the verification of installed package files against MD5 checksums. [DEB-0875]
