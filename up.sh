@@ -29,7 +29,10 @@ fi
 
 # Setup Firewall
 # NOTE: Multiple SCRIPTS rely on this script completing, keep early in the install sequence.
-. $SCRIPTS/base/firewall/up.sh
+# Check if FIREWALL is set to "none"
+if [[ "$FIREWALL" == "iptables" ]]; then
+  . $SCRIPTS/base/firewall/up.sh
+fi
 
 # Install GIT
 # TODO is this needed?
@@ -97,11 +100,11 @@ if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
   #SSH will be installed by default, needs to come first for SSH exceptions or will lock out.
   . $SCRIPTS/apt/sshd/up.sh
 
-   # Because Crowdsec won't work, install anti-scan rules
-  . $SCRIPTS/base/firewall/anti-scan.sh
+  # Because Crowdsec won't work, install anti-scan rules
+  #. $SCRIPTS/base/firewall/anti-scan.sh
 
-    #iptables-save > /etc/iptables.up.rules
-  . $SCRIPTS/base/firewall/save.sh  
+  # #iptables-save > /etc/iptables.up.rules
+  #. $SCRIPTS/base/firewall/save.sh  
 
   # Install Blinkt *** Needs to be last, because it interupts.
   # . $SCRIPTS/apt/blinkt/up.sh
