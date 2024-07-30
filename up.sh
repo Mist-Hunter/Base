@@ -31,11 +31,11 @@ fi
 # NOTE: Multiple SCRIPTS rely on this script completing, keep early in the install sequence.
 if [[ "$FIREWALL" == "iptables" ]]; then
   . $SCRIPTS/base/firewall/up.sh
-fi
 
-# Install GIT
-# TODO is this needed?
-. $SCRIPTS/apt/git/up.sh
+    # Install GIT Firewall Rules
+  # NOTE: this is needed in the event of a firewall being present
+  . $SCRIPTS/apt/git/up.sh
+fi
 
 # Make Directories
 mkdir -p $SCRIPTS
