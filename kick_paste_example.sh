@@ -19,7 +19,6 @@
 
 # Variables and Prep ------------------------------------------------------------------------------
 
-
 GIT_PROTOCOL=""
 GIT_SERVER=""
 GIT_USER=""
@@ -28,9 +27,7 @@ SECURE_USER_ID="1000"
 SECURE_USER="$(id -nu "$SECURE_USER_ID" 2>/dev/null || echo "user")"
 
 BASE="/root/"
-base=$BASE                  # TODO Deprecate
 SCRIPTS="$BASE/scripts/"
-scripts=$SCRIPTS            # TODO Deprecate
 CONFIGS="$BASE/.config/"
 ENV_GLOBAL="$CONFIGS/global.env"
 ssh_path="/root/.ssh"
@@ -47,6 +44,7 @@ export TERM=xterm-256color
 git clone "$GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Base.git" "$SCRIPTS/base"
 
 # Helper script(s)
+source "$SCRIPTS/base/debian/logging_functions.sh"
 source "$SCRIPTS/base/debian/env_writer.sh"
 
 # System Variables -------------------------------------------------------------------------------
@@ -75,6 +73,9 @@ export BASE=\"$BASE\"
 export SCRIPTS=\"$SCRIPTS\"
 export CONFIGS=\"$CONFIGS\"
 export LOGS=/var/log
+
+# Logging
+source $SCRIPTS/base/debian/logging_functions.sh
 "
 
 # IP Tables / Network
