@@ -111,8 +111,7 @@ if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
 fi
 
 # Default Hostname
-. $SCRIPTS/base/hostname/default.sh
-. $SCRIPTS/base/hostname/newhost.sh $(hostname) # <-- Populate hostname to various locations
+. $SCRIPTS/base/hostname/newhost.sh
 
 # Root Login
 . $SCRIPTS/base/users/root_login.sh

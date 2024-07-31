@@ -4,16 +4,20 @@
 # Usage ./newhost.sh <NEW HOSTNAME>
 
 set -e
-
+source /etc/os-release
 current_host=$(hostname)
+template_name="Template-$os_label-$version_id$(date +'%Y%m%d')"
 
-# Prompt if no parameters passed
+# Use provided hostname or prompt for it if not provided
 if [[ $# -eq 0 ]]; then
-   read -p "apt, hostname, newhost.sh: No hostname provided. Please enter new hostname: " new_host
+  read -p "Current hostname is '$(hostname)'. Enter a new hostname (default: '$template_name'): " new_host
+  new_host=${new_host:-$template_name}
 else
-   new_host=$1
-   echo "apt, hostname, newhost.sh: Received $new_host from CLI parameter"  
+  new_host=$1
+  echo "Using provided hostname: $new_host"
 fi
+
+echo "Using hostname: $new_host"
 
 # Check character count and re-prompt if too long
 while true; do
