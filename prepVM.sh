@@ -86,11 +86,9 @@ echo ""  >> /etc/environment
 # Uninstall virt-what
 apt-get remove --purge -y virt-what
 
-
 if [[ $DEV_TYPE = "kvm" ]]; then
     # Qemu-Guest-Agent
     apt install qemu-guest-agent --no-install-recommends -y # 1128 kB
-    #apt remove acpid -y
     
     # Disk Resize
     source $scripts/apt/mount/autoexp.sh
