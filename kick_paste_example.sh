@@ -68,11 +68,16 @@ source /etc/environment
 env_writer \
 --service 'Global' \
 --content "
-# Filepaths
+# FILEPATHS
 export BASE=\"$BASE\"
 export SCRIPTS=\"$SCRIPTS\"
 export CONFIGS=\"$CONFIGS\"
 export LOGS=/var/log
+# filepaths 
+export base=\"$BASE\"
+export scripts=\"$SCRIPTS\"
+export configs=\"$CONFIGS\"
+export logs=/var/log
 
 # Logging
 source $SCRIPTS/base/debian/logging_functions.sh
