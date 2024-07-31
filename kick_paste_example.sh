@@ -73,6 +73,7 @@ export BASE=\"$BASE\"
 export SCRIPTS=\"$SCRIPTS\"
 export CONFIGS=\"$CONFIGS\"
 export LOGS=/var/log
+
 # filepaths 
 export base=\"$BASE\"
 export scripts=\"$SCRIPTS\"
