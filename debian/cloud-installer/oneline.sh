@@ -16,7 +16,7 @@ curl -fLO https://$GIT_SERVER/$GIT_USER/Base/main/debian/cloud-installer/install
 ./install.sh \
 --ethx \
 --version 12 \
---hostname ox2 \
+--hostname debian-preseed \
 --timezone America/Los_Angeles \
 --filesystem ext4 \
 --serial \

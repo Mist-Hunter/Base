@@ -138,6 +138,7 @@ export DOCKER_ROOT_DIR="/var/lib/docker"
 export DOCKER_MOUNTS="$DOCKER_ROOT_DIR/mounts"
 export DOCKER_VOLUMES="$DOCKER_ROOT_DIR/volumes"
 export DOCKER_CONFIGS="$CONFIGS/containers"
+export DOCKER_API_PORT=2376
 
 # Docker
 export DOCKER_REGISTRY_MIRROR=""
