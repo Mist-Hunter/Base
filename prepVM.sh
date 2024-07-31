@@ -54,15 +54,16 @@ fi
 # NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
 echo "Purging unnecessary locales..."
 apt-get install localepurge --no-install-recommends -y
+lang_prefix="${LANG%%_*}"
 cat <<EOT > /etc/locale.nopurge
-    MANDELETE
-    DONTBOTHERNEWLOCALE
-    SHOWFREEDSPACE
-    VERBOSE
-    $lang_prefix
-    $LANG
+MANDELETE
+DONTBOTHERNEWLOCALE
+SHOWFREEDSPACE
+VERBOSE
+$lang_prefix
+$LANG
 EOT
-localpurge
+localepurge
 apt-get remove --purge -y localepurge
 echo "Locale setup and purge completed."
 
