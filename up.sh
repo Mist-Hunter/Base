@@ -119,16 +119,20 @@ fi
 # Secure User Login
 . $SCRIPTS/base/users/user_login.sh
 
-read -p "Install Docker? " -n 1 -r
-echo    # (optional) move to a new line
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-  # Install Docker
-  cd $SCRIPTS
-  source $ENV_GIT
-  git clone $GIT_DOCKER_URL/Docker.git $SCRIPTS/docker
-  # Run Up Script
-  . $SCRIPTS/docker/up.sh
+if [[ "$HOST_NAME" != *preseed* && "$HOST_NAME" != *Template* ]]; then
+
+  read -p "Install Docker? " -n 1 -r
+  echo    # (optional) move to a new line
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    # Install Docker
+    cd $SCRIPTS
+    source $ENV_GIT
+    git clone $GIT_DOCKER_URL/Docker.git $SCRIPTS/docker
+    . $SCRIPTS/docker/up.sh
+  fi
+else
+  echo "Skipping Docker install due to non-permanent host-name: $HOST_NAME"
 fi
 
 # Run Audit
