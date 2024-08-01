@@ -80,6 +80,9 @@ fi
 # Setup Update Service
 . $SCRIPTS/base/debian/updaterservice.sh
 
+# Pseudo-Cron
+. $SCRIPTS/apt/cron/systemd_pesudo_cron_install.sh
+
 # Btop
 . $SCRIPTS/apt/btop/up.sh
 
