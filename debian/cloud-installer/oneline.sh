@@ -2,7 +2,7 @@
 
 source $ENV_GIT
 # FIXME can't user github.com /raw/ anymore?
-GIT_SERVER="raw.githubusercontent.com"
+
 
 # Systems/cloud-ubuntu/prepOracleVM.sh
 # https://github.com/bohanyang/debi?tab=readme-ov-file#available-options
@@ -10,9 +10,14 @@ GIT_SERVER="raw.githubusercontent.com"
 # NOTE !! Remove default GRUB password from systems/preVM.sh
 rm -f /etc/grub.d/40_custom && sed -i '/set superusers="root"/d' /etc/default/grub && sed -i '/password_pbkdf2 root/d' /etc/default/grub && update-grub
 
-# TODO create URL fork for local vrs. wan
+# if Gitea
+curl -fLO https://$GIT_SERVER/$GIT_USER/Base/raw/branch/main/debian/cloud-installer/install.sh
+# if Github
+GIT_SERVER="raw.githubusercontent.com"
+curl -fLO https://$GIT_SERVER/$GIT_USER/Base/main/debian/cloud-installer/install.sh  
 
-curl -fLO https://$GIT_SERVER/$GIT_USER/Base/main/debian/cloud-installer/install.sh && chmod a+rx install.sh && \
+chmod a+rx install.sh
+
 ./install.sh \
 --ethx \
 --version 12 \
