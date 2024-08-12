@@ -21,7 +21,7 @@ apt install -y \
   tree
 
 # Set DEV_TYPE
-. $scripts/virt-what/define.sh
+. $scripts/base/dev-type/define.sh
 
 # Setup Firewall
 if [[ "$FIREWALL" == "iptables" ]]; then
