@@ -6,7 +6,8 @@
 set -e
 source /etc/os-release
 current_host=$(hostname)
-template_name="Template-${ID}-${VERSION_ID}-$(date +'%Y%m%d')"
+ID_CAPITALIZED="$(tr '[:lower:]' '[:upper:]' <<< ${ID:0:1})${ID:1}"
+template_name="Template-${ID_CAPITALIZED}-${VERSION_ID}-$(date +'%Y%m%d')"
 
 # Use provided hostname or prompt for it if not provided
 if [[ $# -eq 0 ]]; then
