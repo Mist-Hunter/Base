@@ -64,10 +64,6 @@ cat <<EOT >> ~/.bashrc
 
 #Shell / Prompt Configuration (bash-it replacement)
 . $scripts/apt/bash-it/prompt.sh
-
-#Aliases
-alias aptUp="$SCRIPTS/base/debian/update.sh"
-alias update="$SCRIPTS/base/debian/update.sh"
 EOT
 fi
 
