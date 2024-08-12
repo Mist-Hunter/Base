@@ -67,6 +67,7 @@ cat <<EOT >> ~/.bashrc
 
 #Aliases
 alias aptUp="$SCRIPTS/base/debian/update.sh"
+alias update="$SCRIPTS/base/debian/update.sh"
 EOT
 fi
 
