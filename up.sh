@@ -63,7 +63,7 @@ else
 cat <<EOT >> ~/.bashrc
 
 #Shell / Prompt Configuration (bash-it replacement)
-. $scripts/apt/bash-it/prompt.sh
+. $scripts/base/shell/prompt.sh
 EOT
 fi
 
