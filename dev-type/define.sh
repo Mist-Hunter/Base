@@ -21,4 +21,4 @@ else
     echo "DEV_TYPE is already present in /etc/environment."
 fi
 
-apt remove virt-what
+apt remove virt-what -y
