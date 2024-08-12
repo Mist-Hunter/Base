@@ -16,6 +16,7 @@ RED='\[\033[01;31m\]'
 GREEN='\[\033[01;32m\]'
 BROWN='\[\033[01;33m\]'
 LIGHT_BLUE='\[\033[1;34m\]'
+BOLD_YELLOW='\[\033[1;33m\]'
 DEFAULT='\[\033[00m\]'
 
 # Get the current username and hostname
@@ -46,6 +47,4 @@ case "$DEV_TYPE" in
 esac
 
 # Set the prompt (PS1) with colored username and hostname
-export PS1="${USER_COLOR}\u@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${LIGHT_BLUE}\w${DEFAULT} \$ "
-
-
+export PS1="${USER_COLOR}\u@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${LIGHT_BLUE}\w${DEFAULT} ${BOLD_YELLOW}\$${DEFAULT} "
