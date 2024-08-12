@@ -98,6 +98,16 @@ fi
 # Remove dhcp6 from dhclient.conf. This doesn't seem to affect ram consumption.
 # sed 's/dhcp6\.[a-z-]\+\(, \)\?//g' /etc/dhcp/dhclient.conf
 
+# Add color to LS by uncommenting default bashrc
+sed -i '/^#export LS_OPTIONS/s/^#//' ~/.bashrc
+sed -i '/^#eval/s/^#//' ~/.bashrc
+sed -i '/^#alias ls/s/^#//' ~/.bashrc
+sed -i '/^#alias ll/s/^#//' ~/.bashrc
+sed -i '/^#alias l/s/^#//' ~/.bashrc
+sed -i '/^#alias rm/s/^#//' ~/.bashrc
+sed -i '/^#alias cp/s/^#//' ~/.bashrc
+sed -i '/^#alias mv/s/^#//' ~/.bashrc
+
 # Add Auto-Resize Terminal & set to Xterm 
 tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial) 
 apt install xterm --no-install-recommends -y # 12.9 MB
