@@ -6,7 +6,7 @@
 set -e
 source /etc/os-release
 current_host=$(hostname)
-template_name="Template-$os_label-$version_id$(date +'%Y%m%d')"
+template_name="Template-${ID}-${VERSION_ID}-$(date +'%Y%m%d')"
 
 # Use provided hostname or prompt for it if not provided
 if [[ $# -eq 0 ]]; then
