@@ -11,11 +11,16 @@
 # green = kvm,,xen,xen-hvm,aws
 # red   = x86_64,aarch64,x86_64,armv7l
 
+# FIXME verify DEV_TYPE exists and veriy PS1 doesn't
+
+# TODO @ symbol could related to matching subnet color code (red, orange etc)
+
 # Define colors
 RED='\[\033[01;31m\]'
 GREEN='\[\033[01;32m\]'
 BROWN='\[\033[01;33m\]'
 LIGHT_BLUE='\[\033[1;34m\]'
+DARK_GRAY='\[\033[1;30m\]'
 BOLD_YELLOW='\[\033[1;33m\]'
 DEFAULT='\[\033[00m\]'
 
@@ -47,4 +52,4 @@ case "$DEV_TYPE" in
 esac
 
 # Set the prompt (PS1) with colored username and hostname
-export PS1="${USER_COLOR}\u@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${LIGHT_BLUE}\w${DEFAULT} ${BOLD_YELLOW}\$${DEFAULT} "
+export PS1="${USER_COLOR}\u${DARK_GRAY}@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${LIGHT_BLUE}\w${DEFAULT} ${BOLD_YELLOW}\$${DEFAULT} "

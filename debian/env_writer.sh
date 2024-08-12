@@ -2,6 +2,9 @@
 
 # TODO if not --source then don't use export?
 
+# TODO create a sub function for writting contents thats automatically idempotent based on (unique) key_comment. Default will just be to append to --file assuring there's a space between last entry and new entry but should support options --comment that can be used for idempotence? Support 'Sections'
+## sources, aliases
+
 env_writer() {
     local serviceName=""
     local configContent=""
