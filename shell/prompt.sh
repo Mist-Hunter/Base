@@ -53,4 +53,4 @@ case "$DEV_TYPE" in
 esac
 
 # Set the prompt (PS1) with colored username and hostname
-export PS1="${USER_COLOR}\u${PURPLE}@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${LIGHT_BLUE}\w${DEFAULT} ${BOLD_YELLOW}\$${DEFAULT} "
+export PS1="${USER_COLOR}\u${DARK_GRAY}@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${LIGHT_BLUE}\w${DEFAULT} ${BOLD_YELLOW}\$${DEFAULT} "
