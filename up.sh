@@ -18,14 +18,10 @@ apt install -y \
   `# tmux - terminal multiplexer that allows multiple terminal sessions to be accessed simultaneously` \
   tmux \
   `# tree - display directory tree structures` \
-  tree \
-  `# virt-what - detect if running in a virtual machine` \
-  virt-what
+  tree
 
-# If VM, use the following
-if [[ $DEV_TYPE = "xen xen-hvm aws" ]]; then
-  echo "This is a place holder, AWS detected $DEV_TYPE"
-fi
+# Set DEV_TYPE
+. $scripts/virt-what/define.sh
 
 # Setup Firewall
 if [[ "$FIREWALL" == "iptables" ]]; then
@@ -66,13 +62,13 @@ EOT
 else
 cat <<EOT >> ~/.bashrc
 
+#Shell / Prompt Configuration (bash-it replacement)
+. $scripts/apt/bash-it/prompt.sh
+
 #Aliases
 alias aptUp="$SCRIPTS/base/debian/update.sh"
 EOT
 fi
-
-# Install under root
-. $SCRIPTS/apt/bash-it/up.sh
 
 # Neofetch
 . $SCRIPTS/apt/neofetch/up.sh
