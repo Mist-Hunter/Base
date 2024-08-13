@@ -35,7 +35,7 @@ source $UPDATED_RULES
 rm $REMOVE_RULES
 rm $UPDATED_RULES
 
-# FIXME Update ENV files export REV_PROXY="172.27.0.1"
+# FIXME Update ENV files export REV_PROXY_FQDN="172.27.0.1"
 sed -i "s|$old_gateway|$GATEWAY|g" $ENV_GLOBAL
 
 . $SCRIPTS/base/firewall/save.sh

@@ -3,7 +3,7 @@
 # IP Tables Rebuild
 
 # Restic
-iptables -A OUTPUT -d $REV_PROXY -p tcp --dport 2222 -m comment --comment "Debian-Base, up.sh: allow Restic outbound SFTP to reverse proxy" -j ACCEPT
+iptables -A OUTPUT -d $REV_PROXY_FQDN -p tcp --dport 2222 -m comment --comment "Debian-Base, up.sh: allow Restic outbound SFTP to reverse proxy" -j ACCEPT
 
 # Allow ICMP out, but don't reply
 # iptables -I INPUT -j DROP -p icmp --icmp-type echo-request -m comment --comment "DebSec, firewall.sh: Allow ICMP out, but don't reply"
@@ -33,7 +33,7 @@ iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment 
 iptables -A OUTPUT -p udp --sport 67:68 -m comment --comment "DebSec, firewall.sh: allow DHCP" -j ACCEPT
 
 #Allow local Gogs server access
-iptables -I OUTPUT -d $REV_PROXY -p tcp --dport 80 -m comment --comment "DebSec, Firewall/up.sh: allow HTTP traffic to reverse proxy, local GIT Server." -j ACCEPT
+iptables -I OUTPUT -d $REV_PROXY_FQDN -p tcp --dport 80 -m comment --comment "DebSec, Firewall/up.sh: allow HTTP traffic to reverse proxy, local GIT Server." -j ACCEPT
 
 #Default Blocks
 iptables -P OUTPUT DROP
@@ -54,9 +54,9 @@ iptables -I DOCKER-USER -m set --match-set BOGONS src -d $DOCKER_SUBNET -m comme
 
 # Docker, Local Exceptions
 iptables -I DOCKER-USER -s $GREEN -m comment --comment "Docker, up.sh: Allow GREEN" -j RETURN
-iptables -I DOCKER-USER -s $REV_PROXY -m comment --comment "Docker, up.sh: Allow HAProxy" -j RETURN
+iptables -I DOCKER-USER -s $REV_PROXY_FQDN -m comment --comment "Docker, up.sh: Allow HAProxy" -j RETURN
 iptables -I DOCKER-USER -d $GREEN -m comment --comment "Docker, up.sh: Allow GREEN" -j RETURN
-iptables -I DOCKER-USER -d $REV_PROXY -m comment --comment "Docker, up.sh: Allow HAProxy" -j RETURN
+iptables -I DOCKER-USER -d $REV_PROXY_FQDN -m comment --comment "Docker, up.sh: Allow HAProxy" -j RETURN
 iptables -A DOCKER-USER -j RETURN
 
 iptables-save > /etc/iptables.up.rules

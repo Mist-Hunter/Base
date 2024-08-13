@@ -20,7 +20,7 @@
 # Variables and Prep ------------------------------------------------------------------------------
 
 GIT_PROTOCOL=""
-GIT_SERVER=""
+GIT_SERVER_FQDN=""
 GIT_USER=""
 
 SECURE_USER_ID="1000"
@@ -41,7 +41,7 @@ apt install wget git openssh-client xterm -y
 trap "resize >/dev/null" DEBUG
 export TERM=xterm-256color
 
-git clone "$GIT_PROTOCOL://$GIT_SERVER/$GIT_USER/Base.git" "$SCRIPTS/base"
+git clone "$GIT_PROTOCOL://$GIT_SERVER_FQDN/$GIT_USER/Base.git" "$SCRIPTS/base"
 
 # Helper script(s)
 source "$SCRIPTS/base/debian/logging_functions.sh"
@@ -92,7 +92,7 @@ env_writer \
 # System
 export DOMAIN="lan"                 # Referenced by scripts that need to know the local or remote domain extension
 export FIREWALL="iptables"          # Referenced by scripts that need to know what, if any firewall is intended to be used
-export REV_PROXY="172.27.0.1"       # Local Reverse Proxy IP (if used)
+export REV_PROXY_FQDN="172.27.0.1"  # Local Reverse Proxy IP (if used)
 
 # Trusted Subnets
 export GREEN="10.0.0.0/24"          # Subnet treated with high trust
@@ -121,7 +121,7 @@ env_writer \
 export ADMIN_EMAIL=""
 export SMTP_USER=""
 export SMTP_PASS=""
-export SMTP_SERVER=""
+export SMTP_SERVER_FQDN=""
 export SMTP_PORT="587"
 '
 
@@ -130,7 +130,7 @@ env_writer \
 --service 'SNMP' \
 --content '
 export SNMP_AGENT_PORT="161"
-export SNMP_POLLER=""
+export SNMP_POLLER_FQDN=""
 export SNMP_LOCATION=""
 '
 
@@ -150,8 +150,7 @@ export DOCKER_API_PORT=2376
 export DOCKER_REGISTRY_MIRROR=""
 
 # Portainer
-export PORTAINER_SERVER=""
-export PORTAINER_HOST=""
+export PORTAINER_SERVER_FQDN=""
 '
 
 # Restic Info
@@ -159,14 +158,14 @@ env_writer \
 --service 'Restic' \
 --content '
 # Server Details, REST: https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#rest-server
-export RESTIC_SERVER_URL=""
+export RESTIC_SERVER_FQDN=""
 export RESTIC_SERVER_PORT="443"
 export RESTIC_SERVER_TYPE="Rest"
 
 # Server User Credentials
 export RESTIC_SERVER_USER_NAME=""
 export RESTIC_SERVER_USER_PASSWORD=""
-export RESTIC_SERVER_BASE_REPO_URL="rest:https://$RESTIC_SERVER_USER_NAME:$RESTIC_SERVER_USER_PASSWORD@$RESTIC_SERVER_URL"  #/$RESTIC_SERVER_USER_NAME-$LABEL
+export RESTIC_SERVER_BASE_REPO_URL="rest:https://$RESTIC_SERVER_USER_NAME:$RESTIC_SERVER_USER_PASSWORD@$RESTIC_SERVER_FQDN"  #/$RESTIC_SERVER_USER_NAME-$LABEL
 
 # Default Repo Password
 export RESTIC_REPO_DEFAULT_PASSWORD=""
@@ -177,12 +176,12 @@ env_writer \
 --service 'GIT' \
 --content "
 # Git
-export GIT_SERVER=\"$GIT_SERVER\"
+export GIT_SERVER_FQDN=\"$GIT_SERVER_FQDN\"
 export GIT_USER=\"$GIT_USER\"
 
 # Specific Repo SSH aliases
-export GIT_APT_URL=\"git@$GIT_SERVER-Apt:/$GIT_USER\"
-export GIT_DOCKER_URL=\"git@$GIT_SERVER-Docker:/$GIT_USER\"
+export GIT_APT_URL=\"git@$GIT_SERVER_FQDN-Apt:/$GIT_USER\"
+export GIT_DOCKER_URL=\"git@$GIT_SERVER_FQDN-Docker:/$GIT_USER\"
 "
 
 ### Identity Files
@@ -199,12 +198,12 @@ EOT
 ### Aliases
 cat <<EOT >> /root/.ssh/config
 # Github SSH Server Aliases ------------------------------------
-Host $GIT_SERVER-Apt
-    Hostname $GIT_SERVER
+Host $GIT_SERVER_FQDN-Apt
+    Hostname $GIT_SERVER_FQDN
     IdentityFile=$ssh_path/gitRepo-Apt-deploy.key
 
-Host $GIT_SERVER-Docker
-    Hostname $GIT_SERVER
+Host $GIT_SERVER_FQDN-Docker
+    Hostname $GIT_SERVER_FQDN
     IdentityFile=$ssh_path/gitRepo-Docker-deploy.key
 
 EOT

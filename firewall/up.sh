@@ -36,6 +36,7 @@ if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
     # TODO: Check if SSHD exists, and add rules. https://linuxhint.com/check-if-ssh-is-running-on-linux/
     # allow SSH
     # Reff: https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands#service-ssh
+    
     iptables -A INPUT -s $GREEN -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -m comment --comment "apt, firewall, up.sh: allow SSH connections from GREEN" -j ACCEPT
     iptables -A OUTPUT -d $GREEN -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -m comment --comment "apt, firewall, up.sh: allow SSH connections from GREEN" -j ACCEPT
 fi
@@ -87,33 +88,11 @@ if [ ! -d "/etc/network/if-pre-up.d" ]; then
   mkdir -p "/etc/network/if-pre-up.d"
 fi
 
-# heredoc, don't expand variables: https://stackoverflow.com/questions/27920806/how-to-avoid-heredoc-expanding-variables
-cat <<'EOF'> /etc/network/if-pre-up.d/iptables
-#!/bin/sh
-# Debian 11 runs direct from: /etc/network/if-pre-up.d/iptables, Debian 12 via SystemD Service, $INVOCATION_ID or $LISTEN_PID = Run by SystemD
-if [ "$IFACE" = "ETH2" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ]; then
-  if [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ]; then
-    echo "iptables persistence, pre-up, SystemD"
-  else
-    echo "iptables persistence, pre-up, interface $IFACE"
-  fi
-  ipset -N BOGONS nethash
-  ipset --add BOGONS 0.0.0.0/8  # self-identification [RFC5735]                                                                                                                                        
-  ipset --add BOGONS 10.0.0.0/8  # Private-Use Networks [RFC1918]                                                                                                                                      
-  ipset --add BOGONS 169.254.0.0/16  # Link Local [RFC5735]
-  ipset --add BOGONS 172.16.0.0/12  # Private-Use Networks [RFC1918]
-  ipset --add BOGONS 192.0.0.0/24  # IANA IPv4 Special Purpose Address Registry [RFC5736]
-  ipset --add BOGONS 192.0.2.0/24   # TEST-NET-1 [RFC5737]
-  ipset --add BOGONS 192.168.0.0/16  # Private-Use Networks [RFC1918]
-  ipset --add BOGONS 192.88.99.0/24  # 6to4 Relay Anycast [RFC3068]
-  ipset --add BOGONS 198.18.0.0/15  # Network Interconnect Device Benchmark Testing [RFC5735]
-  ipset --add BOGONS 198.51.100.0/24  # TEST-NET-2 [RFC5737]
-  ipset --add BOGONS 203.0.113.0/24  # TEST-NET-3 [RFC5737]
-  /sbin/iptables-restore < /etc/iptables.up.rules
-fi
-EOF
-chmod +x /etc/network/if-pre-up.d/iptables
-sed -i "s/ETH2/$ETH2/g" /etc/network/if-pre-up.d/iptables
+# Link script to run prior to nic coming up
+ln $scripts/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/iptables
+
+# Link scrippt to run after nic comes up
+ln $scripts/base/firewall/network-up.sh /etc/network/if-up.d/iptables
 
 if grep -q "12" /etc/os-release; then
 cat <<EOT > /etc/systemd/system/network-pre-up.service
