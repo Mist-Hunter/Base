@@ -10,7 +10,7 @@
 # ipset defines actual ips
 
 # GATEWAY_NIC
-export ETH2=$(ip -o link show up | awk -F': ' 'NR==2 {print $2; exit}' | sed 's/@.*//')
+export LAN_NIC=$(ip -o link show up | awk -F': ' 'NR==2 {print $2; exit}' | sed 's/@.*//')
 
 # TODO write to $ENV_NETWORK
 
@@ -20,7 +20,7 @@ export ETH2=$(ip -o link show up | awk -F': ' 'NR==2 {print $2; exit}' | sed 's/
 # If yes, then grab GATEWAY and name servers and overwrite $ENV_NETWORK values
 
 # GATEWAY_IP
-export GATEWAY=$(ip route show 0.0.0.0/0 dev $ETH2 | cut -d\  -f3)
+export GATEWAY=$(ip route show 0.0.0.0/0 dev $LAN_NIC | cut -d\  -f3)
 
 # DNS
 # allow traffic out on port 53 -- DNS, added TCP to support apt-listbugs use of upgraded GLIBC (which needs TCP)

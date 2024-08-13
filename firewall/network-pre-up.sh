@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# FIXME assure $ETH2 has a value!
+# FIXME ETH2 needs to be replace with PRIMARY_NIC or whatever $LAN_NIC has become
 
 # Debian 11 runs direct from: /etc/network/if-pre-up.d/iptables, Debian 12 via SystemD Service, $INVOCATION_ID or $LISTEN_PID = Run by SystemD
 if [ "$IFACE" = "ETH2" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ]; then
@@ -24,7 +24,8 @@ if [ "$IFACE" = "ETH2" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ]; the
 
   # TODO Instantiate variable variable IPSETS $ENV_* > *_FQDN so rules restore doesn't error.
 
-  # TODO instantiate FireHOL_level1
+  # TODO Restore FireHOL_level1
+  $SCRIPTS/base/firewall/firehol_ipset_apply.sh "/firehol_level1.netset//firehol_level1.netset"
 
   # FIXME is this early enough to not be open?
   /sbin/iptables-restore < /etc/iptables.up.rules

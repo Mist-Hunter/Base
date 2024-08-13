@@ -25,6 +25,7 @@ GIT_USER=""
 
 SECURE_USER_ID="1000"
 SECURE_USER="$(id -nu "$SECURE_USER_ID" 2>/dev/null || echo "user")"
+LAN_NIC=$(ip -o link show up | awk -F': ' 'NR==2 {print $2; exit}' | sed 's/@.*//')
 
 BASE="/root/"
 SCRIPTS="$BASE/scripts/"
@@ -90,6 +91,7 @@ env_writer \
 --service 'Network' \
 --content '
 # System
+export LAN_NIC=$LAN_NIC"            # Predictable network interface name assigned by udev (v197) for the primary network interface
 export DOMAIN="lan"                 # Referenced by scripts that need to know the local or remote domain extension
 export FIREWALL="iptables"          # Referenced by scripts that need to know what, if any firewall is intended to be used
 export REV_PROXY_FQDN="172.27.0.1"  # Local Reverse Proxy IP (if used)
