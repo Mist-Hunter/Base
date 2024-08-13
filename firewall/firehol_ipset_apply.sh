@@ -2,30 +2,13 @@
 
 # From: https://github.com/firehol/firehol/blob/master/contrib/ipset-apply.sh
 
-# (C) Copyright 2016, Costa Tsaousis
-# For FireHOL, a firewall for humans...
-
-# This script can activate any IP list in kernel.
+# This script can load any IPv4 ipset in kernel.
 # It can also update existing (in kernel) ipsets.
 # The source file can be whatever iprange accepts
 # including IPs, CIDRs, ranges, hostnames, etc.
 
-# ipset activation is atomic.
-# There is no point at which the system is left
-# with the ipset empty or incomplete.
-# The new ipset is either applied at once, or
-# the old ipset will remain untouched.
-
-# Call this script with just a filename.
-
-ipset="${1}"
-file=""
-hash=""
-tmpname="tmp-$$-${RANDOM}-$(date +%s)"
-exists="no"
-
-# ipsets are searched in this path too.
-firehol_netsets_path="/etc/firehol/ipsets"
+set -e  # Exit immediately if a command exits with a non-zero status.
+set -u  # Treat unset variables as an error when substituting.
 
 # Default values for iprange reduce mode
 # which optimizes netsets for optimal
@@ -33,111 +16,89 @@ firehol_netsets_path="/etc/firehol/ipsets"
 IPSET_REDUCE_FACTOR=20
 IPSET_REDUCE_ENTRIES=65535
 
-if [ -z "${ipset}" -o "${ipset}" = "-h" -o "${ipset}" = "--help" ]
-	then
-	echo >&2 "This script can load any IPv4 ipset in kernel."
-	echo >&2 "Just give an ipset name (or filename) to load."
-	echo >&2
-	echo >&2 "Files, if not given as absolute pathnames will"
-	echo >&2 "be searched in ${firehol_netsets_path} with .ipset or .netset"
-	exit 1
-fi
-
-if [ -f "${firehol_netsets_path}/${ipset}.ipset" ]
-	then
-	hash="ip"
-	file="${firehol_netsets_path}/${ipset}.ipset"
-
-elif [ -f "${firehol_netsets_path}/${ipset}.netset" ]
-	then
-	hash="net"
-	file="${firehol_netsets_path}/${ipset}.netset"
-
-elif [ -f "${ipset}" ]
-	then
-	if [[ "${ipset}" =~ .*\.ipset ]]
-		then
-		hash="ip"
-		file="${ipset}"
-		ipset=$( firehol_netsets_pathname "${ipset}" )
-		ipset=${ipset/.ipset/}
-
-	elif [[ "${ipset}" =~ .*\.netset ]]
-		then
-		hash="net"
-		file="${ipset}"
-		ipset=$( firehol_netsets_pathname "${ipset}" )
-		ipset=${ipset/.netset/}
-	
-	else
-		echo >&2 "I cannot understand if the file ${ipset} is ipset or netset. You should rename it to *.ipset or *.netset"
-		exit 1
-	fi
-else
-	echo >&2 "I cannot find the file ${firehol_netsets_path}/${ipset}.ipset or ${firehol_netsets_path}/${ipset}.netset"
-	exit 1
-fi
-
-list_active_ipsets() {
-	ipset list -n || ( ipset -L | grep "^Name:" | cut -d: -f 2 )
+usage() {
+    echo >&2 "Usage: $0 <full_path_to_ipset_file>"
+    echo >&2 "This script can load any IPv4 ipset in kernel."
+    echo >&2 "Provide a full path to an .ipset or .netset file to load."
+    exit 1
 }
 
-# get all the active ipsets in the system
-for x in  $( list_active_ipsets )
-do
-	if [ "${x}" = "${ipset}" ]
-		then
-		exists="yes"
-		break
-	fi
+cleanup() {
+    # remove the temporary file
+    rm -f "/tmp/${tmpname}" 2>/dev/null
+
+    # destroy the temporary ipset
+    ipset destroy "${tmpname}" 2>/dev/null || true
+
+    if [ ${FINISHED:-0} -eq 0 ]; then
+        echo >&2 "FAILED, sorry!"
+        exit 1
+    fi
+
+    echo >&2 "OK, all done!"
+    exit 0
+}
+
+# Check if required commands are available
+for cmd in ipset iprange; do
+    if ! command -v $cmd &> /dev/null; then
+        echo >&2 "Error: $cmd is required but not installed. Please install it and try again."
+        exit 1
+    fi
 done
 
-# make sure we cleanup properly
+# Parse arguments
+if [ $# -ne 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    usage
+fi
+
+file="$1"
+ipset=$(basename "${file%.*}")
+tmpname="tmp-$$-${RANDOM}-$(date +%s)"
 FINISHED=0
-cleanup() {
-	# remove the temporary file
-	rm "/tmp/${tmpname}" 2>/dev/null
 
-	# destroy the temporary ipset
-	ipset -X "${tmpname}" 2>/dev/null
+# Validate file
+if [ ! -f "${file}" ]; then
+    echo >&2 "Error: File not found: ${file}"
+    exit 1
+fi
 
-	# remove our cleanup handler
-	trap - EXIT
-	trap - SIGHUP
+# Determine hash type
+case "${file}" in
+    *.ipset) hash="ip" ;;
+    *.netset) hash="net" ;;
+    *) echo >&2 "Error: Unrecognized file extension. File should end with .ipset or .netset"; exit 1 ;;
+esac
 
-	if [ $FINISHED -eq 0 ]
-		then
-		echo >&2 "FAILED, sorry!"
-		exit 1
-	fi
+# Setup cleanup trap
+trap cleanup EXIT SIGHUP SIGINT SIGTERM
 
-	echo >&2 "OK, all done!"
-	exit 0
-}
-trap cleanup EXIT
-trap cleanup SIGHUP
+# Check if ipset already exists
+if ipset list -n | grep -q "^${ipset}$"; then
+    exists="yes"
+else
+    exists="no"
+fi
 
-entries=0
-ips=$( iprange -C "${file}" )
-ips=${ips/*,/}
+# Count entries and unique IPs
+entries=$(iprange -C "${file}")
+ips=${entries/*,/}
 
-# create the ipset restore file
-if [ "${hash}" = "net" ]
-	then
-	iprange "${file}" \
-		--ipset-reduce ${IPSET_REDUCE_FACTOR} \
-		--ipset-reduce-entries ${IPSET_REDUCE_ENTRIES} \
-		--print-prefix "-A ${tmpname} " >"/tmp/${tmpname}" || exit 1
-	entries=$( wc -l <"/tmp/${tmpname}" )
-
-elif [ "${hash}" = "ip" ]
-	then
-	iprange -1 "${file}" \
-		--print-prefix "-A ${tmpname} " >"/tmp/${tmpname}" || exit 1
-	entries=${ips}
+# Create the ipset restore file
+if [ "${hash}" = "net" ]; then
+    iprange "${file}" \
+        --ipset-reduce ${IPSET_REDUCE_FACTOR} \
+        --ipset-reduce-entries ${IPSET_REDUCE_ENTRIES} \
+        --print-prefix "-A ${tmpname} " >"/tmp/${tmpname}"
+    entries=$( wc -l <"/tmp/${tmpname}" )
+elif [ "${hash}" = "ip" ]; then
+    iprange -1 "${file}" \
+        --print-prefix "-A ${tmpname} " >"/tmp/${tmpname}"
+    entries=${ips}
 fi
 echo "COMMIT" >>"/tmp/${tmpname}"
 
+# Print information
 cat <<EOF
 
 ipset     : ${ipset}
@@ -150,32 +111,26 @@ exists in kernel already: ${exists}
 
 EOF
 
+# Set options for large ipsets
 opts=
-if [ ${entries} -gt 65536 ]
-	then
-	opts="maxelem ${entries}"
+if [ ${entries} -gt 65536 ]; then
+    opts="maxelem ${entries}"
 fi
 
-if [ ${exists} = no ]
-	then
-	echo >&2 "Creating the ${ipset} ipset..."
-	ipset -N "${ipset}" ${hash}hash ${opts} || exit 1
+# Create or update the ipset
+if [ ${exists} = no ]; then
+    echo >&2 "Creating the ${ipset} ipset..."
+    ipset create "${ipset}" ${hash}hash ${opts}
 fi
 
 echo >&2 "Creating a temporary ipset..."
-ipset -N "${tmpname}" ${hash}hash ${opts} || exit 1
-
-echo >&2 "Flushing the temporary ipset..."
-ipset -F "${tmpname}" || exit 1
+ipset create "${tmpname}" ${hash}hash ${opts}
 
 echo >&2 "Loading the temporary ipset with the IPs in file ${file}..."
-ipset -R <"/tmp/${tmpname}" || exit 1
+ipset restore <"/tmp/${tmpname}"
 
 echo >&2 "Swapping the temporary ipset with ${ipset}, to activate it..."
-ipset -W "${tmpname}" "${ipset}" || exit 1
+ipset swap "${tmpname}" "${ipset}"
 
 # let the cleanup handler know we did it
 FINISHED=1
-
-exit 0
-

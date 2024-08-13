@@ -13,7 +13,7 @@
 echo "[up.sh] script starting."
 
 #Dietpi check ipset / iptables
-apt install iptables ipset -y
+apt install iptables ipset iprange -y
 
 . $SCRIPTS/base/firewall/get_gateway.sh
 
