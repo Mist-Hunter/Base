@@ -112,6 +112,19 @@ WantedBy=network-pre.target
 EOT
 fi
 
+cat <<EOT > /etc/systemd/system/network-up.service
+[Unit]
+Description=Network Up Script
+
+[Service]
+Type=oneshot
+ExecStart=$(which bash) -c "source $ENV_NETWORK && /etc/network/if-up.d/lan-nic"
+
+[Install]
+WantedBy=multi-user.target
+EOT
+fi
+
 # Querry Anti-Scan IPtables rules
 read -p "Add iptables Anti Port-Scanning? " -n 1 -r
 echo    # (optional) move to a new line
@@ -130,8 +143,10 @@ then
   . $SCRIPTS/base/firewall/firehol_install.sh
 fi
 
-# Start service AFTER optional services
+# Start services AFTER options have been selected.
 systemctl enable network-pre-up.service
 systemctl start network-pre-up.service
+systemctl enable network-up.service
+systemctl start network-up.service
 
 echo "[up.sh] script complete."
