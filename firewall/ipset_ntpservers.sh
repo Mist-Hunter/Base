@@ -19,9 +19,9 @@ add_ips_to_ipset() {
 extract_and_resolve() {
     local config_file="/etc/systemd/timesyncd.conf"
 
-    # Extract NTP and FallbackNTP servers, handling possible leading whitespace
-    local ntp_servers=$(grep -oP '^\s*#?\s*NTP\s*=\s*\K.*' "$config_file" | tr ', ' '\n' | grep -v '^#')
-    local fallback_ntp_servers=$(grep -oP '^\s*#?\s*FallbackNTP\s*=\s*\K.*' "$config_file" | tr ', ' '\n' | grep -v '^#')
+    # Extract NTP and FallbackNTP servers, handling possible leading whitespace.  | grep -v '^#'
+    local ntp_servers=$(grep -oP '^\s*#?\s*NTP\s*=\s*\K.*' "$config_file" | tr ', ' '\n')
+    local fallback_ntp_servers=$(grep -oP '^\s*#?\s*FallbackNTP\s*=\s*\K.*' "$config_file" | tr ', ' '\n')
 
     # Combine server lists and resolve them
     local combined_servers=$(echo "$ntp_servers" "$fallback_ntp_servers")
