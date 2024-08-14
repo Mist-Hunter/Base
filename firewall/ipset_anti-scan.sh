@@ -3,7 +3,7 @@
 echo "Starting anti-scan"
 
 # up
-ipset create AntiScan_AllowList hash:net
+ipset create AntiScan_AllowList hash:ip
 # FIXME ipset add AntiScan_AllowList $LAN_NIC_GATEWAY
 
 # pre-up

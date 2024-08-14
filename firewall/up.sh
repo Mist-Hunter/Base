@@ -104,16 +104,11 @@ Description=Network Pre-Up Script
 
 [Service]
 Type=oneshot
-PassEnvironment=$ENV_NETWORK
-ExecStart=$(which bash) -c "/etc/network/if-pre-up.d/lan-nic"
+ExecStart=$(which bash) -c "source $ENV_NETWORK && /etc/network/if-pre-up.d/lan-nic"
 
 [Install]
 WantedBy=network-pre.target
 EOT
-chown root:root /etc/systemd/system/network-pre-up.service
-chmod 644 /etc/systemd/system/network-pre-up.service
-systemctl enable network-pre-up.service
-systemctl start network-pre-up.service
 fi
 
 # Querry Anti-Scan IPtables rules
@@ -133,5 +128,8 @@ then
   # SNMP Setup
   . $SCRIPTS/base/firewall/firehol_install.sh
 fi
+
+systemctl enable network-pre-up.service
+systemctl start network-pre-up.service
 
 echo "[up.sh] script complete."
