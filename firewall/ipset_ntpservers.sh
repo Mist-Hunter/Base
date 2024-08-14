@@ -22,7 +22,7 @@ combined_servers=$(echo "$ntp_servers" "$fallback_ntp_servers")
 echo "combined_servers=$combined_servers"
 for server in $combined_servers; do
     echo "server=$server"
-    ip=$(nslookup "$server" | awk '/^Address: / { print $2 }')
+    ip=$(dig +short $server)
     echo "$server = $ip"
     ipset add NTP_SERVERS "$ip" -exist
 done
