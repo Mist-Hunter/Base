@@ -21,10 +21,8 @@ combined_servers=$(echo "$ntp_servers" "$fallback_ntp_servers")
 # Resolve domain names to IP addresses and add to ipset
 echo "combined_servers=$combined_servers"
 for server in $combined_servers; do
-
     echo "server=$server"
-    nslookup "$server" | awk '/^Address: / { print $2 }'
+    ip=$(nslookup "$server" | awk '/^Address: / { print $2 }')
     ipset add NTP_SERVERS "$ip" -exist
-
 done
 
