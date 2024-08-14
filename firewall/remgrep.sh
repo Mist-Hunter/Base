@@ -1,13 +1,13 @@
 #!/bin/bash
-FILTER=$1
+filter=$1
 
-echo "Apt, firewall, remgrep.sh: Searching $FILTER:"
-iptables -S | grep $FILTER
+echo "Apt, firewall, remgrep.sh: Searching '$filter'"
+iptables -S | grep $filter
 
 IFS=$'\n'
-for rule in `iptables -S| grep $FILTER | sed -e 's/-A/-D/'`; do
+for rule in `iptables -S| grep $filter | sed -e 's/-A/-D/'`; do
     echo $rule | xargs iptables 
 done
 
 echo "Apt, firewall, remgrep.sh: After removal"
-iptables -S | grep $FILTER
+iptables -S | grep $filter
