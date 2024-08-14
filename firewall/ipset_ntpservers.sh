@@ -29,15 +29,10 @@ extract_and_resolve() {
     # Resolve domain names to IP addresses and add to ipset
     echo "combined_servers=$combined_servers"
     for server in $combined_servers; do
+    
         echo "server=$server"
-        if [[ "$server" =~ ^[0-9.]+$ ]]; then
-            # It's already an IP address
-            echo "server=$server"
-        else
-            # Resolve domain name to IP addresses
-            echo "server=$server"
-            nslookup "$server" | awk '/^Address: / { print $2 }'
-        fi
+        nslookup "$server" | awk '/^Address: / { print $2 }'
+
     done | add_ips_to_ipset
 }
 
