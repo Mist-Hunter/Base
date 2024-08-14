@@ -15,22 +15,8 @@ echo "[up.sh] script starting."
 #Dietpi check ipset / iptables
 apt install iptables ipset iprange -y
 
-. $SCRIPTS/base/firewall/get_gateway.sh
-
-# IPSet Refference http://web-tech.ga-usa.com/2011/09/linux-geoip-firewall-via-iptables-using-ipset/index.html
-# more: https://www.linuxjournal.com/content/advanced-firewall-configurations-ipset
-ipset -N BOGONS nethash
-ipset --add BOGONS 0.0.0.0/8  # self-identification [RFC5735]                                                                                                                                        
-ipset --add BOGONS 10.0.0.0/8  # Private-Use Networks [RFC1918]                                                                                                                                      
-ipset --add BOGONS 169.254.0.0/16  # Link Local [RFC5735]
-ipset --add BOGONS 172.16.0.0/12  # Private-Use Networks [RFC1918]
-ipset --add BOGONS 192.0.0.0/24  # IANA IPv4 Special Purpose Address Registry [RFC5736]
-ipset --add BOGONS 192.0.2.0/24   # TEST-NET-1 [RFC5737]
-ipset --add BOGONS 192.168.0.0/16  # Private-Use Networks [RFC1918]
-ipset --add BOGONS 192.88.99.0/24  # 6to4 Relay Anycast [RFC3068]
-ipset --add BOGONS 198.18.0.0/15  # Network Interconnect Device Benchmark Testing [RFC5735]
-ipset --add BOGONS 198.51.100.0/24  # TEST-NET-2 [RFC5737]
-ipset --add BOGONS 203.0.113.0/24  # TEST-NET-3 [RFC5737]
+. $SCRIPTS/base/firewall/ipset_BOGONS.sh
+. $SCRIPTS/base/firewall/ipset_nameservers.sh
 
 if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
     # TODO: Check if SSHD exists, and add rules. https://linuxhint.com/check-if-ssh-is-running-on-linux/
@@ -53,12 +39,8 @@ iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -m comment --commen
 iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED -m comment --comment "apt, firewall, up.sh: Allow existing traffic" -j ACCEPT
 
 # allow traffic out on port 53 -- DNS, added TCP to support apt-listbugs use of upgraded GLIBC (which needs TCP)
-nameservers=$(grep -oP '(?<=^nameserver\s)\S+' /etc/resolv.conf)
-for ns in $nameservers; do
-  # Add firewall rules for each 
-  iptables -A OUTPUT -d $ns -p udp --dport 53 -m comment --comment "apt, firewall, up.sh: Allow DNS via UDP for $ns" -j ACCEPT
-  iptables -A OUTPUT -d $ns -p tcp --dport 53 -m comment --comment "apt, firewall, up.sh: Allow DNS via TCP for $ns" -j ACCEPT
-done
+iptables -A OUTPUT -m set --match-set NAME_SERVERS dst -p udp --dport 53 -m comment --comment "apt, firewall, up.sh: Allow DNS via UDP for NAME_SERVERS ipset" -j ACCEPT
+iptables -A OUTPUT -m set --match-set NAME_SERVERS dst -p tcp --dport 53 -m comment --comment "apt, firewall, up.sh: Allow DNS via TCP for NAME_SERVERS ipset" -j ACCEPT
 
 # allow traffic out to port 123, NTP. This is in support of systemd-timesyncd which can orginate it's requests on any port. https://serverfault.com/a/1078454
 iptables -A OUTPUT -m set ! --match-set BOGONS dst -p udp --dport 123 -j ACCEPT -m comment --comment "apt, firewall, up.sh: allow NTP out"
@@ -88,11 +70,19 @@ if [ ! -d "/etc/network/if-pre-up.d" ]; then
   mkdir -p "/etc/network/if-pre-up.d"
 fi
 
+mkdir -p /etc/network/if-pre-up.d/lan-nic.d/
+mkdir -p /etc/network/if-up.d/lan-nic.d/
+
 # Link script to run prior to nic coming up
-ln $scripts/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/iptables
+ln $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
+ln $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
+ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_builder.sh
+ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_nameservers.sh
 
 # Link scrippt to run after nic comes up
-ln $scripts/base/firewall/network-up.sh /etc/network/if-up.d/iptables
+ln $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
+ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
+ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
 
 if grep -q "12" /etc/os-release; then
 cat <<EOT > /etc/systemd/system/network-pre-up.service
@@ -118,5 +108,15 @@ then
   # SNMP Setup
   . $SCRIPTS/base/firewall/anti-scan.sh
 fi
+
+# Querry Firehol_level1 Rules
+read -p "Add FireHOL Level 1 Subscription? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+  # SNMP Setup
+  . $SCRIPTS/base/firewall/firehol_install.sh
+fi
+
 
 echo "[up.sh] script complete."
