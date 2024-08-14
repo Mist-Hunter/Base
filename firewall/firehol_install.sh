@@ -11,4 +11,4 @@ iptables -A INPUT -m set --match-set FireHOL_lvl_1 src -m comment --comment "bas
 # Block outbound connections to IPs in the FireHOL_lvl_1 ipset
 iptables -A OUTPUT -m set --match-set FireHOL_lvl_1 dst -m comment --comment "base, firewall, firehol_install.sh: Block outbound matches to ipset FireHOL_lvl_1." -j DROP
 
-. $SCRIPTS/based/firewall/save.sh
+. $SCRIPTS/base/firewall/save.sh
