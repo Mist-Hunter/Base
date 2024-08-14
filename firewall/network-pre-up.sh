@@ -50,7 +50,7 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
   done < "$IPTABLES_PERSISTENT_RULES"
 
   # Restore iptables rules
-  if ! /sbin/iptables-restore < $IPTABLES_PERSISTENT_RULES; then
+  if ! /sbin/iptables-restore < "$IPTABLES_PERSISTENT_RULES"; then
     echo "Error: Failed to restore iptables rules"
     exit 1
   fi
