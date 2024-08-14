@@ -1,4 +1,4 @@
-#!/bin/bash
+# exit #!/bin/bash
 # Example:
 # FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 
@@ -9,14 +9,14 @@ ipset create NTP_SERVERS hash:ip -exist
 
 # Function to extract and resolve servers from the config file
 
-local config_file="/etc/systemd/timesyncd.conf"
+config_file="/etc/systemd/timesyncd.conf"
 
 # Extract NTP and FallbackNTP servers, handling possible leading whitespace.  | tr ', ' '\n' | grep -v '^#'
-local ntp_servers=$(grep -oP '^\s*#?\s*NTP\s*=\s*\K.*' "$config_file")
-local fallback_ntp_servers=$(grep -oP '^\s*#?\s*FallbackNTP\s*=\s*\K.*' "$config_file")
+ntp_servers=$(grep -oP '^\s*#?\s*NTP\s*=\s*\K.*' "$config_file")
+fallback_ntp_servers=$(grep -oP '^\s*#?\s*FallbackNTP\s*=\s*\K.*' "$config_file")
 
 # Combine server lists and resolve them
-local combined_servers=$(echo "$ntp_servers" "$fallback_ntp_servers")
+combined_servers=$(echo "$ntp_servers" "$fallback_ntp_servers")
 
 # Resolve domain names to IP addresses and add to ipset
 echo "combined_servers=$combined_servers"
