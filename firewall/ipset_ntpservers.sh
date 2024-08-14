@@ -1,4 +1,6 @@
 #!/bin/bash
+# Example:
+# FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 
 echo "Starting NTP Servers"
 
@@ -31,6 +33,7 @@ extract_and_resolve() {
             echo "$server"
         else
             # Resolve domain name to IP addresses
+            echo "$server"
             nslookup "$server" | awk '/^Address: / { print $2 }'
         fi
     done | add_ips_to_ipset
