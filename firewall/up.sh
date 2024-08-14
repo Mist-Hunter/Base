@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $ENV_NETWORK
+
 #The Network
 #Best installed first due to later exceptions that refference this package.
 #https://github.com/imthenachoman/How-To-Secure-A-Linux-Server/blob/master/README.md#firewall-with-ufw-uncomplicated-firewall
