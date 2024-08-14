@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ln $SCRIPTS/base/firewall/ipset_firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh
+ln -sf $SCRIPTS/base/firewall/ipset_firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh
 
 . $SCRIPTS/base/firewall/firehol_service_creation.sh
 . $SCRIPTS/base/firewall/ipset_firehol.sh
