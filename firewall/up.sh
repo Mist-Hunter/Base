@@ -96,7 +96,6 @@ ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
 ln -sf $SCRIPTS/base/firewall/ipset_nameservers.sh /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
 
-if grep -q "12" /etc/os-release; then
 # FIXME find some nicer way to source ENV_NETWORK. the && is ugly
 cat <<EOT > /etc/systemd/system/network-pre-up.service
 [Unit]
@@ -109,7 +108,7 @@ ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-pre-up.d/lan-n
 [Install]
 WantedBy=network-pre.target
 EOT
-fi
+systemctl enable network-pre-up.service
 
 cat <<EOT > /etc/systemd/system/network-up.service
 [Unit]
@@ -122,7 +121,7 @@ ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-up.d/lan-nic"
 [Install]
 WantedBy=multi-user.target
 EOT
-fi
+systemctl enable network-up.service
 
 # Querry Anti-Scan IPtables rules
 read -p "Add iptables Anti Port-Scanning? " -n 1 -r
@@ -143,9 +142,7 @@ then
 fi
 
 # Start services AFTER options have been selected.
-systemctl enable network-pre-up.service
 systemctl start network-pre-up.service
-systemctl enable network-up.service
 systemctl start network-up.service
 
 echo "[up.sh] script complete."
