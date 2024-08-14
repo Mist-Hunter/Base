@@ -73,16 +73,16 @@ fi
 mkdir -p /etc/network/if-pre-up.d/lan-nic.d/
 mkdir -p /etc/network/if-up.d/lan-nic.d/
 
-# Link script to run prior to nic coming up
-ln $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
-ln $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
-ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_builder.sh
-ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_nameservers.sh
+# Link scripts to run prior to NIC coming up
+ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
+ln -sf $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
+ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_builder.sh
+ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_nameservers.sh
 
-# Link scrippt to run after nic comes up
-ln $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
-ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
-ln $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
+# Link scripts to run after NIC comes up
+ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
+ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
+ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
 
 if grep -q "12" /etc/os-release; then
 cat <<EOT > /etc/systemd/system/network-pre-up.service
