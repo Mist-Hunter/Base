@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# NOTE: Removed Debian 11 support, this expect to be run manually via systemD service units
+
 echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC"
 
 # Execute all scripts in the lan-nic.d directory if it exists

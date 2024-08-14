@@ -1,6 +1,8 @@
 #!/bin/bash
 source $ENV_NETWORK
 
+# NOTE: Removed Debian 11 support, this expect to be run manually via systemD service units
+
 # Idealy gateway is defined first!
 export LAN_NIC_GATEWAY=$(ip route show 0.0.0.0/0 dev $LAN_NIC | cut -d\  -f3)
 echo "Setting LAN_NIC_GATEWAY: $LAN_NIC_GATEWAY"
