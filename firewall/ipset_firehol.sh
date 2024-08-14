@@ -7,4 +7,4 @@ echo "Starting firehol"
 
 ipset create FireHOL_lvl_1 hash:net -exist
 
-. $SCRIPTS/base/firewall/firehol_ipset_apply.sh "${FIREHOL_NETSETS_PATH}/FireHOL_lvl_1.netset"
+. $SCRIPTS/base/firewall/firehol_ipset_apply.sh "$FIREHOL_NETSETS_PATH/FireHOL_lvl_1.netset"
