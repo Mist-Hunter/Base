@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source $ENV_GLOBAL
 source $ENV_NETWORK
 
 echo "Starting firehol"
