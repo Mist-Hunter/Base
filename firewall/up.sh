@@ -98,6 +98,7 @@ ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ip
 ln -sf $SCRIPTS/base/firewall/ipset_nameservers.sh /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
 
 if grep -q "12" /etc/os-release; then
+# FIXME find some nicer way to source ENV_NETWORK. the && is ugly
 cat <<EOT > /etc/systemd/system/network-pre-up.service
 [Unit]
 Description=Network Pre-Up Script

@@ -20,7 +20,7 @@ usage() {
     echo >&2 "Usage: $0 <full_path_to_ipset_file>"
     echo >&2 "This script can load any IPv4 ipset in kernel."
     echo >&2 "Provide a full path to an .ipset or .netset file to load."
-    exit 1
+    # exit 1
 }
 
 cleanup() {
@@ -32,18 +32,18 @@ cleanup() {
 
     if [ ${FINISHED:-0} -eq 0 ]; then
         echo >&2 "FAILED, sorry!"
-        exit 1
+        # exit 1
     fi
 
     echo >&2 "OK, all done!"
-    exit 1
+    # exit 1
 }
 
 # Check if required commands are available
 for cmd in ipset iprange; do
     if ! command -v $cmd &> /dev/null; then
         echo >&2 "Error: $cmd is required but not installed. Please install it and try again."
-        exit 1
+        # exit 1
     fi
 done
 
@@ -60,14 +60,14 @@ FINISHED=0
 # Validate file
 if [ ! -f "${file}" ]; then
     echo >&2 "Error: File not found: ${file}"
-    exit 1
+    # exit 1
 fi
 
 # Determine hash type
 case "${file}" in
     *.ipset) hash="ip" ;;
     *.netset) hash="net" ;;
-    *) echo >&2 "Error: Unrecognized file extension. File should end with .ipset or .netset"; exit 1 ;;
+    *) echo >&2 "Error: Unrecognized file extension. File should end with .ipset or .netset"; # exit 1 ;;
 esac
 
 # Setup cleanup trap
