@@ -18,7 +18,6 @@ echo "[up.sh] script starting."
 export IPTABLES_PERSISTENT_RULES="/etc/iptables.up.rules"
 
 cat <<EOT >> $ENV_NETWORK
-
 # Firewall Variables
 export LAN_NIC_GATEWAY=""                               # Dynamicaly populated
 export IPTABLES_PERSISTENT_RULES="$IPTABLES_PERSISTENT_RULES"
