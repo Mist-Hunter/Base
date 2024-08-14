@@ -91,7 +91,7 @@ Description=Network Pre-Up Script
 
 [Service]
 Type=oneshot
-ExecStart=/etc/network/if-pre-up.d/iptables
+ExecStart=/etc/network/if-pre-up.d/lan-nic
 
 [Install]
 WantedBy=network-pre.target

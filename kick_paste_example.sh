@@ -89,9 +89,9 @@ source $SCRIPTS/base/debian/logging_functions.sh
 env_writer \
 --source \
 --service 'Network' \
---content '
+--content "
 # System
-export LAN_NIC=$LAN_NIC"            # Predictable network interface name assigned by udev (v197) for the primary network interface
+export LAN_NIC=$LAN_NIC             # Predictable network interface name assigned by udev (v197) for the primary network interface
 export DOMAIN="lan"                 # Referenced by scripts that need to know the local or remote domain extension
 export FIREWALL="iptables"          # Referenced by scripts that need to know what, if any firewall is intended to be used
 export REV_PROXY_FQDN="172.27.0.1"  # Local Reverse Proxy IP (if used)
@@ -115,7 +115,7 @@ export GRAY="172.27.9.0/24"         # VPN outbound national
 
 # Alias for RFC1918 Local area subnets
 export RFC1918="192.168.0.0/16,172.16.0.0/12,10.0.0.0/8"
-'
+"
 
 # SMTP Secrets
 env_writer \
@@ -150,7 +150,7 @@ export DOCKER_CONFIGS="$CONFIGS/containers"
 export DOCKER_API_PORT=2376
 
 # Docker
-export DOCKER_REGISTRY_MIRROR=""
+export DOCKER_REGISTRY_MIRROR_FQDN=""
 
 # Portainer
 export PORTAINER_SERVER_FQDN=""
