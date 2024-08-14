@@ -15,7 +15,14 @@ source $ENV_NETWORK
 echo "[up.sh] script starting."
 
 # Base variables
-IPTABLES_PERSISTENT_RULES="/etc/iptables.up.rules"
+export IPTABLES_PERSISTENT_RULES="/etc/iptables.up.rules"
+
+cat <<EOT >> $ENV_NETWORK
+
+# Firewall Variables
+LAN_NIC_GATEWAY=""                               # Dynamicaly populated
+IPTABLES_PERSISTENT_RULES="$IPTABLES_PERSISTENT_RULES"
+EOT
 
 #Dietpi check ipset / iptables
 apt install iptables ipset iprange -y
@@ -122,13 +129,5 @@ then
   # SNMP Setup
   . $SCRIPTS/base/firewall/firehol_install.sh
 fi
-
-# TODO write iptables section in $ENV_NETWORK; rules_path, firhole etc, gateway?
-cat <<EOT >> $ENV_NETWORK
-
-# Firewall Variables
-LAN_NIC_GATEWAY=""                               # Dynamicaly populated
-IPTABLES_PERSISTENT_RULES="$IPTABLES_PERSISTENT_RULES"
-EOT
 
 echo "[up.sh] script complete."
