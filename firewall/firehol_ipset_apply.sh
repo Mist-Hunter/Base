@@ -124,7 +124,7 @@ if [ ${exists} = no ]; then
 fi
 
 echo >&2 "Creating a temporary ipset..."
-ipset create "${tmpname}" ${hash}hash ${opts}
+ipset create "${tmpname}" ${hash}hash:ip ${opts}
 
 echo >&2 "Loading the temporary ipset with the IPs in file ${file}..."
 ipset restore <"/tmp/${tmpname}"
