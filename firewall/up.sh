@@ -77,12 +77,13 @@ mkdir -p /etc/network/if-up.d/lan-nic.d/
 ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
 ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_builder.sh
-ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_nameservers.sh
+ln -sf $SCRIPTS/base/firewall/ipset_nameservers /etc/network/if-pre-up.d/lan-nic.d/ipset_nameservers.sh
 
 # Link scripts to run after NIC comes up
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
-ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
+ln -sf $SCRIPTS/base/firewall/ipset_nameservers /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
+ln -sf $SCRIPTS/base/firewall/ipset_gateway.sh /etc/network/if-up.d/lan-nic.d/ipset_gateway.sh
 
 if grep -q "12" /etc/os-release; then
 cat <<EOT > /etc/systemd/system/network-pre-up.service
@@ -117,6 +118,5 @@ then
   # SNMP Setup
   . $SCRIPTS/base/firewall/firehol_install.sh
 fi
-
 
 echo "[up.sh] script complete."

@@ -17,18 +17,7 @@ echoheader="apt, firewall, anti-scan.sh:"
 
 . $SCRIPTS/base/firewall/get_gateway.sh
 
-# Make sure that crowdsec-blacklists is in /etc/network/if-pre-up.d/iptables script, or things will go haywire (rules fail to load)
-if (! $(cat /etc/network/if-pre-up.d/iptables | grep -q "port_scanners")); then
-echo "$echoheader ipset crowdsec-blacklists missing in /etc/network/if-pre-up.d/iptables"
-sed -i "s/ipset -N BOGONS nethash/\
-ipset create whitelisted hash:net #$echoheader create exception whitelist!\n\
-ipset add whitelisted $GATEWAY #$echoheader add gateway to whitelist!\n\
-ipset create port_scanners hash:ip family inet hashsize 32768 maxelem 65536 timeout 600 #$echoheader Offenders\n\
-ipset create scanned_ports hash:ip,port family inet hashsize 32768 maxelem 65536 timeout 60 #$echoheader Scanned Ports\n\
-ipset -N BOGONS nethash/g" /etc/network/if-pre-up.d/iptables
-else
-    echo "$echoheader ipset port_scanners present"
-fi
+ln -sf $SCRIPTS/base/firewall/ipset_anti-scan.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_anti-scan.sh
 
 ipset create whitelisted hash:net
 ipset create port_scanners hash:ip family inet hashsize 32768 maxelem 65536 timeout 600
