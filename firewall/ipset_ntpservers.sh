@@ -23,6 +23,7 @@ echo "combined_servers=$combined_servers"
 for server in $combined_servers; do
     echo "server=$server"
     ip=$(nslookup "$server" | awk '/^Address: / { print $2 }')
+    echo "$server = $ip"
     ipset add NTP_SERVERS "$ip" -exist
 done
 
