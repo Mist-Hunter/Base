@@ -11,4 +11,4 @@ fi
 touch $LOGS/firewall.log
 echo -e "# scripts, apt, firewall, save: added by $(whoami) on $(date +"%Y-%m-%d @ %H:%M:%S")---------------------------------------" | tee -a $LOGS/firewall.log
 iptables-save >> $LOGS/firewall.log
-iptables-save > /etc/iptables.up.rules
+iptables-save > $IPTABLES_PERIST_PATH

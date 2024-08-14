@@ -15,19 +15,18 @@ echo "[up.sh] script starting."
 #Dietpi check ipset / iptables
 apt install iptables ipset iprange -y
 
-# FIXME create very early default drop rule that is later ovrerwritten, otherwise open if errored
-
+# Populate ipsets refferenced below
 . $SCRIPTS/base/firewall/ipset_BOGONS.sh
 . $SCRIPTS/base/firewall/ipset_nameservers.sh
 
-if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
-    # TODO: Check if SSHD exists, and add rules. https://linuxhint.com/check-if-ssh-is-running-on-linux/
-    # allow SSH
-    # Reff: https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands#service-ssh
+# if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
+#     # TODO: Check if SSHD exists, and add rules. https://linuxhint.com/check-if-ssh-is-running-on-linux/
+#     # allow SSH
+#     # Reff: https://www.digitalocean.com/community/tutorials/iptables-essentials-common-firewall-rules-and-commands#service-ssh
     
-    iptables -A INPUT -s $GREEN -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -m comment --comment "apt, firewall, up.sh: allow SSH connections from GREEN" -j ACCEPT
-    iptables -A OUTPUT -d $GREEN -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -m comment --comment "apt, firewall, up.sh: allow SSH connections from GREEN" -j ACCEPT
-fi
+#     iptables -A INPUT -s $GREEN -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -m comment --comment "apt, firewall, up.sh: allow SSH connections from GREEN" -j ACCEPT
+#     iptables -A OUTPUT -d $GREEN -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED -m comment --comment "apt, firewall, up.sh: allow SSH connections from GREEN" -j ACCEPT
+# fi
 
 # Allow ICMP out, but don't reply
 iptables -A OUTPUT -p icmp --icmp-type 8 -d 0/0 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT -m comment --comment "apt, firewall, up.sh: Allow ICMP out, but dont reply"
@@ -53,7 +52,8 @@ iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 443 -m comment
 iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BOGONS. APT Package manager." -j ACCEPT
 
 # allow DHCP
-iptables -A OUTPUT -p udp --sport 67:68 -m comment --comment "apt, firewall, up.sh: allow DHCP" -j ACCEPT
+# NOTE handled @ network-pre-up.sh
+# iptables -A OUTPUT -p udp --sport 67:68 -m comment --comment "apt, firewall, up.sh: allow DHCP" -j ACCEPT
 
 #Default Blocks
 iptables -P OUTPUT DROP
@@ -63,7 +63,7 @@ iptables -P INPUT DROP
 #Persistance
 #https://serverfault.com/questions/927673/iptables-restore-sometimes-fails-on-reboot
 #https://askubuntu.com/questions/41400/how-do-i-make-the-script-to-run-automatically-when-tun0-interface-up-down-events
-#iptables-save > /etc/iptables.up.rules
+#iptables-save > $IPTABLES_PERIST_PATH
 . $SCRIPTS/base/firewall/save.sh
 
 # In LXC's for some reason this directory is missing.
@@ -78,8 +78,6 @@ mkdir -p /etc/network/if-up.d/lan-nic.d/
 # Link scripts to run prior to NIC coming up
 ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
-ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_builder.sh
-ln -sf $SCRIPTS/base/firewall/ipset_nameservers.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_nameservers.sh
 
 # Link scripts to run after NIC comes up
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
@@ -120,5 +118,13 @@ then
   # SNMP Setup
   . $SCRIPTS/base/firewall/firehol_install.sh
 fi
+
+# TODO write iptables section in $ENV_NETWORK; rules_path, firhole etc, gateway?
+cat <<EOT >> $ENV_NETWORK
+
+# Firewall Variables
+LAN_NIC_GATEWAY=""                               # Dynamicaly populated
+IPTABLES_PERIST_PATH="/etc/iptables.up.rules"
+EOT
 
 echo "[up.sh] script complete."

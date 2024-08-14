@@ -4,14 +4,12 @@
 . $SCRIPTS/base/firewall/remgrep.sh "anti-scan.sh"
 
 # Flush ipsets
-ipset flush scanned_ports
-ipset flush port_scanners 
-ipset flush whitelisted
+ipset flush AntiScan_ScannedPorts
+ipset flush AntiScan_Offenders 
+ipset flush AntiScan_AllowList
 
 # Remove added ipset lines from iptables script
-cat /etc/network/if-pre-up.d/iptables 
-sed -i '/anti-scan.sh/d' /etc/network/if-pre-up.d/iptables  
-cat /etc/network/if-pre-up.d/iptables 
+rm /etc/network/if-pre-up.d/lan-nic.d/ipset_anti-scan.sh
 
 # Reload firewall 
 . $SCRIPTS/base/firewall/save.sh

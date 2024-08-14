@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# At pre-up
+
 echo "Starting BOGONS"
 
 ipset -N BOGONS nethash
