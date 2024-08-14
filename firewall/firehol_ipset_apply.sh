@@ -120,7 +120,7 @@ fi
 # Create or update the ipset
 if [ ${exists} = no ]; then
     echo >&2 "Creating the ${ipset} ipset..."
-    ipset create "${ipset}" ${hash}hash ${opts}
+    ipset create "${ipset}" ${hash}hash:ip ${opts}
 fi
 
 echo >&2 "Creating a temporary ipset..."
