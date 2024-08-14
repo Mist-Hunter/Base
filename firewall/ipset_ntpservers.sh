@@ -29,6 +29,7 @@ extract_and_resolve() {
     # Resolve domain names to IP addresses and add to ipset
     echo "combined_servers=$combined_servers"
     for server in $combined_servers; do
+        echo "server=$server"
         if [[ "$server" =~ ^[0-9.]+$ ]]; then
             # It's already an IP address
             echo "server=$server"
