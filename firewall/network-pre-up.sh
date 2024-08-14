@@ -40,6 +40,7 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
   fi
 
   # Review $IPTABLES_PERSISTENT_RULES for unset ipsets and create empty ones
+  echo "Creating empty ipsets in $IPTABLES_PERSISTENT_RULES"
   while IFS= read -r line; do
     if echo "$line" | grep -q "match-set"; then
       ipset_name=$(echo "$line" | grep -oP '(?<=match-set )[^ ]+')
@@ -51,6 +52,7 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
   done < "$IPTABLES_PERSISTENT_RULES"
 
   # Restore iptables rules
+  echo "Restoring iptables $IPTABLES_PERSISTENT_RULES"
   if ! /sbin/iptables-restore < "$IPTABLES_PERSISTENT_RULES"; then
     echo "Error: Failed to restore iptables rules"
     exit 1
