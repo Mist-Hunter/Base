@@ -2,7 +2,6 @@
 source $ENV_NETWORK
 
 export FIREHOL_NETSETS_PATH="/etc/firehol/ipsets"
-
 cat <<EOT >> $ENV_NETWORK
 
 # FireHOL
@@ -11,6 +10,7 @@ EOT
 
 ln -sf $SCRIPTS/base/firewall/ipset_firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh
 
+. $SCRIPTS/base/firewall/firehol_updater.sh
 . $SCRIPTS/base/firewall/firehol_service_creation.sh
 . $SCRIPTS/base/firewall/ipset_firehol.sh
 
