@@ -113,6 +113,8 @@ systemctl enable network-pre-up.service
 cat <<EOT > /etc/systemd/system/network-up.service
 [Unit]
 Description=Network Up Script
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=oneshot
