@@ -3,7 +3,7 @@
 # Debian 11 runs direct from: /etc/network/if-pre-up.d/iptables, Debian 12 via SystemD Service, $INVOCATION_ID or $LISTEN_PID = Run by SystemD
 if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ]; then
   if [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ]; then
-    echo "iptables persistence, pre-up, SystemD"
+    echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC"
   else
     echo "iptables persistence, pre-up, interface $IFACE"
   fi
@@ -29,6 +29,7 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
   iptables -A OUTPUT -o lo -j ACCEPT
 
   # DHCP Check if LAN_NIC contains 'dynamic'
+  echo "Checking for DHCP"
   if ip addr show "$LAN_NIC" | grep -q "dynamic"; then
     echo "The NIC '$LAN_NIC' is dynamic. Applying DHCP rules."
     # Allow DHCP traffic (UDP ports 67 and 68)

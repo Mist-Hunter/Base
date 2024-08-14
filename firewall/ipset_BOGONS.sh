@@ -4,6 +4,8 @@
 
 echo "Starting BOGONS"
 
+# TODO check and see if BOGONS exists and or is empty
+
 ipset -N BOGONS nethash
 ipset --add BOGONS 0.0.0.0/8  # self-identification [RFC5735]                                                                                                                                        
 ipset --add BOGONS 10.0.0.0/8  # Private-Use Networks [RFC1918]                                                                                                                                      
