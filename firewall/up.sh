@@ -56,7 +56,7 @@ iptables -A OUTPUT -m set --match-set NAME_SERVERS dst -p udp --dport 53 -m comm
 iptables -A OUTPUT -m set --match-set NAME_SERVERS dst -p tcp --dport 53 -m comment --comment "apt, firewall, up.sh: Allow DNS via TCP for NAME_SERVERS ipset" -j ACCEPT
 
 # allow traffic out to port 123, NTP. This is in support of systemd-timesyncd which can orginate it's requests on any port. https://serverfault.com/a/1078454
-iptables -A OUTPUT -m set ! --match-set BOGONS dst -p udp --dport 123 -j ACCEPT -m comment --comment "apt, firewall, up.sh: allow NTP out"
+iptables -A OUTPUT -m set --match-set NTP_SERVERS dst -p udp --dport 123 -j ACCEPT -m comment --comment "Allow NTP traffic to NTP_SERVERS ipset"
 
 # allow traffic out for HTTP, HTTPS, or FTP
 iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BOGONS. APT Package manager." -j ACCEPT
