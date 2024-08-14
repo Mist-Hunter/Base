@@ -5,9 +5,11 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
   
   # Execute all scripts in the lan-nic.d directory if it exists
   LAN_NIC_DIR="/etc/network/if-up.d/lan-nic.d/"  # Adjust this path to the correct directory
-  if [ -d "$LAN_NIC_DIR" ]; then
-    echo "Running scripts in $LAN_NIC_DIR"
-    run-parts --verbose "$LAN_NIC_DIR"
-  fi
+  for script in "$LAN_NIC_DIR"/*; do
+    if [ -f "$script" ] && [ -x "$script" ]; then
+      echo "Running $script"
+      "$script"
+    fi
+  done
   
 fi
