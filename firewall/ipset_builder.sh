@@ -68,9 +68,9 @@ process_env_files() {
 script_dir=${BASH_SOURCE[0]}
 
 # Check if the path contains 'if-pre-up.d' or 'if-up.d'
-if [[ "$script_dir" == *"/if-pre-up.d/"* ]]; then
+if [[ "$script_dir" == *"if-pre-up.d"* ]]; then
     process_env_files "pre-up"
-elif [[ "$script_dir" == *"/if-up.d/"* ]]; then
+elif [[ "$script_dir" == *"if-up.d"* ]]; then
     process_env_files "up"
 else
     echo "$script_dir, This script should be placed in a directory that contains if-pre-up.d or if-up.d"
