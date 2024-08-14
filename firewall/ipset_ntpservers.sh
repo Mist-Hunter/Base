@@ -38,3 +38,4 @@ extract_and_resolve() {
 
 # Run the extraction and resolution
 extract_and_resolve
+
