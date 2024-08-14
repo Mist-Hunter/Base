@@ -27,6 +27,7 @@ extract_and_resolve() {
     local combined_servers=$(echo "$ntp_servers" "$fallback_ntp_servers")
 
     # Resolve domain names to IP addresses and add to ipset
+    echo $combined_servers
     for server in $combined_servers; do
         if [[ "$server" =~ ^[0-9.]+$ ]]; then
             # It's already an IP address
