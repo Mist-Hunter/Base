@@ -20,8 +20,8 @@ export IPTABLES_PERSISTENT_RULES="/etc/iptables.up.rules"
 cat <<EOT >> $ENV_NETWORK
 
 # Firewall Variables
-LAN_NIC_GATEWAY=""                               # Dynamicaly populated
-IPTABLES_PERSISTENT_RULES="$IPTABLES_PERSISTENT_RULES"
+export LAN_NIC_GATEWAY=""                               # Dynamicaly populated
+export IPTABLES_PERSISTENT_RULES="$IPTABLES_PERSISTENT_RULES"
 EOT
 
 #Dietpi check ipset / iptables
