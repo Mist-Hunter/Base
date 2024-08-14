@@ -12,3 +12,9 @@ iptables -A INPUT -m set --match-set FireHOL_lvl_1 src -m comment --comment "bas
 iptables -A OUTPUT -m set --match-set FireHOL_lvl_1 dst -m comment --comment "base, firewall, firehol_install.sh: Block outbound matches to ipset FireHOL_lvl_1." -j DROP
 
 . $SCRIPTS/base/firewall/save.sh
+
+cat <<EOT >> $ENV_NETWORK
+
+# FireHOL
+export FIREHOL_NETSETS_PATH="/etc/firehol/ipsets"
+EOT

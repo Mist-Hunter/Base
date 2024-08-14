@@ -95,7 +95,6 @@ export LAN_NIC=$LAN_NIC             # Predictable network interface name assigne
 export DOMAIN="lan"                 # Referenced by scripts that need to know the local or remote domain extension
 export FIREWALL="iptables"          # Referenced by scripts that need to know what, if any firewall is intended to be used
 export REV_PROXY_FQDN="172.27.0.1"  # Local Reverse Proxy IP (if used)
-export FIREHOL_NETSETS_PATH="/etc/firehol/ipsets"
 
 # Trusted Subnets
 export GREEN="10.0.0.0/24"          # Subnet treated with high trust
