@@ -129,6 +129,7 @@ then
   . $SCRIPTS/base/firewall/firehol_install.sh
 fi
 
+# Start service AFTER optional services
 systemctl enable network-pre-up.service
 systemctl start network-pre-up.service
 

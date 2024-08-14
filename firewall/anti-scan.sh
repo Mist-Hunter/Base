@@ -7,6 +7,8 @@
 
 # Be aware of that someone can make any IP blocked by just make scan as spoofing. I suggest you don't set block timeout too long.
 
+source $ENV_NETWORK
+
 # Check if FIREWALL is set to "none"
 if [[ "$FIREWALL" == "none" ]]; then
     echo "FIREWALL is set to none. Exiting script."
@@ -14,8 +16,6 @@ if [[ "$FIREWALL" == "none" ]]; then
 fi
 
 echoheader="apt, firewall, anti-scan.sh:"
-
-. $SCRIPTS/base/firewall/get_gateway.sh
 
 ln -sf $SCRIPTS/base/firewall/ipset_anti-scan.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_anti-scan.sh
 
