@@ -15,7 +15,7 @@ echo "[up.sh] script starting."
 #Dietpi check ipset / iptables
 apt install iptables ipset iprange -y
 
-# FIXME create very early default drop rule that is later ovrerwritten
+# FIXME create very early default drop rule that is later ovrerwritten, otherwise open if errored
 
 . $SCRIPTS/base/firewall/ipset_BOGONS.sh
 . $SCRIPTS/base/firewall/ipset_nameservers.sh

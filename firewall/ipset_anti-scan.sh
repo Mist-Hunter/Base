@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Starting anti-scan"
+
 ipset create whitelisted hash:net #$echoheader create exception whitelist!\n\
 # FIXME gateway not defined at pre-up
 # ipset add whitelisted $GATEWAY #$echoheader add gateway to whitelist!\n\
