@@ -20,4 +20,4 @@ dedup "filter"
 dedup "nat"
 dedup "mangle"
 
-iptables-save > $IPTABLES_PERIST_PATH
+iptables-save > $IPTABLES_PERSISTENT_RULES

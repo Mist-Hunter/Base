@@ -59,4 +59,4 @@ iptables -I DOCKER-USER -d $GREEN -m comment --comment "Docker, up.sh: Allow GRE
 iptables -I DOCKER-USER -d $REV_PROXY_FQDN -m comment --comment "Docker, up.sh: Allow HAProxy" -j RETURN
 iptables -A DOCKER-USER -j RETURN
 
-iptables-save > $IPTABLES_PERIST_PATH
+iptables-save > $IPTABLES_PERSISTENT_RULES

@@ -37,7 +37,7 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
     echo "The NIC '$LAN_NIC' is not dynamic. Skipping DHCP rules."
   fi
 
-  # Review $IPTABLES_PERIST_PATH for unset ipsets and create empty ones
+  # Review $IPTABLES_PERSISTENT_RULES for unset ipsets and create empty ones
   while IFS= read -r line; do
     if echo "$line" | grep -q "match-set"; then
       ipset_name=$(echo "$line" | grep -oP '(?<=match-set )[^ ]+')
@@ -46,10 +46,10 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
         ipset create "$ipset_name" hash:ip
       fi
     fi
-  done < $IPTABLES_PERIST_PATH
+  done < $IPTABLES_PERSISTENT_RULES
 
   # Restore iptables rules
-  if ! /sbin/iptables-restore < $IPTABLES_PERIST_PATH; then
+  if ! /sbin/iptables-restore < $IPTABLES_PERSISTENT_RULES; then
     echo "Error: Failed to restore iptables rules"
     exit 1
   fi

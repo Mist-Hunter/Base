@@ -12,6 +12,9 @@
 
 echo "[up.sh] script starting."
 
+# Base variables
+IPTABLES_PERSISTENT_RULES="/etc/iptables.up.rules"
+
 #Dietpi check ipset / iptables
 apt install iptables ipset iprange -y
 
@@ -63,7 +66,7 @@ iptables -P INPUT DROP
 #Persistance
 #https://serverfault.com/questions/927673/iptables-restore-sometimes-fails-on-reboot
 #https://askubuntu.com/questions/41400/how-do-i-make-the-script-to-run-automatically-when-tun0-interface-up-down-events
-#iptables-save > $IPTABLES_PERIST_PATH
+#iptables-save > $IPTABLES_PERSISTENT_RULES
 . $SCRIPTS/base/firewall/save.sh
 
 # In LXC's for some reason this directory is missing.
@@ -83,7 +86,6 @@ ln -sf $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
 ln -sf $SCRIPTS/base/firewall/ipset_nameservers.sh /etc/network/if-up.d/lan-nic.d/ipset_nameservers.sh
-ln -sf $SCRIPTS/base/firewall/ipset_gateway.sh /etc/network/if-up.d/lan-nic.d/ipset_gateway.sh
 
 if grep -q "12" /etc/os-release; then
 cat <<EOT > /etc/systemd/system/network-pre-up.service
@@ -124,7 +126,7 @@ cat <<EOT >> $ENV_NETWORK
 
 # Firewall Variables
 LAN_NIC_GATEWAY=""                               # Dynamicaly populated
-IPTABLES_PERIST_PATH="/etc/iptables.up.rules"
+IPTABLES_PERSISTENT_RULES="$IPTABLES_PERSISTENT_RULES"
 EOT
 
 echo "[up.sh] script complete."

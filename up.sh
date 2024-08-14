@@ -98,7 +98,7 @@ if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
   # Because Crowdsec won't work, install anti-scan rules
   #. $SCRIPTS/base/firewall/anti-scan.sh
 
-  # #iptables-save > $IPTABLES_PERIST_PATH
+  # #iptables-save > $IPTABLES_PERSISTENT_RULES
   #. $SCRIPTS/base/firewall/save.sh  
 
   # Install Blinkt *** Needs to be last, because it interupts.
