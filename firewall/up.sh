@@ -103,8 +103,8 @@ Description=Network Pre-Up Script
 
 [Service]
 Type=oneshot
-EnvironmentFile=$ENV_NETWORK
-ExecStart=/etc/network/if-pre-up.d/lan-nic
+PassEnvironment=$ENV_NETWORK
+ExecStart=$(which bash) -c "/etc/network/if-pre-up.d/lan-nic"
 
 [Install]
 WantedBy=network-pre.target

@@ -4,7 +4,7 @@ echo "Starting anti-scan"
 
 # up
 ipset create AntiScan_AllowList hash:net
-ipset add AntiScan_AllowList $GATEWAY
+# FIXME ipset add AntiScan_AllowList $LAN_NIC_GATEWAY
 
 # pre-up
 ipset create AntiScan_Offenders hash:ip family inet hashsize 32768 maxelem 65536 timeout 600
