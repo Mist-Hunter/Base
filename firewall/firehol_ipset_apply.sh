@@ -36,7 +36,7 @@ cleanup() {
     fi
 
     echo >&2 "OK, all done!"
-    exit 0
+    exit 1
 }
 
 # Check if required commands are available
