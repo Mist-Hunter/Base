@@ -17,7 +17,7 @@ iptables_output=$(iptables -S | grep "$filter")
 # Check if grep found any results
 if [ $? -ne 0 ] || [ -z "$iptables_output" ]; then
   echo "No rules found matching '$filter'. Exiting."
-  exit 1
+  # exit 1
 fi
 
 # Process each rule found by grep
