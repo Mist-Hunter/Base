@@ -14,6 +14,8 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
     echo "Running scripts in $LAN_NIC_DIR"
     run-parts --verbose "$LAN_NIC_DIR"
   fi
+  
+  sleep 2s
 
   # Restore iptables rules
   /sbin/iptables-restore < /etc/iptables.up.rules
