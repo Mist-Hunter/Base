@@ -10,7 +10,7 @@ source $ENV_NETWORK
 netset_file="${FIREHOL_NETSETS_PATH}/FireHOL_lvl_1.netset"
 netset_url="https://iplists.firehol.org/files/firehol_level1.netset"
 github_api_url="https://api.github.com/repos/firehol/blocklist-ipsets/commits?path=firehol_level1.netset&per_page=1"
-firehol_ipset_apply_script="$scripts/base/firewall/firehol_ipset_apply.sh"  # Update with the correct path
+firehol_ipset_apply_script="$SCRIPTS/base/firewall/firehol_ipset_apply.sh"  # Update with the correct path
 
 mkdir -p $FIREHOL_NETSETS_PATH
 

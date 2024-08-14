@@ -13,8 +13,10 @@ iptables -A OUTPUT -m set --match-set FireHOL_lvl_1 dst -m comment --comment "ba
 
 . $SCRIPTS/base/firewall/save.sh
 
+export FIREHOL_NETSETS_PATH="/etc/firehol/ipsets"
+
 cat <<EOT >> $ENV_NETWORK
 
 # FireHOL
-export FIREHOL_NETSETS_PATH="/etc/firehol/ipsets"
+export FIREHOL_NETSETS_PATH="$FIREHOL_NETSETS_PATH"
 EOT

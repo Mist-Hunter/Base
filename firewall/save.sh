@@ -1,4 +1,5 @@
 #!/bin/bash
+source $ENV_NETWORK
 
 # Check if FIREWALL is set to "none"
 if [[ "$FIREWALL" == "none" ]]; then
