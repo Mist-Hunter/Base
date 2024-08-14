@@ -2,6 +2,8 @@
 
 set -e
 
+echo "Starting builder"
+
 # Function to source a file and output variable assignments
 source_and_output() {
     local file="$1"

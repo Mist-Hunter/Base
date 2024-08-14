@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Starting Name Server"
+
 # Create the ipset if it doesn't already exist
 ipset create NAME_SERVERS hash:ip -exist
 
