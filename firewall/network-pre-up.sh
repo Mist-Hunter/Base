@@ -47,7 +47,7 @@ if [ "$IFACE" = "$LAN_NIC" ] || [ -n "$INVOCATION_ID" ] || [ -n "$LISTEN_PID" ];
         ipset create "$ipset_name" hash:ip
       fi
     fi
-  done < $IPTABLES_PERSISTENT_RULES
+  done < "$IPTABLES_PERSISTENT_RULES"
 
   # Restore iptables rules
   if ! /sbin/iptables-restore < $IPTABLES_PERSISTENT_RULES; then
