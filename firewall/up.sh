@@ -109,6 +109,8 @@ ExecStart=/etc/network/if-pre-up.d/lan-nic
 [Install]
 WantedBy=network-pre.target
 EOT
+chown root:root /etc/systemd/system/network-pre-up.service
+chmod 644 /etc/systemd/system/network-pre-up.service
 systemctl enable network-pre-up.service
 systemctl start network-pre-up.service
 fi
