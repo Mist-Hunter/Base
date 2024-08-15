@@ -67,7 +67,7 @@ find_fqdn_variable() {
     local env_files=$(grep -E '^export ENV_[A-Z_]+=".*\.env"' "$env_global" | sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/')
     for env_file in $env_files; do
         echo "Searching $env_file for $fqdn_var_name"
-        fqdn_value=$(grep "^$fqdn_var_name=" "$env_file" | cut -d'=' -f2)
+        fqdn_value=$(grep -E "^export $fqdn_var_name=" "$env_file" | sed -E 's/^export [^=]+="(.*)"/\1/')
         if [ -n "$fqdn_value" ]; then
             echo "$fqdn_value"
             return
