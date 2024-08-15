@@ -79,20 +79,20 @@ find_fqdn_variable() {
 process_iptables_rules() {
     local mode="$1"
     local iptables_rules="$IPTABLES_PERSISTENT_RULES"
-    # Extract all ipset names ending with IP from iptables rules
     local ipset_names=$(grep -oP 'match-set \K\w+IP' "$iptables_rules" | sort -u)
     for ipset_name in $ipset_names; do
-        # Create the ipset
         create_ipset "$ipset_name"
         if [ "$mode" = "up" ]; then
-            # Find corresponding FQDN variable
+            echo "Processing $ipset_name"
             fqdn_value=$(find_fqdn_variable "$ipset_name")
-           
+            echo "FQDN value found: $fqdn_value"
+            
             if [ -n "$fqdn_value" ]; then
-                # Remove any surrounding quotes from fqdn_value
-                fqdn_value=$(echo "$fqdn_value" | sed -e 's/^"//' -e 's/"$//')
-                # Resolve the FQDN and add to ipset
+                fqdn_value=$(echo "$fqdn_value" | tr -d '"' | tr -d "'" | xargs)
+                echo "Attempting to resolve: $fqdn_value"
                 ip=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+                echo "Resolved IP: $ip"
+                
                 if [ -n "$ip" ]; then
                     add_to_ipset "$ipset_name" "$ip"
                     echo "Added $ip to ipset $ipset_name (resolved from $fqdn_value)"
