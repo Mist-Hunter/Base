@@ -66,6 +66,7 @@ find_fqdn_variable() {
     # Check sourced .env files
     local env_files=$(grep -oP "(?<=source )[^\s]+\.env" "$env_global")
     for env_file in $env_files; do
+        echo "Searching $env_file for $fqdn_var_name"
         fqdn_value=$(grep "^$fqdn_var_name=" "$env_file" | cut -d'=' -f2)
         if [ -n "$fqdn_value" ]; then
             echo "$fqdn_value"
