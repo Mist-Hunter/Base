@@ -6,26 +6,27 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-filter=$1
+filter="$1"
 
 # Print the search message
 echo "Apt, firewall, remgrep.sh: Searching for '$filter'"
 
 # Search for the filter in iptables rules
-iptables_output=$(iptables -S | grep "$filter")
+iptables_output=$(sudo iptables -S | grep -F -- "$filter")
 
 # Check if grep found any results
 if [ $? -ne 0 ] || [ -z "$iptables_output" ]; then
   echo "No rules found matching '$filter'. Exiting."
-  # exit 1
+  exit 0
 fi
 
 # Process each rule found by grep
-IFS=$'\n'
-for rule in $(iptables -S | grep "$filter" | sed -e 's/-A/-D/'); do
-    echo "$rule" | xargs iptables
-done
+while IFS= read -r rule; do
+    modified_rule=$(echo "$rule" | sed -e 's/^-A/-D/')
+    echo "Removing rule: $modified_rule"
+    sudo iptables ${modified_rule}
+done < <(echo "$iptables_output")
 
 # Print the message after removal
 echo "Apt, firewall, remgrep.sh: After removal"
-iptables -S | grep "$filter"
+sudo iptables -S | grep -F -- "$filter"

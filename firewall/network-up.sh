@@ -19,3 +19,5 @@ for script in "$LAN_NIC_DIR"/*; do
     "$script"
   fi
 done
+
+#FIXME firehol should come last

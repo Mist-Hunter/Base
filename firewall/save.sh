@@ -1,6 +1,8 @@
 #!/bin/bash
 source $ENV_NETWORK
 
+# TODO assure DROPS at bottom
+
 # Check if FIREWALL is set to "none"
 if [[ "$FIREWALL" == "none" ]]; then
     echo "FIREWALL is set to none. Exiting script."

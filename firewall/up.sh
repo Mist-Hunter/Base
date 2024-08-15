@@ -135,7 +135,12 @@ then
   . $SCRIPTS/base/firewall/anti-scan.sh
 fi
 
-# Querry Firehol_level1 Rules
+  # Install GIT Firewall Rules
+# NOTE: this is needed in the event of a firewall being present
+. $SCRIPTS/apt/git/up.sh
+
+# Querry Firehol_level1 Rules 
+# NOTE DROP rules (like this) should come last
 read -p "Add FireHOL Level 1 Subscription? " -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
