@@ -59,20 +59,22 @@ find_fqdn_variable() {
     # Check ENV_GLOBAL first
     fqdn_value=$(grep "^$fqdn_var_name=" "$env_global" | cut -d'=' -f2)
     if [ -n "$fqdn_value" ]; then
-        echo "$fqdn_value"
+        echo "$fqdn_value" | tr -d '"' | tr -d "'" | xargs
         return
     fi
 
     # Check exported .env files
     local env_files=$(grep -E '^export ENV_[A-Z_]+=".*\.env"' "$env_global" | sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/')
     for env_file in $env_files; do
-        echo "Searching $env_file for $fqdn_var_name"
         fqdn_value=$(grep -E "^export $fqdn_var_name=" "$env_file" | sed -E 's/^export [^=]+="(.*)"/\1/')
         if [ -n "$fqdn_value" ]; then
-            echo "$fqdn_value"
+            echo "$fqdn_value" | tr -d '"' | tr -d "'" | xargs
             return
         fi
     done
+
+    # If we get here, we didn't find the FQDN
+    echo ""
 }
 
 # Main processing function
@@ -88,7 +90,6 @@ process_iptables_rules() {
             echo "FQDN value found: $fqdn_value"
             
             if [ -n "$fqdn_value" ]; then
-                fqdn_value=$(echo "$fqdn_value" | tr -d '"' | tr -d "'" | xargs)
                 echo "Attempting to resolve: $fqdn_value"
                 ip=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
                 echo "Resolved IP: $ip"
