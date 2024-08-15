@@ -136,6 +136,14 @@ export SNMP_POLLER_FQDN=""
 export SNMP_LOCATION=""
 '
 
+# SSH
+env_writer \
+--service 'SSH' \
+--content '
+export SSH_ALLOW_FQDN=""
+export SSH_ALLOW_IPS="$GREEN"
+'
+
 # Docker -----------------------------------------------------------------------------------------
 env_writer \
 --source \

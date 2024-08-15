@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# systemctl status systemd-timesyncd
+
 # Example:
 # FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 
