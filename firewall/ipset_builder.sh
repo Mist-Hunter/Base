@@ -23,6 +23,8 @@
 set -e
 echo "Starting builder"
 
+# FIXME this requires ipset NAME_SERVERS to be complete prior to firing
+
 # Function to source a file and output variable assignments
 source_and_output() {
     local file="$1"
