@@ -27,6 +27,10 @@ apt install -y \
 if [[ "$FIREWALL" == "iptables" ]]; then
   # NOTE: Multiple SCRIPTS rely on this script completing, keep early in the install sequence.
   . $SCRIPTS/base/firewall/up.sh
+
+  # Install GIT Firewall Rules
+  # NOTE: this is needed in the event of a firewall being present
+  . $SCRIPTS/apt/git/up.sh
 fi
 
 # Make Directories
