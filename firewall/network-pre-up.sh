@@ -21,16 +21,16 @@ fi
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT DROP
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A OUTPUT -o lo -j ACCEPT
+iptables -I INPUT -i lo -j ACCEPT
+iptables -I OUTPUT -o lo -j ACCEPT
 
 # DHCP Check if LAN_NIC contains 'dynamic'
 echo "Checking for DHCP"
 if ip addr show "$LAN_NIC" | grep -q "dynamic"; then
   echo "The NIC '$LAN_NIC' is dynamic. Applying DHCP rules."
   # Allow DHCP traffic (UDP ports 67 and 68)
-  iptables -A INPUT -p udp --sport 67 --dport 68 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP client traffic" -j ACCEPT
-  iptables -A OUTPUT -p udp --sport 68 --dport 67 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP server traffic" -j ACCEPT
+  iptables -I INPUT -p udp --sport 67 --dport 68 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP client traffic" -j ACCEPT
+  iptables -I OUTPUT -p udp --sport 68 --dport 67 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP server traffic" -j ACCEPT
 else
   echo "The NIC '$LAN_NIC' is not dynamic. Skipping DHCP rules."
 fi
