@@ -7,7 +7,8 @@ source $ENV_NETWORK
 ## Updates @ https://github.com/firehol/blocklist-ipsets/commits/master/firehol_level1.netset
 
 # URLs and paths
-netset_file="${FIREHOL_NETSETS_PATH}/FireHOL_lvl_1.netset"
+firehol_lable="FireHOL_lvl_1"
+netset_file="${FIREHOL_NETSETS_PATH}/$firehol_lable.netset"
 netset_url="https://iplists.firehol.org/files/firehol_level1.netset"
 github_api_url="https://api.github.com/repos/firehol/blocklist-ipsets/commits?path=firehol_level1.netset&per_page=1"
 firehol_ipset_apply_script="$SCRIPTS/base/firewall/firehol_ipset_apply.sh"  # Update with the correct path
@@ -54,7 +55,8 @@ if check_for_update; then
     # Add the latest commit SHA to the top of the file
     sed -i "1i# SHA: $latest_commit" "$netset_file"
     echo "Applying the new .netset file..."
-    "$firehol_ipset_apply_script" "$netset_file"
+    firhole_ip_array=$(cat "$netset_file" | sed '/^#/d' | tr '\n' ' ' | sed 's/  */ /g')
+    ipset_process --label "FireHOL_lvl_1" --hash_type "net" --ip_array $firhole_ip_array
 else
     echo "Local file is up-to-date."
 fi

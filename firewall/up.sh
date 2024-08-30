@@ -30,6 +30,7 @@ apt install iptables ipset iprange -y
 . $SCRIPTS/base/firewall/ipset_BOGONS.sh
 . $SCRIPTS/base/firewall/ipset_nameservers.sh
 . $SCRIPTS/base/firewall/ipset_ntpservers.sh
+. $SCRIPTS/base/firewall/set_gateway.sh
 . $SCRIPTS/base/firewall/network-up.sh
 
 # if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
@@ -60,6 +61,7 @@ iptables -I OUTPUT -m set --match-set NAME_SERVERS dst -p tcp --dport 53 -m comm
 iptables -I OUTPUT -m set --match-set NTP_SERVERS dst -p udp --dport 123 -j ACCEPT -m comment --comment "Allow NTP traffic to NTP_SERVERS ipset"
 
 # allow traffic out for HTTP, HTTPS, or FTP
+# TODO lookup actual mirrors and create APT_REPO_IP ipset
 iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BOGONS. APT Package manager." -j ACCEPT
 iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BOGONS. APT Package manager." -j ACCEPT
 iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BOGONS. APT Package manager." -j ACCEPT

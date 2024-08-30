@@ -20,36 +20,13 @@
 # TODO reverse the logic of this script, instead of looping on $ENV_GLOBAL, loop on $IPTABLES_PERSISTENT_RULES looking for ipset names ending in *_IP , and then crawling $ENV_GLOBAL and sourced files for matching *_FQDN variables
 # Example: if a vaiable like SNMP_POLLER_IP exsits in $IPTABLES_PERSISTENT_RULES look for SNMP_POLLER_FQDN in $ENV_GLOBAL or sourced file.
 
+#!/bin/bash
 set -e
-echo "Starting builder"
 
-# FIXME this requires ipset NAME_SERVERS to be complete prior to firing
+echo "Starting ipset manager"
 
-# Function to source a file and output variable assignments
-source_and_output() {
-    local file="$1"
-    (
-        set -a
-        source "$file" >/dev/null 2>&1
-        set +a
-        compgen -A variable | while read var; do
-            echo "$var=${!var}"
-        done
-    )
-}
-
-# Function to create an ipset
-create_ipset() {
-    local name="$1"
-    ipset create "$name" hash:ip -exist
-}
-
-# Function to add an IP to an ipset
-add_to_ipset() {
-    local name="$1"
-    local ip="$2"
-    ipset add "$name" "$ip" -exist
-}
+# Import the ipset_manage function
+source $SCRIPTS/base/firewall/ipset_functions.sh
 
 # Function to find FQDN variable in ENV_GLOBAL and sourced files
 find_fqdn_variable() {
@@ -80,44 +57,38 @@ find_fqdn_variable() {
 }
 
 # Main processing function
-process_iptables_rules() {
-    local mode="$1"
+process_ipsets() {
     local iptables_rules="$IPTABLES_PERSISTENT_RULES"
     local ipset_names=$(grep -oP 'match-set \K\w+IP' "$iptables_rules" | sort -u)
     for ipset_name in $ipset_names; do
-        create_ipset "$ipset_name"
-        if [ "$mode" = "up" ]; then
-            echo "Processing $ipset_name"
+        echo "Processing $ipset_name"
+       
+        # Check if the ipset exists and is empty
+        if ! ipset list "$ipset_name" &>/dev/null || [ "$(ipset list "$ipset_name" | wc -l)" -le 8 ]; then
             fqdn_value=$(find_fqdn_variable "$ipset_name")
             echo "FQDN value found: $fqdn_value"
-            
+           
             if [ -n "$fqdn_value" ]; then
                 echo "Attempting to resolve: $fqdn_value"
-                ip=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
-                echo "Resolved IP: $ip"
-                
-                if [ -n "$ip" ]; then
-                    add_to_ipset "$ipset_name" "$ip"
-                    echo "Added $ip to ipset $ipset_name (resolved from $fqdn_value)"
+                # Resolve all IPs for the FQDN
+                ip_list=$(dig +short "$fqdn_value" | tr '\n' ' ' | sed 's/ $//')
+                echo "Resolved IPs: $ip_list"
+               
+                if [ -n "$ip_list" ]; then
+                    ipset_manage --label "$ipset_name" --hash_type "ip" --ip_array $ip_list
+                    ip_count=$(echo "$ip_list" | wc -w)
+                    echo "Added $ip_count IP(s) to ipset $ipset_name (resolved from $fqdn_value)"
                 else
                     echo "Failed to resolve $fqdn_value for $ipset_name"
                 fi
             else
                 echo "No FQDN variable found for $ipset_name"
             fi
+        else
+            echo "$ipset_name already exists and is not empty. Skipping."
         fi
     done
 }
 
-# Determine the mode based on the directory the script was run from
-script_dir=$(dirname "${BASH_SOURCE[0]}")
-
-# Check if the path contains 'if-pre-up.d' or 'if-up.d'
-if [[ "$script_dir" == *"if-pre-up.d"* ]]; then
-    process_iptables_rules "pre-up"
-elif [[ "$script_dir" == *"if-up.d"* ]]; then
-    process_iptables_rules "up"
-else
-    echo "This script should be placed in a directory that contains if-pre-up.d or if-up.d"
-    exit 1
-fi
+# Run the main processing function
+process_ipsets

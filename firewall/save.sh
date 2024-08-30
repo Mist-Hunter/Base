@@ -3,7 +3,7 @@ source $ENV_NETWORK
 
 # This script records the current state of the firewall for persistnce
 
-# TODO assure DROPS at bottom
+# TODO check no drop is followed by an accept further down. If there is, echo the error
 
 # Check if FIREWALL is set to "none"
 if [[ "$FIREWALL" == "none" ]]; then

@@ -1,11 +1,10 @@
 #!/bin/bash
 
-echo "Starting Name Server"
+source $SCRIPTS/base/firewall/ipset_functions.sh
 
-# Create the ipset if it doesn't already exist
-ipset create NAME_SERVERS hash:ip -exist
+# Read each nameserver IP from /etc/resolv.conf and add it to the array
+while read -r ip; do
+    ip_array+=("$ip")
+done < <(grep -oP '(?<=^nameserver\s)\S+' /etc/resolv.conf)
 
-# Read each nameserver IP from /etc/resolv.conf and add it to the ipset
-grep -oP '(?<=^nameserver\s)\S+' /etc/resolv.conf | while read -r ip; do
-    ipset add NAME_SERVERS "$ip" -exist
-done
+ipset_process --label "NAME_SERVERS" --hash_type "ip" --ip_array $ip_array

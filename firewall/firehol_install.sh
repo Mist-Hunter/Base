@@ -15,7 +15,10 @@ ln -sf $SCRIPTS/base/firewall/ipset_firehol.sh /etc/network/if-pre-up.d/lan-nic.
 . $SCRIPTS/base/firewall/ipset_firehol.sh
 
 # Block connections from IPs in the FireHOL_lvl_1 ipset
-iptables -A INPUT -m set --match-set FireHOL_lvl_1 src -m comment --comment "base, firewall, firehol_install.sh: Block inbound matches to ipset FireHOL_lvl_1." -j DROP
-iptables -A OUTPUT -m set --match-set FireHOL_lvl_1 dst -m comment --comment "base, firewall, firehol_install.sh: Block outbound matches to ipset FireHOL_lvl_1." -j DROP
+# FIXME drop rules should only be added to default ALLOW chains! (not needed otherwise) rules can be added, but need ALLOW_LIST exception for name server, gateway
+#iptables -A DOCKER-USER -m set --match-set FireHOL_lvl_1 src -m comment --comment "base, firewall, firehol_install.sh: Block inbound matches to ipset FireHOL_lvl_1." -j DROP
+#iptables -A OUTPUT -m set --match-set FireHOL_lvl_1 dst -m comment --comment "base, firewall, firehol_install.sh: Block outbound matches to ipset FireHOL_lvl_1." -j DROP
 
 . $SCRIPTS/base/firewall/save.sh
+
+# TODO create firehol updater service unit 
