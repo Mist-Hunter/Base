@@ -24,15 +24,16 @@ iptables -P OUTPUT DROP
 iptables -I INPUT -i lo -j ACCEPT
 iptables -I OUTPUT -o lo -j ACCEPT
 
-# DHCP Check if LAN_NIC contains 'dynamic'
 echo "Checking for DHCP"
-if ip addr show "$LAN_NIC" | grep -q "dynamic"; then
-  echo "The NIC '$LAN_NIC' is dynamic. Applying DHCP rules."
+
+# Check if the network interface is configured for DHCP in /etc/network/interfaces
+if grep -q "^iface $LAN_NIC inet dhcp" /etc/network/interfaces; then
+  echo "The NIC '$LAN_NIC' is configured for DHCP. Applying DHCP rules."
   # Allow DHCP traffic (UDP ports 67 and 68)
   iptables -I INPUT -p udp --sport 67 --dport 68 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP client traffic" -j ACCEPT
   iptables -I OUTPUT -p udp --sport 68 --dport 67 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP server traffic" -j ACCEPT
 else
-  echo "The NIC '$LAN_NIC' is not dynamic. Skipping DHCP rules."
+  echo "The NIC '$LAN_NIC' is not configured for DHCP. Skipping DHCP rules."
 fi
 
 # Review $IPTABLES_PERSISTENT_RULES for unset ipsets and create empty ones
