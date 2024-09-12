@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # NOTE: Removed Debian 11 support, this expect to be run manually via systemD service units
-# FIXME $IPABELS_PERSISTENT_RULES not populated
 
-echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC"
+# TODO Check if variables are set; LAN_NIC, IPTABLES_PERSISTENT_RULES
+
+echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC, SCRIPTS=$SCRIPTS"
 
 # Execute all scripts in the lan-nic.d directory if it exists
 LAN_NIC_DIR="/etc/network/if-pre-up.d/lan-nic.d"  # Removed trailing slash
