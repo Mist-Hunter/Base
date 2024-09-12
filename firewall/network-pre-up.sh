@@ -26,6 +26,9 @@ iptables -I OUTPUT -o lo -j ACCEPT
 
 echo "Checking for DHCP"
 
+# FIXME eth0 not dynamic
+## had to ip link set eth0 up && dhclient
+
 # Check if the network interface is configured for DHCP in /etc/network/interfaces
 if grep -q "^iface $LAN_NIC inet dhcp" /etc/network/interfaces; then
   echo "The NIC '$LAN_NIC' is configured for DHCP. Applying DHCP rules."
