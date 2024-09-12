@@ -21,3 +21,6 @@ ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ip
 
 ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/if-up.d/lan-nic.d/ipset_ntpservers.sh
 
+
+# TROUBLESHOOT
+journalctl -u networking

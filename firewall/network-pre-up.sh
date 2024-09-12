@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # NOTE: Removed Debian 11 support, this expect to be run manually via systemD service units
+# FIXME $IPABELS_PERSISTENT_RULES not populated
 
 echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC"
 
