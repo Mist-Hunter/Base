@@ -20,12 +20,14 @@
 # TODO reverse the logic of this script, instead of looping on $ENV_GLOBAL, loop on $IPTABLES_PERSISTENT_RULES looking for ipset names ending in *_IP , and then crawling $ENV_GLOBAL and sourced files for matching *_FQDN variables
 # Example: if a vaiable like SNMP_POLLER_IP exsits in $IPTABLES_PERSISTENT_RULES look for SNMP_POLLER_FQDN in $ENV_GLOBAL or sourced file.
 
+# FIXME is this interacting with LAN_GATEWAY?
+
 #!/bin/bash
 set -e
 
 echo "Starting ipset manager"
 
-# Import the ipset_manage function
+# Import the ipset_process function
 source $SCRIPTS/base/firewall/ipset_functions.sh
 
 # Function to find FQDN variable in ENV_GLOBAL and sourced files
@@ -75,7 +77,7 @@ process_ipsets() {
                 echo "Resolved IPs: $ip_list"
                
                 if [ -n "$ip_list" ]; then
-                    ipset_manage --label "$ipset_name" --hash_type "ip" --ip_array $ip_list
+                    ipset_process --label "$ipset_name" --hash_type "ip" --ip_array $ip_list
                     ip_count=$(echo "$ip_list" | wc -w)
                     echo "Added $ip_count IP(s) to ipset $ipset_name (resolved from $fqdn_value)"
                 else
