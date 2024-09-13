@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $ENV_GLOBAL
+
 # NOTE: Removed Debian 11 support, this expect to be run manually via systemD service units
 
 # TODO Check if variables are set; LAN_NIC, IPTABLES_PERSISTENT_RULES
