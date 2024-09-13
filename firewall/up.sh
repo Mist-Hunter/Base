@@ -99,6 +99,7 @@ ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ip
 ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/if-up.d/lan-nic.d/ipset_ntpservers.sh
 
 # FIXME find some nicer way to source ENV_NETWORK. the && is ugly
+# FIXME ifup already runs all scripts in /etc/network/if-pre-up.d, which makes this service only need when ifup is present?
 cat <<EOT > /etc/systemd/system/network-pre-up.service
 [Unit]
 Description=Network Pre-Up Script

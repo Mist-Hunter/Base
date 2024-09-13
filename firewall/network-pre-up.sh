@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source $ENV_GLOBAL
+source "${ENV_GLOBAL:-/root/.config/global.env}"
 
 # NOTE: Removed Debian 11 support, this expect to be run manually via systemD service units
 
