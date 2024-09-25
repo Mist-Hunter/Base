@@ -1,13 +1,20 @@
 #!/bin/bash
 set -euo pipefail
-IPT='iptables -w'
 
-# Add debug function
+IPT='iptables -w'
 DEBUG=${DEBUG:-0}
+DEDUP_ERROR=0
+
 debug() {
     if [[ $DEBUG -eq 1 ]]; then
         echo "DEBUG: $*" >&2
     fi
+}
+
+handle_error() {
+    local error_message="$1"
+    echo "ERROR: $error_message" >&2
+    DEDUP_ERROR=1
 }
 
 check_docker_user_chain() {
@@ -23,17 +30,15 @@ dedup() {
     local table=$1
     echo "Processing table: $table"
    
-    # Check if the table exists and has content
     if ! iptables -t "$table" -L >/dev/null 2>&1; then
-        echo "Warning: Table $table does not exist or is empty" >&2
-        return 1
+        handle_error "Table $table does not exist or is empty"
+        return
     fi
    
     local table_content
     table_content=$(iptables-save | sed -n "/$table/,/COMMIT/p")
     debug "Table content for $table:\n$table_content"
    
-    # Special handling for DOCKER-USER chain in filter table
     if [[ "$table" == "filter" ]]; then
         check_docker_user_chain
     fi
@@ -45,12 +50,13 @@ dedup() {
         echo "Duplicates found in $table table:"
         echo "$duplicates"
        
-        # Process duplicates
         while read -r count rule; do
             if [[ $count -gt 1 ]]; then
                 local escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
                 debug "Removing duplicate rule: $rule"
-                iptables -t "$table" -D $(echo "$rule" | cut -d' ' -f2-) || echo "Failed to remove rule: $rule"
+                if ! iptables -t "$table" -D $(echo "$rule" | cut -d' ' -f2-); then
+                    handle_error "Failed to remove rule: $rule"
+                fi
             fi
         done <<< "$duplicates"
     else
@@ -58,25 +64,30 @@ dedup() {
     fi
 }
 
-main() {
-    local tables=('filter' 'nat' 'mangle')
-    local failed_tables=()
-   
-    for table in "${tables[@]}"; do
-        if ! dedup "$table"; then
-            failed_tables+=("$table")
-            echo "Error processing table: $table" >&2
-        fi
-    done
-   
-    if [[ ${#failed_tables[@]} -gt 0 ]]; then
-        echo "iptables rules have been saved, but there were issues with these tables: ${failed_tables[*]}" >&2
-        return 1
-    fi
-   
-    iptables-save
-    echo "iptables rules have been successfully deduplicated and saved."
-}
+# Main execution
+tables=('filter' 'nat' 'mangle')
+failed_tables=()
 
-# Run the script
-main
+for table in "${tables[@]}"; do
+    if ! dedup "$table"; then
+        failed_tables+=("$table")
+        handle_error "Error processing table: $table"
+    fi
+done
+
+if [[ ${#failed_tables[@]} -gt 0 ]]; then
+    handle_error "Issues encountered with these tables: ${failed_tables[*]}"
+fi
+
+if ! iptables-save; then
+    handle_error "Failed to save iptables rules"
+fi
+
+if [ $DEDUP_ERROR -eq 0 ]; then
+    echo "iptables rules have been successfully deduplicated and saved."
+else
+    echo "iptables deduplication completed with errors."
+fi
+
+# Set the exit status of the script
+(exit $DEDUP_ERROR)
