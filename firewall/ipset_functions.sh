@@ -1,5 +1,4 @@
 #!/bin/bash
-
 source "$ENV_NETWORK"
 
 # Constants
@@ -18,9 +17,8 @@ create_temp_ipset() {
     local hash_type="$2"
     shift 2
     local ip_array=("$@")
-
     ipset create "$tmp_label" hash:"$hash_type" -exist || error_exit "Failed to create temporary ipset"
-    
+   
     if [ "$hash_type" = "net" ]; then
         echo "${ip_array[@]}" | iprange --ipset-reduce "$IPSET_REDUCE_FACTOR" \
             --ipset-reduce-entries "$IPSET_REDUCE_ENTRIES" \
@@ -36,7 +34,6 @@ create_temp_ipset() {
 
 ipset_process() {
     local label="" hash_type="" ip_array=() netset_path="${NETSET_PATH:-.}"
-
     # Parse command-line options
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -50,6 +47,11 @@ ipset_process() {
 
     # Validate required parameters
     [[ -z "$label" || -z "$hash_type" ]] && error_exit "Missing required arguments"
+
+    # Ensure netset_path directory exists
+    if [ ! -d "$netset_path" ]; then
+        mkdir -p "$netset_path" || error_exit "Failed to create directory: $netset_path"
+    fi
 
     local file_path="$netset_path/${label,,}.netset"
     local tmp_label="${label}_tmp"
