@@ -1,7 +1,5 @@
 #!/bin/bash
-
 set -euo pipefail
-
 IPT='iptables -w'
 
 # Add debug function
@@ -12,27 +10,41 @@ debug() {
     fi
 }
 
+check_docker_user_chain() {
+    echo "Checking DOCKER-USER chain:"
+    if iptables -L DOCKER-USER -n -v --line-numbers > /dev/null 2>&1; then
+        iptables -L DOCKER-USER -n -v --line-numbers
+    else
+        echo "DOCKER-USER chain does not exist or is empty"
+    fi
+}
+
 dedup() {
     local table=$1
     echo "Processing table: $table"
-    
+   
     # Check if the table exists and has content
     if ! iptables -t "$table" -L >/dev/null 2>&1; then
         echo "Warning: Table $table does not exist or is empty" >&2
         return 1
     fi
-    
+   
     local table_content
     table_content=$(iptables-save | sed -n "/$table/,/COMMIT/p")
     debug "Table content for $table:\n$table_content"
-    
+   
+    # Special handling for DOCKER-USER chain in filter table
+    if [[ "$table" == "filter" ]]; then
+        check_docker_user_chain
+    fi
+   
     local duplicates
     duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -dc)
-    
+   
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
         echo "$duplicates"
-        
+       
         # Process duplicates
         while read -r count rule; do
             if [[ $count -gt 1 ]]; then
@@ -49,19 +61,19 @@ dedup() {
 main() {
     local tables=('filter' 'nat' 'mangle')
     local failed_tables=()
-    
+   
     for table in "${tables[@]}"; do
         if ! dedup "$table"; then
             failed_tables+=("$table")
             echo "Error processing table: $table" >&2
         fi
     done
-    
+   
     if [[ ${#failed_tables[@]} -gt 0 ]]; then
         echo "iptables rules have been saved, but there were issues with these tables: ${failed_tables[*]}" >&2
         return 1
     fi
-    
+   
     iptables-save
     echo "iptables rules have been successfully deduplicated and saved."
 }
