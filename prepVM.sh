@@ -27,6 +27,7 @@ if [[ $DEV_TYPE = "kvm" ]]; then
     apt install qemu-guest-agent --no-install-recommends -y # 1128 kB
     
     # Disk Resize
+    # NOTE Resize early to avoid later activites running out of space
     source $SCRIPTS/apt/mount/autoexp.sh
 fi
 
