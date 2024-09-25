@@ -150,6 +150,7 @@ env_writer \
 --service 'Docker' \
 --content '
 # Paths
+export DOCKER_CONTROLLER="$SCRIPTS/docker/.controller"
 export DOCKER_ROOT_DIR="/var/lib/docker"
 export DOCKER_MOUNTS="$DOCKER_ROOT_DIR/mounts"
 export DOCKER_VOLUMES="$DOCKER_ROOT_DIR/volumes"
@@ -161,6 +162,9 @@ export DOCKER_REGISTRY_MIRROR_FQDN=""
 
 # Portainer
 export PORTAINER_SERVER_FQDN=""
+
+# Docker Controller
+alias dc="$DOCKER_CONTROLLER/docker-controller.sh"
 '
 
 # Restic Info

@@ -12,6 +12,29 @@ apt install netselect-apt -y
 netselect-apt
 apt upgrade -y
 
+# Permanently record DEV_TYPE
+apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
+DEV_TYPE=$(virt-what)
+if [[ $DEV_TYPE = "" ]]; then
+    # If physical, replace with Proc architecture
+    DEV_TYPE=$(uname -m)
+fi
+# Write to /etc/environment
+echo "# Device type via 'virt-what'" >> /etc/environment
+echo "export DEV_TYPE=$DEV_TYPE" >> /etc/environment
+echo ""  >> /etc/environment
+
+# Uninstall virt-what
+apt-get remove --purge -y virt-what
+
+if [[ $DEV_TYPE = "kvm" ]]; then
+    # Qemu-Guest-Agent
+    apt install qemu-guest-agent --no-install-recommends -y # 1128 kB
+    
+    # Disk Resize
+    source $scripts/apt/mount/autoexp.sh
+fi
+
 # Check if the group exists
 if getent group "$SECURE_USER_GROUP" >/dev/null; then
   echo "Group $SECURE_USER_GROUP exists."
@@ -71,29 +94,6 @@ echo "Locale setup and purge completed."
 timedatectl set-timezone $TZ
 echo "$TZ" > /etc/timezone
 timedatectl
-
-# Permanently record DEV_TYPE
-apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
-DEV_TYPE=$(virt-what)
-if [[ $DEV_TYPE = "" ]]; then
-    # If physical, replace with Proc architecture
-    DEV_TYPE=$(uname -m)
-fi
-# Write to /etc/environment
-echo "# Device type via 'virt-what'" >> /etc/environment
-echo "export DEV_TYPE=$DEV_TYPE" >> /etc/environment
-echo ""  >> /etc/environment
-
-# Uninstall virt-what
-apt-get remove --purge -y virt-what
-
-if [[ $DEV_TYPE = "kvm" ]]; then
-    # Qemu-Guest-Agent
-    apt install qemu-guest-agent --no-install-recommends -y # 1128 kB
-    
-    # Disk Resize
-    source $scripts/apt/mount/autoexp.sh
-fi
 
 # Remove dhcp6 from dhclient.conf. This doesn't seem to affect ram consumption.
 # sed 's/dhcp6\.[a-z-]\+\(, \)\?//g' /etc/dhcp/dhclient.conf
