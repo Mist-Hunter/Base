@@ -7,11 +7,6 @@ source /etc/default/grub
 
 apt update
 
-# Build Mirror List
-apt install netselect-apt -y
-netselect-apt
-apt upgrade -y
-
 # Permanently record DEV_TYPE
 apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
 DEV_TYPE=$(virt-what)
@@ -34,6 +29,11 @@ if [[ $DEV_TYPE = "kvm" ]]; then
     # Disk Resize
     source $SCRIPTS/apt/mount/autoexp.sh
 fi
+
+# Build Mirror List
+apt install netselect-apt -y
+netselect-apt
+apt upgrade -y
 
 # Check if the group exists
 if getent group "$SECURE_USER_GROUP" >/dev/null; then
