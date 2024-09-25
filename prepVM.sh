@@ -2,7 +2,7 @@
 
 # Handles hardware tuning and base security settings.
 
-export DEBIAN_FRONTEND=noninteractive
+# export DEBIAN_FRONTEND=noninteractive NOTE was blocking read prompts in scripts
 source /etc/default/grub
 
 apt update
