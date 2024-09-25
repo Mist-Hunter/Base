@@ -1,65 +1,70 @@
-#!/usr/bin/env bash
-
-# Description: This script deduplicates iptables rules
-# Usage: ./ipt-dedup.sh
-# Dependencies: iptables
+#!/bin/bash
 
 set -euo pipefail
 
-# Global variables
-IPT="iptables -w"
+IPT='iptables -w'
 
-# Function to deduplicate iptables rules for a specific table
+# Add debug function
+DEBUG=${DEBUG:-0}
+debug() {
+    if [[ $DEBUG -eq 1 ]]; then
+        echo "DEBUG: $*" >&2
+    fi
+}
+
 dedup() {
-    local table="$1"
-    
+    local table=$1
     echo "Processing table: $table"
     
-    iptables-save | sed -n "/${table}/,/COMMIT/p" | grep "^-" | sort | uniq -dc | while read -r l
-    do
-        local c rule
-        c=$(echo "$l" | sed "s|^[ ]*\([0-9]*\).*$|\1|")
-        rule=$(echo "$l" | sed "s|^[ ]*[0-9]* -A\(.*\)$|-t ${table} -D\1|")
-        while [ "${c}" -gt 1 ]; do
-            echo "Attempting to remove duplicate rule: iptables $rule"
-            if ! eval "${IPT} ${rule}"; then
-                echo "Warning: Failed to remove duplicate rule in ${table}" >&2
-                echo "Rule: ${rule}" >&2
-                # Continue processing other rules instead of returning
-                break
+    # Check if the table exists and has content
+    if ! iptables -t "$table" -L >/dev/null 2>&1; then
+        echo "Warning: Table $table does not exist or is empty" >&2
+        return 1
+    fi
+    
+    local table_content
+    table_content=$(iptables-save | sed -n "/$table/,/COMMIT/p")
+    debug "Table content for $table:\n$table_content"
+    
+    local duplicates
+    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -dc)
+    
+    if [[ -n "$duplicates" ]]; then
+        echo "Duplicates found in $table table:"
+        echo "$duplicates"
+        
+        # Process duplicates
+        while read -r count rule; do
+            if [[ $count -gt 1 ]]; then
+                local escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
+                debug "Removing duplicate rule: $rule"
+                iptables -t "$table" -D $(echo "$rule" | cut -d' ' -f2-) || echo "Failed to remove rule: $rule"
             fi
-            c=$((c-1))
-        done
-    done
+        done <<< "$duplicates"
+    else
+        echo "No duplicates found in $table table"
+    fi
 }
 
-# Main function to deduplicate all tables
 main() {
-    local tables=("filter" "nat" "mangle")
+    local tables=('filter' 'nat' 'mangle')
     local failed_tables=()
-
+    
     for table in "${tables[@]}"; do
         if ! dedup "$table"; then
-            echo "Warning: Issues encountered while deduplicating $table table" >&2
             failed_tables+=("$table")
+            echo "Error processing table: $table" >&2
         fi
     done
-
-    # Save the deduplicated rules
-    if ! iptables-save > /etc/iptables.up.rules; then
-        echo "Error: Failed to save deduplicated rules" >&2
+    
+    if [[ ${#failed_tables[@]} -gt 0 ]]; then
+        echo "iptables rules have been saved, but there were issues with these tables: ${failed_tables[*]}" >&2
         return 1
     fi
-
-    if [ ${#failed_tables[@]} -eq 0 ]; then
-        echo "iptables rules have been deduplicated and saved successfully"
-    else
-        echo "iptables rules have been saved, but there were issues with these tables: ${failed_tables[*]}"
-        return 1
-    fi
+    
+    iptables-save
+    echo "iptables rules have been successfully deduplicated and saved."
 }
 
-# Run the main function only if the script is being sourced
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-    main
-fi
+# Run the script
+main
