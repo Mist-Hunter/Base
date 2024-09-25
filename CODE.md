@@ -128,3 +128,24 @@ Your response should always be in a complete code block, followed in text by any
 
 ## echo
 suggest `$SCRIPTS\base\debian\logging_functions.sh log()` in the place of echo
+
+# Subshell-Safe Scripting
+
+## Why It's Important
+- Scripts often run in subshells (e.g., when called from other scripts)
+- `exit` in a sourced script can terminate the parent shell
+- `return` only works in functions, not in the main body of a script
+
+## The Approach
+1. Use an error flag instead of `exit` or `return`
+2. Log errors but continue execution
+3. Set the final exit status without using `exit`
+
+## How It Works
+- Initialize an error flag: `ERROR=0`
+- Use error handling function: 
+  ```bash
+  handle_error() {
+    echo "Error: $1" >&2
+    ERROR=1
+  }

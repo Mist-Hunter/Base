@@ -35,9 +35,9 @@ mkdir -p "$(dirname "${logs}/firewall.log")" || handle_error "Failed to create l
 log_message "Starting iptables save operation"
 
 # Run ipt-dedup
-if [[ -f "${SCRIPTS}/apt/firewall/ipt-dedup.sh" ]]; then
+if [[ -f "${SCRIPTS}/base/firewall/ipt-dedup.sh" ]]; then
     # shellcheck disable=SC1090
-    source "${SCRIPTS}/apt/firewall/ipt-dedup.sh" || handle_error "Failed to execute ipt-dedup.sh"
+    source "${SCRIPTS}/base/firewall/ipt-dedup.sh" || handle_error "Failed to execute ipt-dedup.sh"
 else
     handle_error "ipt-dedup.sh not found"
 fi
