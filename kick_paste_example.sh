@@ -83,6 +83,9 @@ export logs=/var/log
 
 # Logging
 source $SCRIPTS/base/debian/logging_functions.sh
+
+# Pull All
+alias pullall="find "$SCRIPTS" -type d -name ".git" -exec sh -c 'echo "Pulling updates in $(dirname "{}")..."; git -C "$(dirname "{}")" pull' \;"
 "
 
 # IP Tables / Network

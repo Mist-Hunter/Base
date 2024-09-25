@@ -1,32 +1,48 @@
 #!/bin/bash
+set -euo pipefail
 
-# Ensure a filter argument is provided
+REMGREP_ERROR=0
+
+log_message() {
+    echo "Apt, firewall, remgrep.sh: $1"
+}
+
+handle_error() {
+    log_message "ERROR: $1"
+    REMGREP_ERROR=1
+}
+
+process_rules() {
+    local filter="$1"
+    log_message "Searching for '$filter'"
+
+    local iptables_output
+    iptables_output=$(sudo iptables -S | grep -F -- "$filter") || true
+
+    if [ -z "$iptables_output" ]; then
+        log_message "No rules found matching '$filter'."
+        return
+    fi
+
+    while IFS= read -r rule; do
+        local modified_rule
+        modified_rule=$(echo "$rule" | sed -e 's/^-A/-D/')
+        log_message "Removing rule: $modified_rule"
+        if ! sudo iptables ${modified_rule}; then
+            handle_error "Failed to remove rule: $modified_rule"
+        fi
+    done < <(echo "$iptables_output")
+
+    log_message "After removal"
+    sudo iptables -S | grep -F -- "$filter" || true
+}
+
+# Main execution
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 <filter>"
-  exit 1
+    handle_error "Usage: $0 <filter>"
+else
+    process_rules "$1"
 fi
 
-filter="$1"
-
-# Print the search message
-echo "Apt, firewall, remgrep.sh: Searching for '$filter'"
-
-# Search for the filter in iptables rules
-iptables_output=$(sudo iptables -S | grep -F -- "$filter")
-
-# Check if grep found any results
-if [ $? -ne 0 ] || [ -z "$iptables_output" ]; then
-  echo "No rules found matching '$filter'. Exiting."
-  exit 0
-fi
-
-# Process each rule found by grep
-while IFS= read -r rule; do
-    modified_rule=$(echo "$rule" | sed -e 's/^-A/-D/')
-    echo "Removing rule: $modified_rule"
-    sudo iptables ${modified_rule}
-done < <(echo "$iptables_output")
-
-# Print the message after removal
-echo "Apt, firewall, remgrep.sh: After removal"
-sudo iptables -S | grep -F -- "$filter"
+# Set the exit status of the script
+(exit $REMGREP_ERROR)
