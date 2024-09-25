@@ -127,6 +127,7 @@ if [[ "$HOST_NAME" != *preseed* && "$HOST_NAME" != *Template* ]]; then
     git clone $GIT_DOCKER_URL/Docker.git $SCRIPTS/docker
     . $SCRIPTS/docker/up.sh
   fi
+  
 else
   echo "Skipping Docker install due to non-permanent host-name: $HOST_NAME"
 fi

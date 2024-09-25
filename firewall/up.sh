@@ -16,11 +16,13 @@ echo "[up.sh] script starting."
 
 # Base variables
 export IPTABLES_PERSISTENT_RULES="/etc/iptables.up.rules"
+export NETSET_PATH="/etc/ipset"
 
 cat <<EOT >> $ENV_NETWORK
 # Firewall Variables
 export LAN_NIC_GATEWAY=""                               # Dynamicaly populated
 export IPTABLES_PERSISTENT_RULES="$IPTABLES_PERSISTENT_RULES"
+export NETSET_PATH="$NETSET_PATH"
 EOT
 
 #Dietpi check ipset / iptables
