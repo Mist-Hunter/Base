@@ -1,24 +1,37 @@
 #!/bin/bash
+set -e  # Exit immediately if a command exits with a non-zero status.
+
 source $ENV_NETWORK
 
 export FIREHOL_NETSETS_PATH="/etc/firehol/ipsets"
-cat <<EOT >> $ENV_NETWORK
+mkdir -p "$FIREHOL_NETSETS_PATH"
 
-# FireHOL
-export FIREHOL_NETSETS_PATH="$FIREHOL_NETSETS_PATH"
-EOT
+echo "export FIREHOL_NETSETS_PATH=\"$FIREHOL_NETSETS_PATH\"" >> $ENV_NETWORK
 
 ln -sf $SCRIPTS/base/firewall/ipset_firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh
 
-. $SCRIPTS/base/firewall/firehol_updater.sh
-. $SCRIPTS/base/firewall/firehol_service_creation.sh
-. $SCRIPTS/base/firewall/ipset_firehol.sh
+echo "Running FireHOL updater..."
+if ! . $SCRIPTS/base/firewall/firehol_updater.sh; then
+    echo "Error: FireHOL updater failed"
+    exit 1
+fi
 
-# Block connections from IPs in the FireHOL_lvl_1 ipset
-# FIXME drop rules should only be added to default ALLOW chains! (not needed otherwise) rules can be added, but need ALLOW_LIST exception for name server, gateway
-#iptables -A DOCKER-USER -m set --match-set FireHOL_lvl_1 src -m comment --comment "base, firewall, firehol_install.sh: Block inbound matches to ipset FireHOL_lvl_1." -j DROP
-#iptables -A OUTPUT -m set --match-set FireHOL_lvl_1 dst -m comment --comment "base, firewall, firehol_install.sh: Block outbound matches to ipset FireHOL_lvl_1." -j DROP
+echo "Creating FireHOL service..."
+if ! . $SCRIPTS/base/firewall/firehol_service_creation.sh; then
+    echo "Error: Failed to create FireHOL service"
+    exit 1
+fi
+
+echo "Running ipset_firehol.sh..."
+if ! . $SCRIPTS/base/firewall/ipset_firehol.sh; then
+    echo "Error: Failed to run ipset_firehol.sh"
+    exit 1
+fi
+
+# Uncomment and adjust these rules as needed
+# iptables -I INPUT -m set --match-set FireHOL_lvl_1 src -j DROP -m comment --comment "Block inbound from FireHOL_lvl_1 IPs"
+# iptables -I OUTPUT -m set --match-set FireHOL_lvl_1 dst -j DROP -m comment --comment "Block outbound to FireHOL_lvl_1 IPs"
 
 . $SCRIPTS/base/firewall/save.sh
 
-# TODO create firehol updater service unit 
+echo "FireHOL installation complete."
