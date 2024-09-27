@@ -83,9 +83,6 @@ export logs=/var/log
 
 # Logging
 source $SCRIPTS/base/debian/logging_functions.sh
-
-# Pull All
-alias pullall="find "$SCRIPTS" -type d -name ".git" -exec sh -c 'echo "Pulling updates in $(dirname "{}")..."; git -C "$(dirname "{}")" pull' \;"
 "
 
 # IP Tables / Network
@@ -240,11 +237,11 @@ export SECURE_USER_GROUP=users
 export ENV_GLOBAL="$ENV_GLOBAL"
 source "$ENV_GLOBAL"
 
-# APT aliases
-aptUP="$SCRIPTS/base/debian/update.sh"
-update="$SCRIPTS/base/debian/update.sh"
-clean="$SCRIPTS/base/clean.sh"
-
+# Aliases
+alias aptup="$SCRIPTS/base/debian/update.sh"
+alias update="$SCRIPTS/base/debian/update.sh"
+alias clean="$SCRIPTS/apt/clean.sh"
+alias pullall='find "$SCRIPTS" -type d -name ".git" -exec sh -c '\''echo "Pulling updates in $(dirname "{}")..."; git -C "$(dirname "{}")" pull'\'' \;'
 EOT
 
 # Reload .bashrc

@@ -1,8 +1,9 @@
 #!/bin/bash
 
 colorize() {
-
+    
     local line="$1"
+    local rules_file="${2:-$(dirname "$0")/colorization_default.sh}"
     local colored=false
 
     # Define tput color variables
@@ -15,43 +16,42 @@ colorize() {
     local WHITE=$(tput setaf 7)
     local BOLD=$(tput bold)
     local NC=$(tput sgr0) # Reset all attributes
+    
+    # Define combined colors
+    local BOLD_RED="${BOLD}${RED}"
+    local BOLD_GREEN="${BOLD}${GREEN}"
+    local BOLD_YELLOW="${BOLD}${YELLOW}"
+    local BOLD_CYAN="${BOLD}${CYAN}"
 
-    # Define color rules (regex -> color)
-    # TODO move to file, get more comprehensive. 
-    local -A line_rules=(
-        ["(Shader|HDR|shader|WARNING|Unloading|Total:|UnloadTime|Camera|Null|null|NULL)"]="$WHITE"
-        ["(Valheim l-.*|Load world:.*|isModded:.*|Am I Host\?|version|world)"]="$YELLOW"
-        ["(Connections|ZDOS:|sent:|recv:|New connection|queue|connecting|Connecting|socket|Socket|RPC|Accepting connection|socket|msg|Connected|Got connection|handshake)"]="$CYAN"
-        ["(New peer connected|<color=orange>.*</color>|ZDOID)"]="$GREEN"
-        ["(ERROR:|Exception|HDSRDP|wrong password)"]="${BOLD}${RED}"
-        ["(Added .* locations,|Loaded .* locations|Loading .* zdos|save|Save|backup)"]="$MAGENTA"
-        ["(Console: )"]="$BLUE"
-    )
+    # Source the colorization rules
+    if [[ -f "$rules_file" ]]; then
+        source "$rules_file"
+    else
+        echo "Warning: Colorization rules file not found at $rules_file" >&2
+        return
+    fi
 
-    local -A word_rules=(
-        ["(varExp|\$SERVER_NAME|\$SERVER_PLAYER_PASS|\$WORLD_NAME)"]="${BOLD}${YELLOW}"
-        ["(?:ZDOID from ([\w\s]+) :)"]="${BOLD}${GREEN}"
-        ["(SteamID \d{17}|client \d{17}|socket \d{17})"]="${BOLD}${CYAN}"
-    )
-
-    # Format whole line on any match
-    for regex in "${!line_rules[@]}"; do
-        if [[ $line =~ $regex ]]; then
-            line=$(echo "${line_rules[$regex]}${line}${NC}")
+    # Apply line rules
+    for rule in "${!LINE_RULE_@}"; do
+        IFS=':' read -r pattern color_name <<< "${!rule}"
+        if [[ $line =~ $pattern ]]; then
+            line="${!color_name}${line}${NC}"
+            colored=true
+            break
         fi
     done
 
-    # Only format match
-    for regex in "${!word_rules[@]}"; do
-        while [[ $line =~ $regex ]]; do
+    # Apply word rules
+    for rule in "${!WORD_RULE_@}"; do
+        IFS=':' read -r pattern color_name <<< "${!rule}"
+        while [[ $line =~ $pattern ]]; do
             matched_part="${BASH_REMATCH[0]}"
-            styled_part="${word_rules[$regex]}${matched_part}${NC}"
+            styled_part="${!color_name}${matched_part}${NC}"
             line="${line/${matched_part}/${styled_part}}"
         done
     done
 
     echo "$line"
-
 }
 
 log_tails() {
