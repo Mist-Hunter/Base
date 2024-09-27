@@ -3,7 +3,7 @@
 colorize() {
     
     local line="$1"
-    local rules_file="${2:-$(dirname "$0")/colorization_default.sh}"
+    local rules_file="${2:-$SCRIPTS/base/debian/colorization_default.sh}"
     local colored=false
 
     # Define tput color variables
