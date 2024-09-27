@@ -89,6 +89,7 @@ present_secrets() {
     # Example: present_secrets "Root Password:p@ssw0rd123" "GRUB Password:grub123" "SSH Key:ssh-rsa AAAAB3NzaC1yc2E..."
     # present_secrets "Root Password:p@ssw0rd123" "GRUB Password:grub123" "SSH Key:ssh-rsa AAAAB3NzaC1yc2E..."
     # TODO include caller function and file path like log()
+
     local secrets=("$@")
     local term_width=$(($(tput cols) - 5))  # Subtract 5 for the scrollbar
     local separator_line=""
@@ -124,6 +125,8 @@ present_secrets() {
 
 log() {
     # TODO support non-date prepended syntax via flag --no-dates, add flag --content
+
+    LOG_FILTER_SKIP="${LOG_FILTER_SKIP:-}"
 
     local caller_function="${FUNCNAME[1]}"
     local line="$1"

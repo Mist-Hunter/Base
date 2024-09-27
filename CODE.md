@@ -149,3 +149,14 @@ suggest `$SCRIPTS\base\debian\logging_functions.sh log()` in the place of echo
     echo "Error: $1" >&2
     ERROR=1
   }
+
+# Note function origins with comment
+
+example:
+```
+source "$SCRIPTS/base/debian/logging_functions.sh" # --> log()
+```
+
+# main
+Should be used to collect function order and logic and due to good function naming almost ends up reading like english or pseudo code
+SHould not be used to do a bunch of direct tasks
