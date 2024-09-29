@@ -99,17 +99,26 @@ process_ipsets() {
 # Function to create ipsets based on FQDN variables
 create_ipsets_from_env_fqdn() {
     local env_global="$ENV_GLOBAL"
+    echo "ENV_GLOBAL is set to: $env_global"
 
     # Create an array to store all env files
     mapfile -t all_env_files < <(
         echo "$env_global"
         grep -E '^export ENV_[A-Z_]+=".*\.env"' "$env_global" | 
-        sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/'
+        sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/' |
+        sort -u  # Remove duplicates
     )
+
+    echo "Files to be processed:"
+    printf '%s\n' "${all_env_files[@]}"
 
     for env_file in "${all_env_files[@]}"; do
         if [ -f "$env_file" ]; then
             echo "Processing file: $env_file"
+            echo "Contents of $env_file:"
+            cat "$env_file"
+            echo "End of $env_file"
+            
             while IFS= read -r line; do
                 if [[ $line =~ ^([A-Z_]+FQDN)=(.+)$ ]]; then
                     fqdn_var="${BASH_REMATCH[1]}"
