@@ -97,20 +97,18 @@ process_ipsets() {
 }
 
 # Function to create ipsets based on FQDN variables
-create_ipsets_from_fqdn() {
+create_ipsets_from_env_fqdn() {
     local env_global="$ENV_GLOBAL"
-    local all_env_files="$env_global"
-
-    # Find all sourced .env files
-    local sourced_files=$(grep -E '^source .*\.env' "$env_global" | awk '{print $2}')
-    all_env_files="$all_env_files $sourced_files"
 
     # Find all exported .env files
     local exported_files=$(grep -E '^export ENV_[A-Z_]+=".*\.env"' "$env_global" | sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/')
-    all_env_files="$all_env_files $exported_files"
+
+    # Add ENV_GLOBAL itself to the list of files to process
+    local all_env_files="$env_global $exported_files"
 
     for env_file in $all_env_files; do
         if [ -f "$env_file" ]; then
+            echo "Processing file: $env_file"
             local fqdn_vars=$(grep -E '_FQDN=' "$env_file" | cut -d'=' -f1)
             
             for fqdn_var in $fqdn_vars; do
@@ -124,7 +122,7 @@ create_ipsets_from_fqdn() {
                     if [ -n "$ip_list" ]; then
                         ipset_process --label "$ip_var" --hash_type "ip" --ip_array $ip_list
                         ip_count=$(echo "$ip_list" | wc -w)
-                        echo "Added $ip_count IP(s) to ipset $ip_var (resolved from $fqdn_value)"
+                        echo "Processed $ip_count IP(s) for ipset $ip_var (resolved from $fqdn_value)"
                     else
                         echo "Failed to resolve $fqdn_value for $ip_var"
                     fi
