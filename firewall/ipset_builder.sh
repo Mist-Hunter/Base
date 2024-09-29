@@ -97,7 +97,7 @@ process_ipsets() {
 }
 
 # Function to create ipsets based on FQDN variables
-process_all_fqdn_variables() {
+create_ipsets_from_env_fqdn() {
     local env_global="$ENV_GLOBAL"
 
     # Create an array to store all env files
