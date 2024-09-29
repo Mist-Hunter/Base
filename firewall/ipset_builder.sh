@@ -97,25 +97,28 @@ process_ipsets() {
 }
 
 # Function to create ipsets based on FQDN variables
-create_ipsets_from_env_fqdn() {
+process_all_fqdn_variables() {
     local env_global="$ENV_GLOBAL"
 
-    # Find all exported .env files
-    local exported_files=$(grep -E '^export ENV_[A-Z_]+=".*\.env"' "$env_global" | sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/')
+    # Create an array to store all env files
+    mapfile -t all_env_files < <(
+        echo "$env_global"
+        grep -E '^export ENV_[A-Z_]+=".*\.env"' "$env_global" | 
+        sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/'
+    )
 
-    # Add ENV_GLOBAL itself to the list of files to process
-    local all_env_files="$env_global $exported_files"
-
-    for env_file in $all_env_files; do
+    for env_file in "${all_env_files[@]}"; do
         if [ -f "$env_file" ]; then
             echo "Processing file: $env_file"
-            local fqdn_vars=$(grep -E '_FQDN=' "$env_file" | cut -d'=' -f1)
-            
-            for fqdn_var in $fqdn_vars; do
-                local ip_var="${fqdn_var%FQDN}IP"
-                local fqdn_value=$(grep "^$fqdn_var=" "$env_file" | cut -d'=' -f2 | tr -d '"' | tr -d "'" | xargs)
-                
-                if [ -n "$fqdn_value" ]; then
+            while IFS= read -r line; do
+                if [[ $line =~ ^([A-Z_]+FQDN)=(.+)$ ]]; then
+                    fqdn_var="${BASH_REMATCH[1]}"
+                    fqdn_value="${BASH_REMATCH[2]}"
+                    ip_var="${fqdn_var%FQDN}IP"
+                    
+                    # Remove any surrounding quotes from fqdn_value
+                    fqdn_value=$(echo "$fqdn_value" | tr -d '"' | tr -d "'")
+                    
                     echo "Processing $ip_var from $fqdn_value (found in $env_file)"
                     ip_list=$(dig +short "$fqdn_value" | tr '\n' ' ' | sed 's/ $//')
                     
@@ -127,13 +130,12 @@ create_ipsets_from_env_fqdn() {
                         echo "Failed to resolve $fqdn_value for $ip_var"
                     fi
                 fi
-            done
+            done < "$env_file"
         else
             echo "Warning: File $env_file not found"
         fi
     done
 }
-
 
 # Run the main processing function
 process_ipsets
