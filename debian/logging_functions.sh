@@ -130,7 +130,7 @@ log() {
 
     local caller_function="${FUNCNAME[1]}"
     local line="$1"
-    local filename="${2:-$caller_function}"
+    local filename="${2:-$caller_function}" # TODO is there a way to deduce this?
 
     local current_date=$(date "+%m/%d/%Y")
     local current_time=$(date "+%H:%M:%S")
