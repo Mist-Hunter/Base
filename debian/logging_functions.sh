@@ -169,10 +169,12 @@ log() {
     text=$(echo "$text" | sed -E 's/\[[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]{2}\.[0-9]{2}\.[0-9]{2}:[0-9]{3}\]//')
 
     # Skip lines with LOG_FILTER_SKIP matches
-    if [[ -n "$LOG_FILTER_SKIP" ]]; then
+    if [[ -n "${LOG_FILTER_SKIP:-}" ]]; then
         IFS=',' read -ra FILTER_ITEMS <<< "$LOG_FILTER_SKIP"
         for item in "${FILTER_ITEMS[@]}"; do
-            [[ "$text" == *"$item"* ]] && return
+            if [[ "$text" == *"$item"* ]]; then
+                return
+            fi
         done
     fi
 
