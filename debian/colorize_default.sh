@@ -10,10 +10,10 @@ LINE_RULE_1="(ERROR|CRITICAL|ALERT|EMERGENCY):BOLD_RED"
 LINE_RULE_2="(WARNING|WARN):BOLD_YELLOW"
 
 # Highlight informational and notice messages
-LINE_RULE_3="(INFO|NOTICE):BLUE"
+LINE_RULE_3="(INFO|NOTICE):WHITE"
 
 # Highlight debug messages
-LINE_RULE_4="(DEBUG):GRAY"
+LINE_RULE_4="(DEBUG):BLUE"
 
 # Highlight success messages
 LINE_RULE_5="(success|succeeded|Succeeded|Success):BOLD_GREEN"
