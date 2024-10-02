@@ -124,13 +124,25 @@ present_secrets() {
 }
 
 log() {
-    # TODO support non-date prepended syntax via flag --no-dates, add flag --content
+    local text=""
+    local caller_script=$(basename "$0")
 
-    LOG_FILTER_SKIP="${LOG_FILTER_SKIP:-}"
+    # Parse flags and set variables
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --text) text="$2"; shift 2 ;;
+            --filename) filename="${2:-${FUNCNAME[1]}}"; shift 2 ;;
+            --time) show_time="${2:-true}"; shift 2 ;;
+            --date) show_date="${2:-false}"; shift 2 ;;
+            --log_level) log_level="$2"; shift 2 ;;
+            --show_function) show_function="${2:-false}"; shift 2 ;;
+            --show_caller) show_caller="${2:-false}"; shift 2 ;;
+            *) echo "Unknown option: $1"; return 1 ;;
+        esac
+    done
 
-    local caller_function="${FUNCNAME[1]}"
-    local line="$1"
-    local filename="${2:-$caller_function}" # TODO is there a way to deduce this?
+    # Exit if no text is provided
+    [[ -z "$text" ]] && return
 
     local current_date=$(date "+%m/%d/%Y")
     local current_time=$(date "+%H:%M:%S")
@@ -138,44 +150,48 @@ log() {
     local formatted_time=""
 
     # Trim all whitespace characters, including newlines
-    line=$(echo "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/\r//' -e 's/\n//')
+    text=$(echo "$text" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/\r//' -e 's/\n//')
 
     # Strip the conan time stamp, ex. [2024.07.13-19.42.42:171]
-    line=$(echo "$line" | sed -E 's/\[[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]{2}\.[0-9]{2}\.[0-9]{2}:[0-9]{3}\]//')
-    
-    # Skip empty lines
-    [[ -z "$line" ]] && return
+    text=$(echo "$text" | sed -E 's/\[[0-9]{4}\.[0-9]{2}\.[0-9]{2}-[0-9]{2}\.[0-9]{2}\.[0-9]{2}:[0-9]{3}\]//')
 
     # Skip lines with LOG_FILTER_SKIP matches
     if [[ -n "$LOG_FILTER_SKIP" ]]; then
         IFS=',' read -ra FILTER_ITEMS <<< "$LOG_FILTER_SKIP"
         for item in "${FILTER_ITEMS[@]}"; do
-            [[ "$line" == *"$item"* ]] && return
+            [[ "$text" == *"$item"* ]] && return
         done
     fi
 
-    # Extract date if present
-    if [[ $line =~ ([0-9]{2}/[0-9]{2}/[0-9]{4}) ]]; then
+    # Extract date if present and show_date is true
+    if [[ "$show_date" == true && $text =~ ([0-9]{2}/[0-9]{2}/[0-9]{4}) ]]; then
         formatted_date="${BASH_REMATCH[1]}"
-        line="${line#*${BASH_REMATCH[0]}}"
-    else
+        text="${text#*${BASH_REMATCH[0]}}"
+    elif [[ "$show_date" == true ]]; then
         formatted_date="$current_date"
     fi
 
-    # Extract time if present, discard trailing ':'
-    if [[ $line =~ ([0-9]{2}:[0-9]{2}:[0-9]{2})(: )? ]]; then
+    # Extract time if present and show_time is true
+    if [[ "$show_time" == true && $text =~ ([0-9]{2}:[0-9]{2}:[0-9]{2})(: )? ]]; then
         formatted_time="${BASH_REMATCH[1]}"
-        line="${line#*${BASH_REMATCH[0]}}"
-    else
+        text="${text#*${BASH_REMATCH[0]}}"
+    elif [[ "$show_time" == true ]]; then
         formatted_time="$current_time"
     fi
 
     # Construct the formatted line
-    local formatted_line="${formatted_date} ${formatted_time} [${filename}]: ${line}"
+    local formatted_line=""
+    [[ -n "$formatted_date" ]] && formatted_line+="${formatted_date} "
+    [[ -n "$formatted_time" ]] && formatted_line+="${formatted_time} "
+    [[ "$show_caller" == true ]] && formatted_line+="[${caller_script}]"
+    [[ "$show_function" == true ]] && formatted_line+="[${FUNCNAME[1]}]"
+    [[ -n "$filename" ]] && formatted_line+="[${filename}]"
+    [[ -n "$log_level" ]] && formatted_line+="[${log_level}]"
+    formatted_line+=": ${text}"
+
     local colored_line=$(colorize "$formatted_line")
 
     echo -e "$colored_line"
-
 }
 
 log_clean() {

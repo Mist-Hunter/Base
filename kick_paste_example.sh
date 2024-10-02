@@ -183,6 +183,7 @@ export RESTIC_SERVER_BASE_REPO_URL="rest:https://$RESTIC_SERVER_USER_NAME:$RESTI
 
 # Default Repo Password
 export RESTIC_REPO_DEFAULT_PASSWORD=""
+export 
 '
 
 # Git -----------------------------------------------------------------------------------------------

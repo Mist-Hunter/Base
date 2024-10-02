@@ -160,3 +160,7 @@ source "$SCRIPTS/base/debian/logging_functions.sh" # --> log()
 # main
 Should be used to collect function order and logic and due to good function naming almost ends up reading like english or pseudo code
 SHould not be used to do a bunch of direct tasks
+
+# functions
+globals should amost neve be used
+locals and parameter flags allow for built in documentation showing the flow of variables and makking it easier to get a sense of what you are look at. 
