@@ -125,29 +125,42 @@ present_secrets() {
 
 log() {
     local text=""
-    local caller_script=$(basename "$0")
 
-    # Parse flags and set variables
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-            --text) text="$2"; shift 2 ;;
-            --filename) filename="${2:-${FUNCNAME[1]}}"; shift 2 ;;
-            --time) show_time="${2:-true}"; shift 2 ;;
-            --date) show_date="${2:-false}"; shift 2 ;;
-            --log_level) log_level="$2"; shift 2 ;;
-            --show_function) show_function="${2:-false}"; shift 2 ;;
-            --show_caller) show_caller="${2:-false}"; shift 2 ;;
-            *) echo "Unknown option: $1"; return 1 ;;
-        esac
+    # Find the correct caller script
+    local i=1
+    local caller_script
+    while [[ "${BASH_SOURCE[i]}" == */logging_functions.sh || "${BASH_SOURCE[i]}" == logging_functions.sh ]]; do
+        ((i++))
     done
+    caller_script=$(basename "${BASH_SOURCE[i]:-$0}")
+
+    # Find the correct caller function
+    local j=$((i-1))
+    local caller_function="${FUNCNAME[j]:-main}"
+
+    # Check if a single parameter is provided without flags
+    if [[ $# -eq 1 && "$1" != --* ]]; then
+        text="$1"
+    else
+        # Parse flags and set variables
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --text) text="$2"; shift 2 ;;
+                --time) show_time="${2:-true}"; shift 2 ;;
+                --date) show_date="${2:-false}"; shift 2 ;;
+                --log_level) log_level="${2:-INFO}"; shift 2 ;;
+                --show_function) show_function="${2:-true}"; shift 2 ;;
+                --show_caller) show_caller="${2:-true}"; shift 2 ;;
+                *) echo "Unknown option: $1"; return 1 ;;
+            esac
+        done
+    fi
 
     # Exit if no text is provided
     [[ -z "$text" ]] && return
 
     local current_date=$(date "+%m/%d/%Y")
     local current_time=$(date "+%H:%M:%S")
-    local formatted_date=""
-    local formatted_time=""
 
     # Trim all whitespace characters, including newlines
     text=$(echo "$text" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/\r//' -e 's/\n//')
@@ -163,30 +176,13 @@ log() {
         done
     fi
 
-    # Extract date if present and show_date is true
-    if [[ "$show_date" == true && $text =~ ([0-9]{2}/[0-9]{2}/[0-9]{4}) ]]; then
-        formatted_date="${BASH_REMATCH[1]}"
-        text="${text#*${BASH_REMATCH[0]}}"
-    elif [[ "$show_date" == true ]]; then
-        formatted_date="$current_date"
-    fi
-
-    # Extract time if present and show_time is true
-    if [[ "$show_time" == true && $text =~ ([0-9]{2}:[0-9]{2}:[0-9]{2})(: )? ]]; then
-        formatted_time="${BASH_REMATCH[1]}"
-        text="${text#*${BASH_REMATCH[0]}}"
-    elif [[ "$show_time" == true ]]; then
-        formatted_time="$current_time"
-    fi
-
     # Construct the formatted line
     local formatted_line=""
-    [[ -n "$formatted_date" ]] && formatted_line+="${formatted_date} "
-    [[ -n "$formatted_time" ]] && formatted_line+="${formatted_time} "
-    [[ "$show_caller" == true ]] && formatted_line+="[${caller_script}]"
-    [[ "$show_function" == true ]] && formatted_line+="[${FUNCNAME[1]}]"
-    [[ -n "$filename" ]] && formatted_line+="[${filename}]"
-    [[ -n "$log_level" ]] && formatted_line+="[${log_level}]"
+    [[ "${show_date:-false}" == true ]] && formatted_line+="${current_date} "
+    [[ "${show_time:-true}" == true ]] && formatted_line+="${current_time} "
+    [[ "${show_caller:-true}" == true ]] && formatted_line+="[${caller_script}]"
+    [[ "${show_function:-true}" == true ]] && formatted_line+="[${caller_function}]"
+    [[ -n "${log_level:-INFO}" ]] && formatted_line+="[${log_level:-INFO}]"
     formatted_line+=": ${text}"
 
     local colored_line=$(colorize "$formatted_line")
