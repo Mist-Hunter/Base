@@ -135,10 +135,6 @@ log() {
     caller_script=$(basename "${BASH_SOURCE[i]:-$0}")
     caller_function="${FUNCNAME[i]:-main}"
 
-    # Find the correct caller function
-    local j=$((i-1))
-    local caller_function="${FUNCNAME[j]:-main}"
-
     # Check if a single parameter is provided without flags
     if [[ $# -eq 1 && "$1" != --* ]]; then
         text="$1"
