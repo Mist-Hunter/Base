@@ -181,7 +181,7 @@ log() {
     [[ "${show_time:-true}" == true ]] && formatted_line+="${current_time} "
     [[ "${show_caller:-true}" == true ]] && formatted_line+="[${caller_script}"
     [[ "${show_function:-true}" == true ]] && formatted_line+=" < ${caller_function}()]"
-    [[ -n "${log_level:-INFO}" ]] && formatted_line+="${log_level:-INFO}:"
+    [[ -n "${log_level:-INFO}" ]] && formatted_line+=" ${log_level:-INFO}:"
     formatted_line+=": ${text}"
 
     local colored_line=$(colorize "$formatted_line")
