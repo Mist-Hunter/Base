@@ -176,6 +176,11 @@ log() {
     fi
 
     # Construct the formatted line
+    # TODO maintain formatting rules even when elements are missing
+    ## Example: date time [script < function] log_level: text
+    ## if funciton is missing it would become date time [script] log_level: text
+    ## if Log level and function were msissing it would become date time [script] text
+    ## if log level, script and function were missing would become date time [script] text
     local formatted_line=""
     [[ "${show_date:-false}" == true ]] && formatted_line+="${current_date} "
     [[ "${show_time:-true}" == true ]] && formatted_line+="${current_time} "
