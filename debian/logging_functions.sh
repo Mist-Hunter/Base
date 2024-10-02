@@ -133,6 +133,7 @@ log() {
         ((i++))
     done
     caller_script=$(basename "${BASH_SOURCE[i]:-$0}")
+    caller_function="${FUNCNAME[i]:-main}"
 
     # Find the correct caller function
     local j=$((i-1))
