@@ -4,6 +4,9 @@ set -e
 source $ENV_GLOBAL
 source $ENV_NETWORK
 
+# Import the ipset_process function
+source $SCRIPTS/base/firewall/ipset_functions.sh
+
 echo "Starting FireHOL ipset creation"
 
 if ! ipset list FireHOL_lvl_1 >/dev/null 2>&1; then
@@ -25,6 +28,6 @@ if [ -z "$firhole_ip_array" ]; then
 fi
 
 echo "Populating FireHOL_lvl_1 ipset"
-ipset_process --label "FireHOL_lvl_1" --hash_type "net" --ip_array $firhole_ip_array
+ipset_process --label "FireHOL_lvl_1" --hash_type "net" --ip_array $firhole_ip_array --netset_path $file_path
 
 echo "FireHOL ipset creation complete"
