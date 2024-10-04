@@ -55,8 +55,9 @@ if check_for_update; then
     # Add the latest commit SHA to the top of the file
     sed -i "1i# SHA: $latest_commit" "$netset_file"
     echo "Applying the new .netset file..."
-    firhole_ip_array=$(cat "$netset_file" | sed '/^#/d' | tr '\n' ' ' | sed 's/  */ /g')
-    ipset_process --label "FireHOL_lvl_1" --hash_type "net" --ip_array $firhole_ip_array
+    firehol_ip_array=$(cat "$netset_file" | sed '/^#/d' | tr '\n' ' ' | sed 's/  */ /g')
+    ipset_process --label "FireHOL_lvl_1" --hash_type "net" --ip_array $firehol_ip_array
 else
     echo "Local file is up-to-date."
+    # TODO check if ipset is empty
 fi
