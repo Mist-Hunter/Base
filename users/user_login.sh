@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $ENV_GLOBAL
+
 # Ensure SECURE_USER_UID and SHELL are defined
 if [[ -z "$SECURE_USER_UID" ]] || [[ -z "$SHELL" ]]; then
   echo "Error: SECURE_USER_UID or SHELL variable is not set."
