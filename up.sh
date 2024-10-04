@@ -9,8 +9,6 @@ apt update
 apt install -y \
   `# dnsutils - includes tools like nslookup and dig for DNS troubleshooting` \
   dnsutils \
-  `# htop - interactive process viewer and system monitor` \
-  htop \
   `# ncdu - disk usage analyzer with an ncurses interface` \
   ncdu \
   `# net-tools - networking utilities including ifconfig and netstat` \
