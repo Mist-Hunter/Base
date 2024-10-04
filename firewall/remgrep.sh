@@ -1,30 +1,13 @@
 #!/bin/bash
-set -euo pipefail
+FILTER=$1
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <filter>"
-    exit 1
-fi
-
-FILTER="$1"
-log "Searching for '$FILTER':"
-matching_rules=$(iptables -S | grep -F -- "$FILTER" || true)
-
-if [ -z "$matching_rules" ]; then
-    log "No rules found matching '$FILTER'."
-    exit 0
-fi
-
-echo "$matching_rules"
+log "Apt, firewall, remgrep.sh: Searching $FILTER:"
+iptables -S | grep $FILTER
 
 IFS=$'\n'
-while read -r rule; do
-    modified_rule=$(echo "$rule" | sed -e 's/^-A/-D/')
-    log "Removing rule: $modified_rule"
-    if ! iptables $modified_rule; then
-        log "Warning: Failed to remove rule: $modified_rule"
-    fi
-done <<< "$matching_rules"
+for rule in `iptables -S| grep $FILTER | sed -e 's/-A/-D/'`; do
+    echo $rule | xargs iptables 
+done
 
-log "After removal:"
-iptables -S | grep -F -- "$FILTER" || true
+log "Apt, firewall, remgrep.sh: After removal"
+iptables -S | grep $FILTER || true
