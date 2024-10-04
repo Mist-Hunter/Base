@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source $ENV_GLOBAL
+
 # Autologin, Random Root Password---------------------------------------------------------------------------------------------------
 # agetty Auto-Login, ref: https://wiki.archlinux.org/title/Getty#Automatic_login_to_virtual_console , https://man7.org/linux/man-pages/man8/agetty.8.html
 
