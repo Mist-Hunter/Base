@@ -16,7 +16,7 @@ process_rules() {
     local filter="$1"
     log_message "Searching for '$filter'"
     local iptables_output
-    iptables_output=$(sudo iptables -S | grep -F -- "$filter") || true
+    iptables_output=$(iptables -S | grep -F -- "$filter") || true
     if [ -z "$iptables_output" ]; then
         log_message "No rules found matching '$filter'."
         return
@@ -27,8 +27,8 @@ process_rules() {
         # Properly quote the comment
         modified_rule=$(echo "$modified_rule" | sed -e 's/--comment \(.*\)/--comment "\1"/')
         log_message "Attempting to remove rule: $modified_rule"
-        if sudo iptables -C ${modified_rule#-D } 2>/dev/null; then
-            if ! sudo iptables ${modified_rule}; then
+        if iptables -C ${modified_rule#-D } 2>/dev/null; then
+            if ! iptables ${modified_rule}; then
                 handle_error "Failed to remove rule: $modified_rule"
             else
                 log_message "Successfully removed rule: $modified_rule"
@@ -38,7 +38,7 @@ process_rules() {
         fi
     done < <(echo "$iptables_output")
     log_message "After removal"
-    sudo iptables -S | grep -F -- "$filter" || true
+    iptables -S | grep -F -- "$filter" || true
 }
 
 # Main execution
