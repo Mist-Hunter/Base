@@ -28,6 +28,6 @@ if [ -z "$firhole_ip_array" ]; then
 fi
 
 echo "Populating FireHOL_lvl_1 ipset"
-ipset_process --label "FireHOL_lvl_1" --hash_type "net" --ip_array $firhole_ip_array --netset_path $file_path
+ipset_process --label "FireHOL_lvl_1" --hash_type "net" --ip_array $firhole_ip_array --netset_path $FIREHOL_NETSETS_PATH
 
 echo "FireHOL ipset creation complete"
