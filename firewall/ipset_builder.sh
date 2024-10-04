@@ -143,5 +143,17 @@ create_ipsets_from_env_fqdn() {
     done
 }
 
-# Run the main processing function
-process_ipsets
+# Main function
+main() {
+    if [ "$#" -eq 0 ]; then
+        process_ipsets
+    elif [ "$1" == "--env_crawl" ]; then
+        create_ipsets_from_env_fqdn
+    else
+        echo "Invalid parameter. Use '--env_crawl' or no parameter."
+        exit 1
+    fi
+}
+
+# Run the main function
+main "$@"
