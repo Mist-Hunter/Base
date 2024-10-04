@@ -67,8 +67,8 @@ cat <<EOT >> ~/.bashrc
 EOT
 fi
 
-# Neofetch
-. $SCRIPTS/apt/neofetch/up.sh
+# FastFetch
+. $SCRIPTS/apt/fastfetch/up.sh
 
 # Setup Update Service
 . $SCRIPTS/base/debian/updaterservice.sh
