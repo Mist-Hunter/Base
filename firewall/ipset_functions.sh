@@ -20,7 +20,9 @@ create_temp_ipset() {
     
     ipset create "$tmp_label" hash:"$hash_type" -exist || error_exit "Failed to create temporary ipset"
    
-    if [ "$hash_type" = "net" ]; then
+    if [ "$hash_type" = "netZZZSKIP" ]; then
+        # FIXME unclear that iprange is helping
+        # Firehol probably already does this according to sources online
         local original_count=${#ip_array[@]}
         printf '%s\n' "${ip_array[@]}" | iprange --ipset-reduce "$IPSET_REDUCE_FACTOR" \
             --ipset-reduce-entries "$IPSET_REDUCE_ENTRIES" \
