@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source $ENV_GLOBAL
+source $SCRIPTS/base/users/passgen.sh
 
 # Ensure SECURE_USER_UID and SHELL are defined
 if [[ -z "$SECURE_USER_UID" ]] || [[ -z "$SHELL" ]]; then
@@ -14,7 +15,7 @@ echo # (optional) move to a new line
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   # Generate a new password
-  new_password=$(tr -dc _A-Z-a-z-0-9 </dev/urandom | head -c 32)
+  new_password=$(generate_strong_password)
 
   # Get the username for the given UID
   username=$(id -nu "$SECURE_USER_UID")
