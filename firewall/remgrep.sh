@@ -1,52 +1,30 @@
 #!/bin/bash
 set -euo pipefail
 
-REMGREP_ERROR=0
-
-log_message() {
-    echo "Apt, firewall, remgrep.sh: $1"
-}
-
-handle_error() {
-    log_message "ERROR: $1"
-    REMGREP_ERROR=1
-}
-
-process_rules() {
-    local filter="$1"
-    log_message "Searching for '$filter'"
-    local iptables_output
-    iptables_output=$(iptables -S | grep -F -- "$filter") || true
-    if [ -z "$iptables_output" ]; then
-        log_message "No rules found matching '$filter'."
-        return
-    fi
-    while IFS= read -r rule; do
-        local modified_rule
-        modified_rule=$(echo "$rule" | sed -e 's/^-A/-D/')
-        # Properly quote the comment
-        modified_rule=$(echo "$modified_rule" | sed -e 's/--comment \(.*\)/--comment "\1"/')
-        log_message "Attempting to remove rule: $modified_rule"
-        if iptables -C ${modified_rule#-D } 2>/dev/null; then
-            if ! iptables ${modified_rule}; then
-                handle_error "Failed to remove rule: $modified_rule"
-            else
-                log_message "Successfully removed rule: $modified_rule"
-            fi
-        else
-            log_message "Rule does not exist, skipping: $modified_rule"
-        fi
-    done < <(echo "$iptables_output")
-    log_message "After removal"
-    iptables -S | grep -F -- "$filter" || true
-}
-
-# Main execution
 if [ $# -ne 1 ]; then
-    handle_error "Usage: $0 <filter>"
-else
-    process_rules "$1"
+    echo "Usage: $0 <filter>"
+    exit 1
 fi
 
-# Set the exit status of the script
-(exit $REMGREP_ERROR)
+FILTER="$1"
+log "Searching for '$FILTER':"
+matching_rules=$(iptables -S | grep -F -- "$FILTER" || true)
+
+if [ -z "$matching_rules" ]; then
+    log "No rules found matching '$FILTER'."
+    exit 0
+fi
+
+echo "$matching_rules"
+
+IFS=$'\n'
+while read -r rule; do
+    modified_rule=$(echo "$rule" | sed -e 's/^-A/-D/')
+    log "Removing rule: $modified_rule"
+    if ! iptables $modified_rule; then
+        log "Warning: Failed to remove rule: $modified_rule"
+    fi
+done <<< "$matching_rules"
+
+log "After removal:"
+iptables -S | grep -F -- "$FILTER" || true
