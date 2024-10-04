@@ -32,6 +32,7 @@ apt install iptables ipset iprange -y
 . $SCRIPTS/base/firewall/ipset_BOGONS.sh
 . $SCRIPTS/base/firewall/ipset_nameservers.sh
 . $SCRIPTS/base/firewall/ipset_ntpservers.sh
+. $SCRIPTS/base/firewall/ipset_builder.sh
 . $SCRIPTS/base/firewall/network-up.sh
 
 # if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
@@ -152,10 +153,5 @@ fi
 # Start services AFTER options have been selected.
 systemctl start network-pre-up.service
 systemctl start network-up.service
-
-# First run of IPSET to populate
-. $SCRIPTS/base/firewall/ipset_BOGONS.sh
-. $SCRIPTS/base/firewall/ipset_builder.sh
-. $SCRIPTS/base/firewall/ipset_ntpservers.sh
 
 echo "[up.sh] script complete."

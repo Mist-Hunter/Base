@@ -5,6 +5,7 @@
 echo "Starting BOGONS"
 
 # TODO check and see if BOGONS exists and or is empty
+# FIXME ipset v7.17: Set cannot be created: set with the same name already exists
 
 ipset -N BOGONS nethash
 ipset --add BOGONS 0.0.0.0/8  # self-identification [RFC5735]                                                                                                                                        
