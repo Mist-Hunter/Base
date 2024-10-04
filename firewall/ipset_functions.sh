@@ -19,8 +19,8 @@ create_temp_ipset() {
     local ip_array=("$@")
     ipset create "$tmp_label" hash:"$hash_type" -exist || error_exit "Failed to create temporary ipset"
    
-    if [ "$hash_type" = "netZZZZZ" ]; then
-        echo "${ip_array[@]}" | iprange --ipset-reduce "$IPSET_REDUCE_FACTOR" \
+    if [ "$hash_type" = "net" ]; then
+        printf '%s\n' "${ip_array[@]}" | iprange --ipset-reduce "$IPSET_REDUCE_FACTOR" \
             --ipset-reduce-entries "$IPSET_REDUCE_ENTRIES" \
             | while IFS= read -r line; do
                 ipset add "$tmp_label" "$line" || echo "Warning: Failed to add $line to $tmp_label"
