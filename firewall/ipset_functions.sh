@@ -22,24 +22,18 @@ create_temp_ipset() {
    
     if [ "$hash_type" = "net" ]; then
         local original_count=${#ip_array[@]}
-        local reduced_list=$(printf '%s\n' "${ip_array[@]}" | iprange --ipset-reduce "$IPSET_REDUCE_FACTOR" \
-            --ipset-reduce-entries "$IPSET_REDUCE_ENTRIES")
-        local reduced_count=$(echo "$reduced_list" | wc -l)
-        
-        echo "Original IP range count: $original_count"
-        echo "Reduced IP range count: $reduced_count"
-        echo "Reduction percentage: $(awk "BEGIN {printf \"%.2f%%\", (($original_count-$reduced_count)/$original_count)*100}")"
-        
-        echo "$reduced_list" | while IFS= read -r line; do
-            ipset add "$tmp_label" "$line" || echo "Warning: Failed to add $line to $tmp_label"
-        done
+        printf '%s\n' "${ip_array[@]}" | iprange --ipset-reduce "$IPSET_REDUCE_FACTOR" \
+            --ipset-reduce-entries "$IPSET_REDUCE_ENTRIES" \
+            | while IFS= read -r line; do
+                ipset add "$tmp_label" "$line" || echo "Warning: Failed to add $line to $tmp_label"
+            done
+        local post_count=$(ipset list "$tmp_label" | grep -c "^[0-9]")
+        echo "original_count:$original_count, post_count=$post_count" 
     else
         printf '%s\n' "${ip_array[@]}" | sort -u | while IFS= read -r ip; do
             ipset add "$tmp_label" "$ip" || echo "Warning: Failed to add $ip to $tmp_label"
         done
     fi
-    
-    echo "Final ipset size: $(ipset list "$tmp_label" | grep -c "^[0-9]")"
 }
 
 ipset_process() {
