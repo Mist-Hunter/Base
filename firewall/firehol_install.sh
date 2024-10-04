@@ -28,6 +28,7 @@ if ! . $SCRIPTS/base/firewall/ipset_firehol.sh; then
     exit 1
 fi
 
+. $SCRIPTS/base/firewall/remgrep.sh "BOGONS"
 iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to FireHOL_lvl_1. APT Package manager." -j ACCEPT
 iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to FireHOL_lvl_1. APT Package manager." -j ACCEPT
 iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to FireHOL_lvl_1. APT Package manager." -j ACCEPT
