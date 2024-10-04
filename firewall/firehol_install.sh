@@ -28,9 +28,9 @@ if ! . $SCRIPTS/base/firewall/ipset_firehol.sh; then
     exit 1
 fi
 
-# Uncomment and adjust these rules as needed
-# iptables -I INPUT -m set --match-set FireHOL_lvl_1 src -j DROP -m comment --comment "Block inbound from FireHOL_lvl_1 IPs"
-# iptables -I OUTPUT -m set --match-set FireHOL_lvl_1 dst -j DROP -m comment --comment "Block outbound to FireHOL_lvl_1 IPs"
+iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to FireHOL_lvl_1. APT Package manager." -j ACCEPT
+iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to FireHOL_lvl_1. APT Package manager." -j ACCEPT
+iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to FireHOL_lvl_1. APT Package manager." -j ACCEPT
 
 . $SCRIPTS/base/firewall/save.sh
 

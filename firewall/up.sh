@@ -62,11 +62,24 @@ iptables -I OUTPUT -m set --match-set NAME_SERVERS dst -p tcp --dport 53 -m comm
 # allow traffic out to port 123, NTP. This is in support of systemd-timesyncd which can orginate it's requests on any port. https://serverfault.com/a/1078454
 iptables -I OUTPUT -m set --match-set NTP_SERVERS dst -p udp --dport 123 -j ACCEPT -m comment --comment "Allow NTP traffic to NTP_SERVERS ipset"
 
-# allow traffic out for HTTP, HTTPS, or FTP
-# TODO lookup actual mirrors and create APT_REPO_IP ipset
-iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BOGONS. APT Package manager." -j ACCEPT
-iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BOGONS. APT Package manager." -j ACCEPT
-iptables -I OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BOGONS. APT Package manager." -j ACCEPT
+# Define output block rules for 80,443,21--------------------------------------------------------------------------------------------------
+
+# Querry Firehol_level1 Rules 
+# NOTE DROP rules (like this) should come last
+read -p "Add FireHOL Level 1 Subscription? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+  # SNMP Setup
+  . $SCRIPTS/base/firewall/firehol_install.sh
+else
+  # allow traffic out for HTTP, HTTPS, or FTP
+  # TODO lookup actual mirrors and create APT_REPO_IP ipset
+  iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BOGONS. APT Package manager." -j ACCEPT
+  iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BOGONS. APT Package manager." -j ACCEPT
+  iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BOGONS. APT Package manager." -j ACCEPT
+fi
+
 
 # allow DHCP
 # NOTE handled @ network-pre-up.sh
@@ -138,16 +151,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
   # SNMP Setup
   . $SCRIPTS/base/firewall/anti-scan.sh
-fi
-
-# Querry Firehol_level1 Rules 
-# NOTE DROP rules (like this) should come last
-read -p "Add FireHOL Level 1 Subscription? " -n 1 -r
-echo    # (optional) move to a new line
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-  # SNMP Setup
-  . $SCRIPTS/base/firewall/firehol_install.sh
 fi
 
 # Start services AFTER options have been selected.
