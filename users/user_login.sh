@@ -22,11 +22,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   # Check if user exists
   if getent passwd "$username" > /dev/null 2>&1; then
     echo "User $username exists."
-    echo "$username:$new_password" | chpasswd
+    echo "$username:$new_password" | chpasswd  > /dev/null 2>&1
   else
     echo "User $username does not exist. Creating user."
     useradd "$username" -s "$SHELL"
-    echo "$username:$new_password" | chpasswd
+    echo "$username:$new_password" | chpasswd  > /dev/null 2>&1
   fi
 
   # Provide feedback to the user

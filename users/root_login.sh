@@ -10,7 +10,7 @@ echo # (optional) move to a new line
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     new_password=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 32)
-    echo "root:$new_password" | chpasswd
+    echo "root:$new_password" | chpasswd  > /dev/null 2>&1
     present_secrets "User:root" "Password:$new_password"
 
     # Autologin for the current terminal
