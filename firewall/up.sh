@@ -95,7 +95,7 @@ ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
 
 # Link scripts to run after NIC comes up
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
-ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
+#ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
 ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/if-up.d/lan-nic.d/ipset_ntpservers.sh
 
 # FIXME find some nicer way to source ENV_NETWORK. the && is ugly
@@ -139,7 +139,7 @@ then
   . $SCRIPTS/base/firewall/firehol_install.sh
   #ln -sf $SCRIPTS/base/firewall/firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh  
 else
-  ln -sf $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
+  #ln -sf $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
 fi
 
 # Querry Anti-Scan IPtables rules
