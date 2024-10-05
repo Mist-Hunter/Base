@@ -33,7 +33,6 @@ fi
 declare -A ipset_names
 
 # First loop: Collect unique ipset names
-
 while IFS= read -r line; do
     # Inner loop: Process each ipset name found in the current line
     while read -r ipset_name; do
