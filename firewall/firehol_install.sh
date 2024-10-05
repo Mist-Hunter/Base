@@ -17,16 +17,44 @@ if ! . $SCRIPTS/base/firewall/firehol_updater.sh; then
 fi
 
 echo "Creating FireHOL service..."
-if ! . $SCRIPTS/base/firewall/firehol_service_creation.sh; then
-    echo "Error: Failed to create FireHOL service"
-    exit 1
-fi
+# Setup Updater
+service_name="network-ipset-firehol-updater"
+
+cat <<EOT > /etc/systemd/system/$service_name.service
+[Unit]
+Description=Network IPset FireHOL Updater
+
+[Service]
+Type=simple
+ExecStart=/bin/bash $SCRIPTS/base/firewall/firehol_updater.sh
+# Optionally define user/group if needed:
+# User=youruser
+# Group=yourgroup
+
+[Install]
+WantedBy=multi-user.target
+EOT
+
+cat <<EOT > /etc/systemd/system/$service_name.timer
+[Unit]
+Description=Run $service_name daily
+
+[Timer]
+OnCalendar=daily
+# Optionally adjust when the timer starts:
+# OnCalendar=*-*-* 02:00:00
+# This would run the script daily at 2 AM
+
+[Install]
+WantedBy=timers.target
+EOT
+
+systemctl daemon-reload
+systemctl enable $service_name.timer
+systemctl start $service_name.timer
 
 echo "Running ipset_firehol.sh..."
-if ! . $SCRIPTS/base/firewall/ipset_firehol.sh; then
-    echo "Error: Failed to run ipset_firehol.sh"
-    exit 1
-fi
+systemctl start network-ipset-firehol-updater
 
 # NOTE FireHOL_lvl_1 will take the place of blocking outbound neighbor BOGONS and also blocks outbound to bad reputation in non-bogons.
 . $SCRIPTS/base/firewall/remgrep.sh "BOGONS"
@@ -35,5 +63,6 @@ iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 443 -m 
 iptables -A OUTPUT -m set ! --match-set FireHOL_lvl_1 dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to FireHOL_lvl_1. APT Package manager." -j ACCEPT
 
 . $SCRIPTS/base/firewall/save.sh
+
 
 echo "FireHOL installation complete."

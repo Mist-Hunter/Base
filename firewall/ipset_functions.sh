@@ -66,6 +66,8 @@ ipset_process() {
     if [[ ${#ip_array[@]} -gt 0 ]]; then
         create_temp_ipset "$tmp_label" "$hash_type" "${ip_array[@]}"
         new_content=$(ipset list "$tmp_label" --output save)
+        # FIXME Where does --output save endup?
+        # FIXME Problem where firehol_lvl_1.netset contains lines like 'add FireHOL_lvl_1_tmp 206.197.212.0/24'
     fi
 
     # Check if the ipset already exists
@@ -93,4 +95,5 @@ ipset_process() {
 
     # Clean up
     ipset destroy "$tmp_label" 2>/dev/null
+    
 }

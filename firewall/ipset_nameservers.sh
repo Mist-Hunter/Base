@@ -8,5 +8,3 @@ while read -r ip; do
 done < <(grep -oP '(?<=^nameserver\s)\S+' /etc/resolv.conf)
 
 ipset_process --label "NAME_SERVERS" --hash_type "ip" --ip_array $ip_array
-
-# FIXME ipset NAME_SERVERS exists. bash: /etc/ipset/name_servers.netset: No such file or directory

@@ -2,6 +2,12 @@
 
 # At pre-up
 
+source $ENV_GLOBAL
+source $ENV_NETWORK
+
+# Import the ipset_process function
+source $SCRIPTS/base/firewall/ipset_functions.sh
+
 echo "Starting BOGONS"
 
 # TODO check and see if BOGONS exists and or is empty

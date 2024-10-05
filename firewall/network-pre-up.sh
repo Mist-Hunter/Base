@@ -3,10 +3,6 @@
 # NOTE having trouble with a variable ENV path be available when this is called.
 source "${ENV_GLOBAL:-/root/.config/global.env}"
 
-# NOTE: Removed Debian 11 support, this expect to be run manually via systemD service units
-
-# TODO Check if variables are set; LAN_NIC, IPTABLES_PERSISTENT_RULES
-
 echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC, SCRIPTS=$SCRIPTS"
 
 # Execute all scripts in the lan-nic.d directory if it exists
@@ -23,6 +19,8 @@ else
 fi
 
 # Default drop prior to rule load incase of error firewall not left open
+# FIXME does DOCKER-CHAIN need to be added here?
+
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT DROP
@@ -30,9 +28,6 @@ iptables -I INPUT -i lo -j ACCEPT
 iptables -I OUTPUT -o lo -j ACCEPT
 
 echo "Checking for DHCP"
-
-# FIXME eth0 not dynamic
-## had to ip link set eth0 up && dhclient
 
 # Check if the network interface is configured for DHCP in /etc/network/interfaces
 if grep -q "^iface $LAN_NIC inet dhcp" /etc/network/interfaces; then
@@ -50,6 +45,7 @@ while IFS= read -r line; do
   if echo "$line" | grep -q "match-set"; then
     ipset_name=$(echo "$line" | grep -oP '(?<=match-set )[^ ]+')
     if ! ipset list "$ipset_name" &>/dev/null; then
+      # TODO Review $IPTABLES_PERSISTENT_RULES for unset ipsets and load .netsets from NETSET_PATH create empty ones
       echo "Creating empty ipset: $ipset_name"
       ipset create "$ipset_name" hash:ip
     fi

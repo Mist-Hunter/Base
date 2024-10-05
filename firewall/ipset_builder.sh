@@ -20,7 +20,7 @@
 # TODO reverse the logic of this script, instead of looping on $ENV_GLOBAL, loop on $IPTABLES_PERSISTENT_RULES looking for ipset names ending in *_IP , and then crawling $ENV_GLOBAL and sourced files for matching *_FQDN variables
 # Example: if a vaiable like SNMP_POLLER_IP exsits in $IPTABLES_PERSISTENT_RULES look for SNMP_POLLER_FQDN in $ENV_GLOBAL or sourced file.
 
-# FIXME is this interacting with LAN_GATEWAY?
+# FIXME with .netsets being loaded in network-pre-up.sh, and ipset_functions ipset_process auto saving to $NETSET_PATH, this builder should likely be moved to a function in ipset_functions and called only for first run
 
 #!/bin/bash
 set -e
