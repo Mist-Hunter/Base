@@ -87,7 +87,7 @@ ipset_process() {
         ipset swap "$tmp_label" "$label" || error_exit "Failed to swap ipsets"
         # NOTE reload current_conent with post-swap corrected data
         current_content=$(ipset list "$label" --output save)
-        echo "$new_content" > "$file_path" || error_exit "Failed to write to $file_path"
+        echo "$current_content" > "$file_path" || error_exit "Failed to write to $file_path"
         echo "Updated $file_path"
     elif [[ -n "$new_content" ]]; then
         echo "No changes detected for $label"
