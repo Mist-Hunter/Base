@@ -119,7 +119,7 @@ if [ $SAVE_ERROR -eq 0 ]; then
     log_message "iptables save operation completed successfully"
 else
     log_message "iptables save operation completed with errors"
+    # Set the exit status of the script
+    exit $SAVE_ERROR
 fi
 
-# Set the exit status of the script
-exit $SAVE_ERROR
