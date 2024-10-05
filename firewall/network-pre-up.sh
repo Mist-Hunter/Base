@@ -14,6 +14,19 @@ iptables -P OUTPUT DROP
 iptables -I INPUT -i lo -j ACCEPT
 iptables -I OUTPUT -o lo -j ACCEPT
 
+# Execute all scripts in the lan-nic.d directory if it exists
+LAN_NIC_DIR="/etc/network/if-pre-up.d/lan-nic.d"  # Removed trailing slash
+if [ -d "$LAN_NIC_DIR" ]; then
+  for script in "$LAN_NIC_DIR"/*; do
+    if [ -f "$script" ] && [ -x "$script" ]; then
+      echo "Running $script"
+      "$script"
+    fi
+  done
+else
+  echo "Warning: Directory $LAN_NIC_DIR does not exist"
+fi
+
 # NOTE Review $IPTABLES_PERSISTENT_RULES for unset ipsets and restore or create empty
 echo "Creating empty ipsets in $IPTABLES_PERSISTENT_RULES"
 while IFS= read -r line; do
@@ -31,19 +44,6 @@ while IFS= read -r line; do
     fi
   fi
 done < "$IPTABLES_PERSISTENT_RULES"
-
-# Execute all scripts in the lan-nic.d directory if it exists
-LAN_NIC_DIR="/etc/network/if-pre-up.d/lan-nic.d"  # Removed trailing slash
-if [ -d "$LAN_NIC_DIR" ]; then
-  for script in "$LAN_NIC_DIR"/*; do
-    if [ -f "$script" ] && [ -x "$script" ]; then
-      echo "Running $script"
-      "$script"
-    fi
-  done
-else
-  echo "Warning: Directory $LAN_NIC_DIR does not exist"
-fi
 
 echo "Checking for DHCP"
 
