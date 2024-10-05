@@ -24,10 +24,10 @@ ipset create AntiScan_Offenders hash:ip family inet hashsize 32768 maxelem 65536
 ipset create AntiScan_ScannedPorts hash:ip,port family inet hashsize 32768 maxelem 65536 timeout 60
 
 iptables -A INPUT -m conntrack --ctstate INVALID -m comment --comment "apt, firewall, anti-scan.sh: Drop invalid packets" -j DROP
-iptables -I INPUT -m conntrack --ctstate NEW -m set ! --match-set AntiScan_ScannedPorts src,dst -m hashlimit --hashlimit-above 1/hour --hashlimit-burst 5 --hashlimit-mode srcip --hashlimit-name portscan --hashlimit-htable-expire 10000 -m comment --comment "$echoheader Add offenders to AntiScan_Offenders" -j SET --add-set AntiScan_Offenders src --exist
+iptables -I INPUT -m conntrack --ctstate NEW -m set ! --match-set AntiScan_ScannedPorts src,dst -m hashlimit --hashlimit-above 1/hour --hashlimit-burst 5 --hashlimit-mode srcip --hashlimit-name portscan --hashlimit-htable-expire 10000 -m comment --comment "apt, firewall, anti-scan.sh: Add offenders to AntiScan_Offenders" -j SET --add-set AntiScan_Offenders src --exist
 # FIXME drop rules should only be added to default ALLOW chains! (not needed otherwise)
 ## NOTE drop rules could still help, if placed above ACCEPT rules
-iptables -A INPUT -m conntrack --ctstate NEW -m set --match-set AntiScan_Offenders src -m set ! --match-set AntiScan_AllowList src -m comment --comment "$echoheader Drop packets from port_scanner members" -j DROP
+iptables -A INPUT -m conntrack --ctstate NEW -m set --match-set AntiScan_Offenders src -m set ! --match-set AntiScan_AllowList src -m comment --comment "apt, firewall, anti-scan.sh: Drop packets from port_scanner members" -j DROP
 iptables -I INPUT -m conntrack --ctstate NEW -m comment --comment "apt, firewall, anti-scan.sh: Add scanner ports to AntiScan_ScannedPorts" -j SET --add-set AntiScan_ScannedPorts src,dst
 
 . $SCRIPTS/base/firewall/save.sh
