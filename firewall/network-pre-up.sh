@@ -28,22 +28,43 @@ else
 fi
 
 # NOTE Review $IPTABLES_PERSISTENT_RULES for unset ipsets and restore or create empty
-echo "Creating empty ipsets in $IPTABLES_PERSISTENT_RULES"
+
+# Create an associative array to store unique ipset names
+declare -A ipset_names
+
+# First loop: Collect unique ipset names
 while IFS= read -r line; do
-  if echo "$line" | grep -q "match-set"; then
-    ipset_name=$(echo "$line" | grep -oP '(?<=match-set )[^ ]+')
-    if ! ipset list "$ipset_name" &>/dev/null; then
-      netset_file="$NETSET_PATH/${ipset_name,,}.netset"
-      if [ -f "$netset_file" ]; then
-        echo "Restoring ipset $ipset_name from $netset_file"
-        ipset restore < "$netset_file" || echo "Failed to restore $ipset_name from $netset_file"
-      else
-        echo "Creating empty ipset: $ipset_name"
-        ipset create "$ipset_name" hash:ip
-      fi
+    if echo "$line" | grep -q "match-set"; then
+        ipset_name=$(echo "$line" | grep -oP '(?<=match-set )[^ ]+')
+        ipset_names["$ipset_name"]=1
     fi
-  fi
 done < "$IPTABLES_PERSISTENT_RULES"
+
+echo "Found ${#ipset_names[@]} unique ipset names."
+
+# Second loop: Process each unique ipset
+for ipset_name in "${!ipset_names[@]}"; do
+    if ! ipset list "$ipset_name" &>/dev/null; then
+        netset_file="$NETSET_PATH/${ipset_name,,}.netset"
+        if [ -f "$netset_file" ]; then
+            echo "Restoring ipset $ipset_name from $netset_file"
+            if ipset restore < "$netset_file"; then
+                echo "Successfully restored $ipset_name from $netset_file"
+            else
+                echo "Failed to restore $ipset_name from $netset_file"
+            fi
+        else
+            echo "Creating empty ipset: $ipset_name"
+            if ipset create "$ipset_name" hash:ip; then
+                echo "Successfully created empty ipset: $ipset_name"
+            else
+                echo "Failed to create empty ipset: $ipset_name"
+            fi
+        fi
+    else
+        echo "Ipset $ipset_name already exists. Skipping."
+    fi
+done
 
 echo "Checking for DHCP"
 
