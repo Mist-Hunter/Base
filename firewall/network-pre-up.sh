@@ -73,6 +73,7 @@ echo "Checking for DHCP"
 
 # Check if the network interface is configured for DHCP in /etc/network/interfaces
 # FIXME /etc/network/interfaces doesn't exist
+# TODO is this needed? If DHCP completes prior to default drop?
 if grep -q "^iface $LAN_NIC inet dhcp" /etc/network/interfaces; then
   echo "The NIC '$LAN_NIC' is configured for DHCP. Applying DHCP rules."
   # Allow DHCP traffic (UDP ports 67 and 68)
