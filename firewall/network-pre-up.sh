@@ -33,11 +33,15 @@ fi
 declare -A ipset_names
 
 # First loop: Collect unique ipset names
+
 while IFS= read -r line; do
-    if echo "$line" | grep -q "match-set"; then
-        ipset_name=$(echo "$line" | grep -oP '(?<=match-set )[^ ]+')
-        ipset_names["$ipset_name"]=1
-    fi
+    # Inner loop: Process each ipset name found in the current line
+    while read -r ipset_name; do
+        if [ -n "$ipset_name" ]; then
+            ipset_names["$ipset_name"]=1
+            echo "Found ipset: $ipset_name"
+        fi
+    done < <(echo "$line" | grep -oP '(?<=--match-set )[^ ]+')
 done < "$IPTABLES_PERSISTENT_RULES"
 
 echo "Found ${#ipset_names[@]} unique ipset names."
