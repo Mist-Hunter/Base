@@ -21,11 +21,6 @@ OFFENDER_TIMER=600
 
 # Create IP Sets
 . $SCRIPTS/base/firewall/ipset_anti-scan.sh
-## FIXME implement GATEWAY ALLOW_LIST
-
-# ipset create AntiScan_AllowList hash:net
-# ipset create AntiScan_Offenders hash:ip family inet hashsize 32768 maxelem 65536 timeout $OFFENDER_TIMER
-# ipset create AntiScan_ScannedPorts hash:ip,port family inet hashsize 32768 maxelem 65536 timeout 60
 
 iptables -A INPUT -m conntrack --ctstate INVALID -m comment --comment "apt, firewall, anti-scan.sh: Drop invalid packets" -j DROP
 iptables -I INPUT -m conntrack --ctstate NEW -m set ! --match-set AntiScan_ScannedPorts src,dst -m hashlimit --hashlimit-above 1/hour --hashlimit-burst 5 --hashlimit-mode srcip --hashlimit-name portscan --hashlimit-htable-expire 10000 -m comment --comment "apt, firewall, anti-scan.sh: Add offenders to AntiScan_Offenders" -j SET --add-set AntiScan_Offenders src --exist
