@@ -30,6 +30,4 @@ iptables -I INPUT -m conntrack --ctstate NEW -m set ! --match-set AntiScan_Scann
 iptables -A INPUT -m conntrack --ctstate NEW -m set --match-set AntiScan_Offenders src -m set ! --match-set AntiScan_AllowList src -m comment --comment "apt, firewall, anti-scan.sh: Drop packets from port_scanner members" -j DROP
 iptables -I INPUT -m conntrack --ctstate NEW -m comment --comment "apt, firewall, anti-scan.sh: Add scanner ports to AntiScan_ScannedPorts" -j SET --add-set AntiScan_ScannedPorts src,dst
 
-. $SCRIPTS/base/firewall/save.sh
-
 # TODO create anti-scan notification service, will need to interact on a interval matching $OFFENDER_TIMER
