@@ -57,7 +57,7 @@ dedup() {
     if ! iptables -t "$table" -L >/dev/null 2>&1; then
         handle_error "Table $table does not exist or is empty"
         return
-    }
+    fi
    
     local table_content
     table_content=$(iptables-save | sed -n "/$table/,/COMMIT/p")
