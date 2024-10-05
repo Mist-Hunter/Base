@@ -55,6 +55,7 @@ if check_for_update; then
     sed -i "1i# SHA: $latest_commit" "$netset_file"
     echo "Applying the new .netset file..."
     firehol_ip_array=$(cat "$netset_file" | sed '/^#/d' | tr '\n' ' ' | sed 's/  */ /g')
+    # FIXME the .netset output contains lines with ADD ... _tmp
     ipset_process --label "THE_BAD_IPS" --hash_type "net" --ip_array $firehol_ip_array
 else
     echo "Local file is up-to-date."

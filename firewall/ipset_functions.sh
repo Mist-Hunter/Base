@@ -66,8 +66,6 @@ ipset_process() {
     if [[ ${#ip_array[@]} -gt 0 ]]; then
         create_temp_ipset "$tmp_label" "$hash_type" "${ip_array[@]}"
         new_content=$(ipset list "$tmp_label" --output save)
-        # FIXME Where does --output save endup?
-        # FIXME Problem where firehol_lvl_1.netset contains lines like 'add FireHOL_lvl_1_tmp 206.197.212.0/24'
     fi
 
     # Check if the ipset already exists
@@ -85,8 +83,10 @@ ipset_process() {
     fi
 
     # Compare and swap if necessary
-    if [[ -n "$new_content" && "$new_content" != "$current_content" ]]; then
+    if [[ -n "$new_content" && "$new_content" != "$current_content" ]]; then        
         ipset swap "$tmp_label" "$label" || error_exit "Failed to swap ipsets"
+        # NOTE reload current_conent with post-swap corrected data
+        current_content=$(ipset list "$label" --output save)
         echo "$new_content" > "$file_path" || error_exit "Failed to write to $file_path"
         echo "Updated $file_path"
     elif [[ -n "$new_content" ]]; then

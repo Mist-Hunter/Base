@@ -39,15 +39,20 @@ else
   echo "The NIC '$LAN_NIC' is not configured for DHCP. Skipping DHCP rules."
 fi
 
-# Review $IPTABLES_PERSISTENT_RULES for unset ipsets and create empty ones
+# Review $IPTABLES_PERSISTENT_RULES for unset ipsets and restore or create empty
 echo "Creating empty ipsets in $IPTABLES_PERSISTENT_RULES"
 while IFS= read -r line; do
   if echo "$line" | grep -q "match-set"; then
     ipset_name=$(echo "$line" | grep -oP '(?<=match-set )[^ ]+')
     if ! ipset list "$ipset_name" &>/dev/null; then
-      # TODO Review $IPTABLES_PERSISTENT_RULES for unset ipsets and load .netsets from NETSET_PATH create empty ones
-      echo "Creating empty ipset: $ipset_name"
-      ipset create "$ipset_name" hash:ip
+      netset_file="$NETSET_PATH/${ipset_name,,}.netset"
+      if [ -f "$netset_file" ]; then
+        echo "Restoring ipset $ipset_name from $netset_file"
+        ipset restore < "$netset_file" || echo "Failed to restore $ipset_name from $netset_file"
+      else
+        echo "Creating empty ipset: $ipset_name"
+        ipset create "$ipset_name" hash:ip
+      fi
     fi
   fi
 done < "$IPTABLES_PERSISTENT_RULES"

@@ -137,7 +137,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
   # TODO change ipset name to something more generic that can optionlly include other lists
   . $SCRIPTS/base/firewall/firehol_install.sh
-  ln -sf $SCRIPTS/base/firewall/firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh  
+  #ln -sf $SCRIPTS/base/firewall/firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh  
 else
   ln -sf $SCRIPTS/base/firewall/ipset_BOGONS.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_BOGONS.sh
 fi
