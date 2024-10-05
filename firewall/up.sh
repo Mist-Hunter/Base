@@ -27,10 +27,11 @@ EOT
 #Dietpi check ipset / iptables
 apt install iptables ipset iprange -y
 
-# Populate ipsets refferenced below
+# Populate ipsets refferenced below (first-run)
 . $SCRIPTS/base/firewall/ipset_BOGONS.sh
 . $SCRIPTS/base/firewall/ipset_nameservers.sh
 . $SCRIPTS/base/firewall/ipset_ntpservers.sh
+. $SCRIPTS/base/firewall/ipset_gateway.sh
 . $SCRIPTS/base/firewall/ipset_builder.sh --env_crawl
 . $SCRIPTS/base/firewall/network-up.sh
 

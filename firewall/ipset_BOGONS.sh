@@ -10,18 +10,19 @@ source $SCRIPTS/base/firewall/ipset_functions.sh
 
 echo "Starting BOGONS"
 
-# TODO check and see if BOGONS exists and or is empty
-# FIXME ipset v7.17: Set cannot be created: set with the same name already exists
+# Declare an array to hold the bogons
+bogons_array=()
 
-ipset -N BOGONS nethash
-ipset --add BOGONS 0.0.0.0/8  # self-identification [RFC5735]                                                                                                                                        
-ipset --add BOGONS 10.0.0.0/8  # Private-Use Networks [RFC1918]                                                                                                                                      
-ipset --add BOGONS 169.254.0.0/16  # Link Local [RFC5735]
-ipset --add BOGONS 172.16.0.0/12  # Private-Use Networks [RFC1918]
-ipset --add BOGONS 192.0.0.0/24  # IANA IPv4 Special Purpose Address Registry [RFC5736]
-ipset --add BOGONS 192.0.2.0/24   # TEST-NET-1 [RFC5737]
-ipset --add BOGONS 192.168.0.0/16  # Private-Use Networks [RFC1918]
-ipset --add BOGONS 192.88.99.0/24  # 6to4 Relay Anycast [RFC3068]
-ipset --add BOGONS 198.18.0.0/15  # Network Interconnect Device Benchmark Testing [RFC5735]
-ipset --add BOGONS 198.51.100.0/24  # TEST-NET-2 [RFC5737]
-ipset --add BOGONS 203.0.113.0/24  # TEST-NET-3 [RFC5737]
+bogons_array+=("0.0.0.0/8")        # self-identification [RFC5735]
+bogons_array+=("10.0.0.0/8")       # Private-Use Networks [RFC1918]
+bogons_array+=("169.254.0.0/16")   # Link Local [RFC5735]
+bogons_array+=("172.16.0.0/12")    # Private-Use Networks [RFC1918]
+bogons_array+=("192.0.0.0/24")     # IANA IPv4 Special Purpose Address Registry [RFC5736]
+bogons_array+=("192.0.2.0/24")     # TEST-NET-1 [RFC5737]
+bogons_array+=("192.168.0.0/16")    # Private-Use Networks [RFC1918]
+bogons_array+=("192.88.99.0/24")    # 6to4 Relay Anycast [RFC3068]
+bogons_array+=("198.18.0.0/15")     # Network Interconnect Device Benchmark Testing [RFC5735]
+bogons_array+=("198.51.100.0/24")   # TEST-NET-2 [RFC5737]
+bogons_array+=("203.0.113.0/24")    # TEST-NET-3 [RFC5737]
+
+ipset_process --label "BOGONS" --hash_type "ip" --ip_array $bogons_array
