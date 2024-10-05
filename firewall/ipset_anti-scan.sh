@@ -4,9 +4,11 @@ source $ENV_NETWORK
 
 echo "Starting anti-scan"
 
+lan_nic_gateway=$(ip route show 0.0.0.0/0 dev $LAN_NIC | cut -d\  -f3)
+
 # up
 ipset create AntiScan_AllowList hash:ip
-ipset add AntiScan_AllowList $LAN_NIC_GATEWAY
+ipset add AntiScan_AllowList $lan_nic_gateway
 
 # pre-up
 ipset create AntiScan_Offenders hash:ip family inet hashsize 32768 maxelem 65536 timeout 600

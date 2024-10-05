@@ -19,6 +19,10 @@ ln -sf $SCRIPTS/base/firewall/ipset_anti-scan.sh /etc/network/if-pre-up.d/lan-ni
 
 OFFENDER_TIMER=600
 
+# Create IP Sets
+. $SCRIPTS/base/firewall/ipset_anti-scan.sh
+## FIXME implement GATEWAY ALLOW_LIST
+
 ipset create AntiScan_AllowList hash:net
 ipset create AntiScan_Offenders hash:ip family inet hashsize 32768 maxelem 65536 timeout $OFFENDER_TIMER
 ipset create AntiScan_ScannedPorts hash:ip,port family inet hashsize 32768 maxelem 65536 timeout 60
@@ -29,5 +33,7 @@ iptables -I INPUT -m conntrack --ctstate NEW -m set ! --match-set AntiScan_Scann
 ## NOTE drop rules could still help, if placed above ACCEPT rules
 iptables -A INPUT -m conntrack --ctstate NEW -m set --match-set AntiScan_Offenders src -m set ! --match-set AntiScan_AllowList src -m comment --comment "apt, firewall, anti-scan.sh: Drop packets from port_scanner members" -j DROP
 iptables -I INPUT -m conntrack --ctstate NEW -m comment --comment "apt, firewall, anti-scan.sh: Add scanner ports to AntiScan_ScannedPorts" -j SET --add-set AntiScan_ScannedPorts src,dst
+
+. $SCRIPTS/base/firewall/save.sh
 
 # TODO create anti-scan notification service, will need to interact on a interval matching $OFFENDER_TIMER

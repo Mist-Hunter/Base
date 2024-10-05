@@ -148,7 +148,7 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   # SNMP Setup
-  . $SCRIPTS/base/firewall/anti-scan.sh
+  . $SCRIPTS/base/firewall/anti-scan-install.sh
 fi
 
 # Start services AFTER options have been selected.
