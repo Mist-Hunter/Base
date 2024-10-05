@@ -8,7 +8,7 @@ mkdir -p "$FIREHOL_NETSETS_PATH"
 
 echo "export FIREHOL_NETSETS_PATH=\"$FIREHOL_NETSETS_PATH\"" >> $ENV_NETWORK
 
-ln -sf $SCRIPTS/base/firewall/ipset_firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh
+# ln -sf $SCRIPTS/base/firewall/ipset_firehol.sh /etc/network/if-pre-up.d/lan-nic.d/ipset_firehol.sh
 
 echo "Running FireHOL updater..."
 if ! . $SCRIPTS/base/firewall/firehol_updater.sh; then
@@ -63,6 +63,5 @@ iptables -A OUTPUT -m set ! --match-set THE_BAD_IPS dst -p tcp --dport 443 -m co
 iptables -A OUTPUT -m set ! --match-set THE_BAD_IPS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to THE_BAD_IPS. APT Package manager." -j ACCEPT
 
 . $SCRIPTS/base/firewall/save.sh
-
 
 echo "FireHOL installation complete."
