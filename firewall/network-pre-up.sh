@@ -39,7 +39,7 @@ else
   echo "The NIC '$LAN_NIC' is not configured for DHCP. Skipping DHCP rules."
 fi
 
-# Review $IPTABLES_PERSISTENT_RULES for unset ipsets and restore or create empty
+# NOTE Review $IPTABLES_PERSISTENT_RULES for unset ipsets and restore or create empty
 echo "Creating empty ipsets in $IPTABLES_PERSISTENT_RULES"
 while IFS= read -r line; do
   if echo "$line" | grep -q "match-set"; then
