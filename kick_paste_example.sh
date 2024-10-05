@@ -242,7 +242,7 @@ source "$ENV_GLOBAL"
 alias aptup="$SCRIPTS/base/debian/update.sh"
 alias update="$SCRIPTS/base/debian/update.sh"
 alias clean="$SCRIPTS/apt/clean.sh"
-alias pullall='find "$SCRIPTS" -type d -name ".git" -exec sh -c 'for dir; do echo "Pulling updates in $(dirname "$dir")..."; git -C "$(dirname "$dir")" pull; done' _ {} +'
+alias pullall="$SCRIPTS/base/debian/pullall.sh"
 EOT
 
 # Reload .bashrc
