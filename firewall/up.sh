@@ -68,7 +68,6 @@ iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 443 -m comment
 iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BOGONS. APT Package manager." -j ACCEPT
 
 # allow DHCP if enabled
-# NOTE Debian 12+ seems to store DHCP flag here /etc/netplan/90-default.yaml
 dhcp_setting=$(sed -n "/name: ${LAN_NIC%${LAN_NIC#?}}*/,/^ *$/p" /etc/netplan/90-default.yaml | grep -m1 'dhcp4:' | awk '{print $2}')
 if [ "$dhcp_setting" = "true" ]; then
     echo "The NIC '$LAN_NIC' is configured for DHCP. Applying DHCP rules."
