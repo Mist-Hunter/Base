@@ -5,6 +5,8 @@ source "${ENV_GLOBAL:-/root/.config/global.env}"
 
 echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC, SCRIPTS=$SCRIPTS"
 
+
+# Defaul Drop Rules --------------------------------------------------------------------------------------------------------------------------------
 # Default drop prior to rule load incase of error firewall not left open
 # FIXME does DOCKER-CHAIN need to be added here?
 
@@ -14,6 +16,7 @@ iptables -P OUTPUT DROP
 iptables -I INPUT -i lo -j ACCEPT
 iptables -I OUTPUT -o lo -j ACCEPT
 
+# Execute User Scripts -----------------------------------------------------------------------------------------------------------------------------
 # Execute all scripts in the lan-nic.d directory if it exists
 LAN_NIC_DIR="/etc/network/if-pre-up.d/lan-nic.d"  # Removed trailing slash
 if [ -d "$LAN_NIC_DIR" ]; then
@@ -29,6 +32,7 @@ fi
 
 # NOTE Review $IPTABLES_PERSISTENT_RULES for unset ipsets and restore or create empty
 
+# Restore IPSets from files ------------------------------------------------------------------------------------------------------------------------
 # Create an associative array to store unique ipset names
 declare -A ipset_names
 
@@ -69,25 +73,7 @@ for ipset_name in "${!ipset_names[@]}"; do
     fi
 done
 
-echo "Checking for DHCP"
-
-# Check if the network interface is configured for DHCP in /etc/network/interfaces
-# TODO is this needed? If DHCP completes prior to default drop?
-
-# Extract DHCP setting directly from Netplan config
-# NOTE Debian 12+ seems to store DHCP flag here /etc/netplan/90-default.yaml
-dhcp_setting=$(sed -n "/name: ${LAN_NIC%${LAN_NIC#?}}*/,/^ *$/p" /etc/netplan/90-default.yaml | grep -m1 'dhcp4:' | awk '{print $2}')
-
-if [ "$dhcp_setting" = "true" ]; then
-    echo "The NIC '$LAN_NIC' is configured for DHCP. Applying DHCP rules."
-    # Allow DHCP traffic (UDP ports 67 and 68)
-    iptables -I INPUT -p udp --sport 67 --dport 68 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP client traffic" -j ACCEPT
-    iptables -I OUTPUT -p udp --sport 68 --dport 67 -m comment --comment "base, firewall, network-pre-up.sh: Allow DHCP server traffic" -j ACCEPT
-else
-    echo "The NIC '$LAN_NIC' is not configured for DHCP. Skipping DHCP rules."
-fi
-
-# Restore iptables rules
+# Restore iptables rules ---------------------------------------------------------------------------------------------------------------------------
 echo "Restoring iptables $IPTABLES_PERSISTENT_RULES"
 if ! /sbin/iptables-restore < "$IPTABLES_PERSISTENT_RULES"; then
   echo "Error: Failed to restore iptables rules"
