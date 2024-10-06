@@ -35,6 +35,7 @@ apt install iptables ipset iprange -y
 . $SCRIPTS/base/firewall/ipset_builder.sh --env_crawl
 . $SCRIPTS/base/firewall/network-up.sh
 
+# Allow SSH if SSHD is running
 # if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
 #     # TODO: Check if SSHD exists, and add rules. https://linuxhint.com/check-if-ssh-is-running-on-linux/
 #     # allow SSH
@@ -63,9 +64,10 @@ iptables -I OUTPUT -m set --match-set NAME_SERVERS dst -p tcp --dport 53 -m comm
 iptables -I OUTPUT -m set --match-set NTP_SERVERS dst -p udp --dport 123 -j ACCEPT -m comment --comment "Allow NTP traffic to NTP_SERVERS ipset"
 
 # allow traffic out for HTTP, HTTPS, or FTP
-iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BOGONS. APT Package manager." -j ACCEPT
-iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BOGONS. APT Package manager." -j ACCEPT
-iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BOGONS. APT Package manager." -j ACCEPT
+# FIXME BOGONS should be consistent with FireHol name
+iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
+iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
+iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
 
 # allow DHCP if enabled
 dhcp_setting=$(sed -n "/name: ${LAN_NIC%${LAN_NIC#?}}*/,/^ *$/p" /etc/netplan/90-default.yaml | grep -m1 'dhcp4:' | awk '{print $2}')
@@ -99,7 +101,6 @@ ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
 
 # Link scripts to run after NIC comes up
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
-#ln -sf $SCRIPTS/base/firewall/ipset_builder.sh /etc/network/if-up.d/lan-nic.d/ipset_builder.sh
 ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/if-up.d/lan-nic.d/ipset_ntpservers.sh
 
 # FIXME find some nicer way to source ENV_NETWORK. the && is ugly

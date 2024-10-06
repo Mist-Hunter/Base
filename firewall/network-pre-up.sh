@@ -8,7 +8,6 @@ echo "iptables persistence, pre-up, SystemD. LAN_NIC=$LAN_NIC, SCRIPTS=$SCRIPTS"
 
 # Defaul Drop Rules --------------------------------------------------------------------------------------------------------------------------------
 # Default drop prior to rule load incase of error firewall not left open
-# FIXME does DOCKER-CHAIN need to be added here?
 
 iptables -P INPUT DROP
 iptables -P FORWARD DROP

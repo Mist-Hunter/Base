@@ -7,8 +7,7 @@ source $ENV_NETWORK
 # Import the ipset_process function
 source $SCRIPTS/base/firewall/ipset_functions.sh
 
-firehol_set="THE_BAD_IPS"
-ipset_label="BOGONS_BADIPS"
+firehol_set="BLOCK_LIST"
 
 echo "Starting $firehol_set ipset creation"
 
