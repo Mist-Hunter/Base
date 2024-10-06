@@ -84,11 +84,7 @@ fi
 iptables -P OUTPUT DROP
 iptables -P INPUT DROP
 
-#Debian Iptables https://wiki.debian.org/iptables
 #Persistance
-#https://serverfault.com/questions/927673/iptables-restore-sometimes-fails-on-reboot
-#https://askubuntu.com/questions/41400/how-do-i-make-the-script-to-run-automatically-when-tun0-interface-up-down-events
-#iptables-save > $IPTABLES_PERSISTENT_RULES
 . $SCRIPTS/base/firewall/save.sh
 
 # In LXC's for some reason this directory is missing.
