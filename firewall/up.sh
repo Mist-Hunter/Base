@@ -63,9 +63,6 @@ iptables -I OUTPUT -m set --match-set NAME_SERVERS dst -p tcp --dport 53 -m comm
 iptables -I OUTPUT -m set --match-set NTP_SERVERS dst -p udp --dport 123 -j ACCEPT -m comment --comment "Allow NTP traffic to NTP_SERVERS ipset"
 
 # allow traffic out for HTTP, HTTPS, or FTP
-# Querry Firehol_level1 Rules 
-# NOTE DROP rules (like this) should come last
-# NOTE needs to occur after mkdir above
 read -p "Add FireHOL Level 1 Subscription? " -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
