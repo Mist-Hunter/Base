@@ -50,8 +50,7 @@ WantedBy=timers.target
 EOT
 
 # NOTE FireHOL_lvl_1 will take the place of blocking outbound neighbor BOGONS and also blocks outbound to bad reputation in non-bogons.
-. $SCRIPTS/base/firewall/remgrep.sh "BLOCK_LIST"
-ipset destroy BLOCK_LIST
+. $SCRIPTS/base/firewall/remgrep.sh "BOGONS"
 
 systemctl daemon-reload
 systemctl enable $service_name.timer

@@ -64,10 +64,9 @@ iptables -I OUTPUT -m set --match-set NAME_SERVERS dst -p tcp --dport 53 -m comm
 iptables -I OUTPUT -m set --match-set NTP_SERVERS dst -p udp --dport 123 -j ACCEPT -m comment --comment "Allow NTP traffic to NTP_SERVERS ipset"
 
 # allow traffic out for HTTP, HTTPS, or FTP
-# FIXME BOGONS should be consistent with FireHol name
-iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
-iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
-iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
+iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BOGONS. APT Package manager." -j ACCEPT
+iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BOGONS. APT Package manager." -j ACCEPT
+iptables -A OUTPUT -m set ! --match-set BOGONS dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BOGONS. APT Package manager." -j ACCEPT
 
 # allow DHCP if enabled
 dhcp_setting=$(sed -n "/name: ${LAN_NIC%${LAN_NIC#?}}*/,/^ *$/p" /etc/netplan/90-default.yaml | grep -m1 'dhcp4:' | awk '{print $2}')
