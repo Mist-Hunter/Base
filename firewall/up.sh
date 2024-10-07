@@ -31,7 +31,7 @@ apt install iptables ipset iprange -y
 . $SCRIPTS/base/firewall/ipset_nameservers.sh
 . $SCRIPTS/base/firewall/ipset_ntpservers.sh
 . $SCRIPTS/base/firewall/ipset_gateway.sh
-. $SCRIPTS/base/firewall/ipset_builder.sh --env_crawl
+. $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh
 . $SCRIPTS/base/firewall/network-up.sh
 
 # Allow SSH if SSHD is running
@@ -108,6 +108,7 @@ ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
 # Link scripts to run after NIC comes up
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/if-up.d/lan-nic.d/ipset_ntpservers.sh
+ln -sf $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh /etc/network/if-up.d/lan-nic.d/ipset_fqdn_env_to_ipset.sh
 
 # FIXME find some nicer way to source ENV_NETWORK. the && is ugly
 # FIXME ifup already runs all scripts in /etc/network/if-pre-up.d, which makes this service only need when ifup is present?

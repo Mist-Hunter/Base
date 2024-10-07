@@ -16,7 +16,6 @@ if ! ipset list $firehol_set >/dev/null 2>&1; then
     ipset create $firehol_set hash:net -exist
 fi
 
-
 file_path="$FIREHOL_NETSETS_PATH/$firehol_set.netset"
 if [ ! -f "$file_path" ]; then
     echo "Error: $file_path does not exist"
