@@ -101,6 +101,7 @@ fi
 
 mkdir -p /etc/network/if-pre-up.d/lan-nic.d/
 mkdir -p /etc/network/if-up.d/lan-nic.d/
+mkdir -p /etc/network/ipset-updates
 
 # Link scripts to run prior to NIC coming up
 ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
@@ -109,6 +110,13 @@ ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/if-up.d/lan-nic.d/ipset_ntpservers.sh
 ln -sf $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh /etc/network/if-up.d/lan-nic.d/ipset_fqdn_env_to_ipset.sh
+
+# Link ipset scripts to check for network changes (DNS _fqdn changes) on a schedule
+# TODO In addition to running on bootup, the following scripts should run on a nightly schedule
+# TODO how would these scripts be handled when just run by bootup? (if rebooted near update time)
+# FIXME currently there is no service unit for these, this is prepatory
+ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh //etc/network/ipset-updates/ipset_ntpservers.sh
+ln -sf $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh /etc/network/ipset-updates/ipset_fqdn_env_to_ipset.sh
 
 # FIXME find some nicer way to source ENV_NETWORK. the && is ugly
 # FIXME ifup already runs all scripts in /etc/network/if-pre-up.d, which makes this service only need when ifup is present?
@@ -138,8 +146,22 @@ ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-up.d/lan-nic"
 [Install]
 WantedBy=multi-user.target
 EOT
-systemctl enable network-up.service
 
+cat <<EOT > /etc/systemd/system/network-up.service
+[Unit]
+Description=Network Up Script
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-up.d/lan-nic"
+
+[Install]
+WantedBy=multi-user.target
+EOT
+
+systemctl enable network-up.service
 
 # Querry Anti-Scan IPtables rules
 read -p "Add iptables Anti Port-Scanning? " -n 1 -r

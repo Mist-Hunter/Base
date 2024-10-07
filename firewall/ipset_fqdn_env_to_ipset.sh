@@ -7,13 +7,10 @@ echo "Starting ipset manager"
 # Import the ipset_process function
 source $SCRIPTS/base/firewall/ipset_functions.sh
 
-local env_global="$ENV_GLOBAL"
-echo "ENV_GLOBAL is set to: $env_global"
-
 # Create an array to store all env files
 mapfile -t all_env_files < <(
-    echo "$env_global"
-    grep -E '^export ENV_[A-Z_]+=".*\.env"' "$env_global" | 
+    echo "$ENV_GLOBAL"
+    grep -E '^export ENV_[A-Z_]+=".*\.env"' "$ENV_GLOBAL" | 
     sed -E 's/^export ENV_[A-Z_]+="(.*\.env)".*/\1/' |
     sort -u  # Remove duplicates
 )
