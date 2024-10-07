@@ -49,13 +49,13 @@ OnCalendar=daily
 WantedBy=timers.target
 EOT
 
-systemctl daemon-reload
-systemctl enable $service_name.timer
-systemctl start $service_name.timer
-
 # NOTE FireHOL_lvl_1 will take the place of blocking outbound neighbor BOGONS and also blocks outbound to bad reputation in non-bogons.
 . $SCRIPTS/base/firewall/remgrep.sh "BLOCK_LIST"
 ipset destroy BLOCK_LIST
+
+systemctl daemon-reload
+systemctl enable $service_name.timer
+systemctl start $service_name.timer
 
 echo "Running ipset_firehol.sh..."
 systemctl start network-ipset-firehol-updater
