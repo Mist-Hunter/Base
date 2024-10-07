@@ -58,6 +58,7 @@ systemctl start network-ipset-firehol-updater
 
 # NOTE FireHOL_lvl_1 will take the place of blocking outbound neighbor BOGONS and also blocks outbound to bad reputation in non-bogons.
 . $SCRIPTS/base/firewall/remgrep.sh "BLOCK_LIST"
+ipset destroy BLOCK_LIST
 iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
 iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
 iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
