@@ -28,7 +28,6 @@ EOT
 apt install iptables ipset iprange -y
 
 # Populate ipsets refferenced below (first-run)
-. $SCRIPTS/base/firewall/ipset_BOGONS.sh
 . $SCRIPTS/base/firewall/ipset_nameservers.sh
 . $SCRIPTS/base/firewall/ipset_ntpservers.sh
 . $SCRIPTS/base/firewall/ipset_gateway.sh
@@ -73,6 +72,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
   . $SCRIPTS/base/firewall/firehol_install.sh
 else
+  . $SCRIPTS/base/firewall/ipset_BOGONS.sh
   iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 80 -m comment --comment "apt, firewall, up.sh: Allow HTTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
   iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 443 -m comment --comment "apt, firewall, up.sh: Allow HTTPS out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
   iptables -A OUTPUT -m set ! --match-set BLOCK_LIST dst -p tcp --dport 21 -m comment --comment "apt, firewall, up.sh: Allow FTP out, except to BLOCK_LIST. APT Package manager." -j ACCEPT
