@@ -15,15 +15,15 @@
 
 # TODO @ symbol could related to matching subnet color code (red, orange etc)
 
-# Define colors
-RED='\[\033[01;31m\]'
-GREEN='\[\033[01;32m\]'
-BROWN='\[\033[01;33m\]'
-LIGHT_BLUE='\[\033[1;34m\]'
-DARK_GRAY='\[\033[1;30m\]'
-PURPLE='\[\033[1;35m\]' 
-BOLD_YELLOW='\[\033[1;33m\]'
-DEFAULT='\[\033[00m\]'
+# Define colors with ANSI_ prefix
+ANSI_RED='\[\033[01;31m\]'
+ANSI_GREEN='\[\033[01;32m\]'
+ANSI_BROWN='\[\033[01;33m\]'
+ANSI_LIGHT_BLUE='\[\033[1;34m\]'
+ANSI_DARK_GRAY='\[\033[1;30m\]'
+ANSI_PURPLE='\[\033[1;35m\]' 
+ANSI_BOLD_YELLOW='\[\033[1;33m\]'
+ANSI_DEFAULT='\[\033[00m\]'
 
 # Get the current username and hostname
 USER=$(whoami)
@@ -31,26 +31,26 @@ HOSTNAME=$(hostname)
 
 # Determine user color
 if [ "$USER" == "root" ]; then
-    USER_COLOR=$RED
+    USER_COLOR=$ANSI_RED
 else
-    USER_COLOR=$GREEN
+    USER_COLOR=$ANSI_GREEN
 fi
 
 # Determine hostname color based on DEV_TYPE
 case "$DEV_TYPE" in
     *lxc*)
-        HOSTNAME_COLOR=$BROWN
+        HOSTNAME_COLOR=$ANSI_BROWN
         ;;
     *kvm* | *xen* | *xen-hvm* | *aws*)
-        HOSTNAME_COLOR=$GREEN
+        HOSTNAME_COLOR=$ANSI_GREEN
         ;;
     *x86_64* | *aarch64* | *armv7l*)
-        HOSTNAME_COLOR=$RED
+        HOSTNAME_COLOR=$ANSI_RED
         ;;
     *)
-        HOSTNAME_COLOR=$DEFAULT
+        HOSTNAME_COLOR=$ANSI_DEFAULT
         ;;
 esac
 
 # Set the prompt (PS1) with colored username and hostname
-export PS1="${USER_COLOR}\u${DARK_GRAY}@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${LIGHT_BLUE}\w${DEFAULT} ${BOLD_YELLOW}\$${DEFAULT} "
+export PS1="${USER_COLOR}\u${ANSI_DARK_GRAY}@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${ANSI_LIGHT_BLUE}\w${ANSI_DEFAULT} ${ANSI_BOLD_YELLOW}\$${ANSI_DEFAULT} "
