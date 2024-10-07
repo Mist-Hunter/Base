@@ -2,6 +2,8 @@
 
 set -e
 
+source $ENV_GLOBAL
+
 echo "Starting ipset manager"
 
 # Import the ipset_process function
