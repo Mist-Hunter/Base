@@ -49,3 +49,4 @@ for env_file in "${all_env_files[@]}"; do
         echo "Warning: File $env_file not found"
     fi
 done
+
