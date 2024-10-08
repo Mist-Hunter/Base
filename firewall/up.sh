@@ -116,7 +116,7 @@ ln -sf $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh /etc/network/if-up.d/la
 # TODO how would these scripts be handled when just run by bootup? (if rebooted near update time)
 # FIXME currently there is no service unit for these, this is prepatory
 # NOTE it's possible that this is better handled on reboot only
-ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh //etc/network/ipset-updates/ipset_ntpservers.sh
+ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/ipset-updates/ipset_ntpservers.sh
 ln -sf $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh /etc/network/ipset-updates/ipset_fqdn_env_to_ipset.sh
 
 # FIXME find some nicer way to source ENV_NETWORK. the && is ugly
