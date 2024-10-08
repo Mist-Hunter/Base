@@ -34,7 +34,8 @@ for env_file in "${all_env_files[@]}"; do
                 fqdn_value=$(echo "$fqdn_value" | tr -d '"' | tr -d "'" | xargs)
                 
                 echo "Processing $ip_var from $fqdn_value (found in $env_file)"
-                ip_list=$(dig +short "$fqdn_value" | tr '\n' ' ' | sed 's/ $//')
+                # Get unique IPv4 addresses using getent
+                ip_list=$(getent ahosts "$fqdn_value" | awk '{print $1}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -u | tr '\n' ' ')
                 
                 if [ -n "$ip_list" ]; then
                     ipset_process --label "$ip_var" --hash_type "ip" --ip_array $ip_list
