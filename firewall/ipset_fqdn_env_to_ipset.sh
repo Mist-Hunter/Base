@@ -25,7 +25,7 @@ for env_file in "${all_env_files[@]}"; do
         echo "Processing file: $env_file"
         
         while IFS= read -r line; do
-            if [[ $line =~ ([A-Z_]+FQDN)=(.+)$ ]]; then
+            if [[ $line =~ ([A-Z_]+FQDN)=(\S+) ]]; then
                 fqdn_var="${BASH_REMATCH[1]}"
                 fqdn_value="${BASH_REMATCH[2]}"
                 ip_var="${fqdn_var%FQDN}IP"
