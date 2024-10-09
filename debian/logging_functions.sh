@@ -209,3 +209,62 @@ log_clean() {
 
     log "Log cleanup process completed"
 }
+
+
+# TODO 
+prompt() {
+
+}
+
+writer() {
+    local path=""
+    local content=""
+    local source=false
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --path)
+                if [[ "$2" =~ ^[a-zA-Z_]+$ ]]; then # If only a word, set default path
+                    path="${CONFIGS}/${2,,}.env"
+                else
+                    path="$2"
+                fi
+                shift 2
+                ;;
+            --content)
+                content="$2"
+                shift 2
+                while [[ $# -gt 0 && $1 != --* ]]; do
+                    content+="\n$1"
+                    shift
+                done
+                ;;
+            --source)
+                source=true
+                shift
+                ;;
+            *)
+                log "Unknown option: $1"
+                return 1
+                ;;
+        esac
+    done
+
+    # Validate required arguments
+    if [[ -z $path ]]; then
+        log "Error: --path is required."
+        return 1
+    fi
+
+    # Write content to file
+    # Keep indentation for the first line and remove from the rest
+    {
+        echo "$content" | awk 'NR==1{print; next} {sub(/^[[:space:]]+/, ""); print}'
+    } > "$path"
+
+    # Optionally source the file
+    if [[ $source == true ]]; then
+        source "$path"
+    fi
+}
