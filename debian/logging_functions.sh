@@ -218,23 +218,25 @@ writer() {
     local path=""
     local content=""
     local source=false
+    local global=false
+    local CONFIGS="/tmp"  # Define a base directory for your configs
+    local ENV_GLOBAL="/path/to/global.env"  # Define the path to the global environment file
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --path)
-                if [[ "$2" =~ ^[a-zA-Z_]+$ ]]; then # If only a word, set default path
-                    # Generate file paths and names
-                    local name=$2
-                    local env_name="${$name^^}"  # Uppercase version
-                    local path="${CONFIGS}/${name,,}.env"
+                if [[ "$2" =~ ^[a-zA-Z_]+$ ]]; then  # If only a word, set default path
+                    local name="$2"
+                    local env_name="${name^^}"  # Uppercase version
+                    path="${CONFIGS}/${name,,}.env"  # Lowercase path
                 else
-                    local path="$2"
+                    path="$2"
                 fi
                 shift 2
                 ;;
             --content)
-                local content="$2"
+                content="$2"
                 shift 2
                 while [[ $# -gt 0 && $1 != --* ]]; do
                     content+="\n$1"
@@ -242,15 +244,15 @@ writer() {
                 done
                 ;;
             --source)
-                local source=true
+                source=true
                 shift
                 ;;
             --global)
-                local global=true
+                global=true
                 shift
                 ;;
             *)
-                log "Unknown option: $1"
+                echo "Unknown option: $1"
                 return 1
                 ;;
         esac
@@ -258,25 +260,21 @@ writer() {
 
     # Validate required arguments
     if [[ -z $path ]]; then
-        log "Error: --path is required."
+        echo "Error: --path is required."
         return 1
     fi
 
     # Write content to file
-    # Keep indentation for the first line and remove from the rest
     {
-        echo "$content" | awk 'NR==1{print; next} {sub(/^[[:space:]]+/, ""); print}'
+        echo -e "$content" | awk 'NR==1{print; next} {sub(/^[[:space:]]+/, ""); print}'
     } > "$path"
 
-    # Optionally call file in $ENV_GLOBAL
-    if [[ global == true]]; then
-        # Update the global environment file to source the service-specific environment file
+    # Optionally update the global environment file
+    if [[ $global == true ]]; then
         if ! grep -q "^export ENV_${env_name}=" "$ENV_GLOBAL"; then
             echo "# $name" >> "$ENV_GLOBAL"
             echo "export ENV_${env_name}=\"$path\"" >> "$ENV_GLOBAL"
-            if $caddSource; then
-                echo "source $serviceEnv" >> "$ENV_GLOBAL"
-            fi
+            echo "source $path" >> "$ENV_GLOBAL"  # Source the specific env file
             echo "" >> "$ENV_GLOBAL"
             echo "Updated global environment file: $ENV_GLOBAL"
         else
