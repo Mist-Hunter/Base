@@ -134,8 +134,11 @@ log() {
     while [[ "${BASH_SOURCE[i]}" == */logging_functions.sh || "${BASH_SOURCE[i]}" == logging_functions.sh ]]; do
         ((i++))
     done
+
+    # FIXME the next two FIXME's are related to log() being called from within this script
     # FIXME basename: invalid option -- 'b'
     # FIXME caller_function=main
+    
     caller_script=$(basename "${BASH_SOURCE[i]:-$0}")
     caller_function="${FUNCNAME[i]:-main}"
 
