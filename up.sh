@@ -18,8 +18,8 @@ apt install -y \
   `# tree - display directory tree structures` \
   tree
 
-# Set DEV_TYPE
-. $scripts/base/dev-type/define.sh
+# Default Hostname
+. $SCRIPTS/base/hostname/newhost.sh
 
 # Setup Firewall
 if [[ "$FIREWALL" == "iptables" ]]; then
@@ -103,9 +103,6 @@ if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
   # . $SCRIPTS/apt/blinkt/up.sh
 
 fi
-
-# Default Hostname
-. $SCRIPTS/base/hostname/newhost.sh
 
 # Root Login
 . $SCRIPTS/base/users/root_login.sh
