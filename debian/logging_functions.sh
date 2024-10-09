@@ -210,10 +210,8 @@ log_clean() {
     log "Log cleanup process completed"
 }
 
-
-# TODO 
 prompt() {
-
+    echo "TODO"
 }
 
 writer() {
