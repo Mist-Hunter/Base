@@ -27,8 +27,8 @@ for env_file in "${all_env_files[@]}"; do
         while IFS= read -r line; do
             # FIXME this match is matching anything
             if [[ $line =~ ^(export[[:space:]]+)?([A-Za-z_]+FQDN)=([^[:space:]]+) ]]; then
-                fqdn_var="${BASH_REMATCH[1]}"
-                fqdn_value="${BASH_REMATCH[2]}"
+                fqdn_var="${BASH_REMATCH[2]}"
+                fqdn_value="${BASH_REMATCH[3]}"
                 ip_var="${fqdn_var%FQDN}IP"
                 
                 # Remove any surrounding quotes and leading/trailing whitespace from fqdn_value
