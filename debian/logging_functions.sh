@@ -129,6 +129,8 @@ log() {
     # Find the correct caller script
     local i=1
     local caller_script
+    local caller_function
+    
     while [[ "${BASH_SOURCE[i]}" == */logging_functions.sh || "${BASH_SOURCE[i]}" == logging_functions.sh ]]; do
         ((i++))
     done
@@ -274,7 +276,7 @@ writer() {
             echo "export ENV_${env_name}=\"$path\"" >> "$ENV_GLOBAL"
             echo "source $path" >> "$ENV_GLOBAL"  # Source the specific env file
             echo "" >> "$ENV_GLOBAL"
-            log "Updated global environment file: $ENV_GLOBAL"
+            log "Updated $ENV_GLOBAL with $name"
         else
             log "The global environment file already includes settings for $name."
         fi
