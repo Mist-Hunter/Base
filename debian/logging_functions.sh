@@ -224,14 +224,17 @@ writer() {
         case $1 in
             --path)
                 if [[ "$2" =~ ^[a-zA-Z_]+$ ]]; then # If only a word, set default path
-                    path="${CONFIGS}/${2,,}.env"
+                    # Generate file paths and names
+                    local name=$2
+                    local env_name="${$name^^}"  # Uppercase version
+                    local path="${CONFIGS}/${name,,}.env"
                 else
-                    path="$2"
+                    local path="$2"
                 fi
                 shift 2
                 ;;
             --content)
-                content="$2"
+                local content="$2"
                 shift 2
                 while [[ $# -gt 0 && $1 != --* ]]; do
                     content+="\n$1"
@@ -239,7 +242,11 @@ writer() {
                 done
                 ;;
             --source)
-                source=true
+                local source=true
+                shift
+                ;;
+            --global)
+                local global=true
                 shift
                 ;;
             *)
@@ -260,6 +267,22 @@ writer() {
     {
         echo "$content" | awk 'NR==1{print; next} {sub(/^[[:space:]]+/, ""); print}'
     } > "$path"
+
+    # Optionally call file in $ENV_GLOBAL
+    if [[ global == true]]; then
+        # Update the global environment file to source the service-specific environment file
+        if ! grep -q "^export ENV_${env_name}=" "$ENV_GLOBAL"; then
+            echo "# $name" >> "$ENV_GLOBAL"
+            echo "export ENV_${env_name}=\"$path\"" >> "$ENV_GLOBAL"
+            if $caddSource; then
+                echo "source $serviceEnv" >> "$ENV_GLOBAL"
+            fi
+            echo "" >> "$ENV_GLOBAL"
+            echo "Updated global environment file: $ENV_GLOBAL"
+        else
+            echo "The global environment file already includes settings for $name."
+        fi
+    fi
 
     # Optionally source the file
     if [[ $source == true ]]; then
