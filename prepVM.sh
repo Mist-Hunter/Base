@@ -14,6 +14,7 @@ if [[ $DEV_TYPE = "" ]]; then
     # If physical, replace with Proc architecture
     DEV_TYPE=$(uname -m)
 fi
+
 # Write to /etc/environment
 echo "# Device type via 'virt-what'" >> /etc/environment
 echo "export DEV_TYPE=$DEV_TYPE" >> /etc/environment
