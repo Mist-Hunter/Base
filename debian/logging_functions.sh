@@ -274,9 +274,9 @@ writer() {
             echo "export ENV_${env_name}=\"$path\"" >> "$ENV_GLOBAL"
             echo "source $path" >> "$ENV_GLOBAL"  # Source the specific env file
             echo "" >> "$ENV_GLOBAL"
-            echo "Updated global environment file: $ENV_GLOBAL"
+            log "Updated global environment file: $ENV_GLOBAL"
         else
-            echo "The global environment file already includes settings for $name."
+            log "The global environment file already includes settings for $name."
         fi
     fi
 
