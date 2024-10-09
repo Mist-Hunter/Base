@@ -127,10 +127,10 @@ log() {
     local text=""
 
     # Find the correct caller script
-    local i=1
+    local i=0
     local caller_script
     local caller_function
-    
+
     while [[ "${BASH_SOURCE[i]}" == */logging_functions.sh || "${BASH_SOURCE[i]}" == logging_functions.sh ]]; do
         ((i++))
     done
