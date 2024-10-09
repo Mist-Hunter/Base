@@ -219,8 +219,6 @@ writer() {
     local content=""
     local source=false
     local global=false
-    local CONFIGS="/tmp"  # Define a base directory for your configs
-    local ENV_GLOBAL="/path/to/global.env"  # Define the path to the global environment file
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
