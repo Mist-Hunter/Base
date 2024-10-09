@@ -127,13 +127,15 @@ log() {
     local text=""
 
     # Find the correct caller script
-    local i=0
+    local i=1
     local caller_script
     local caller_function
 
     while [[ "${BASH_SOURCE[i]}" == */logging_functions.sh || "${BASH_SOURCE[i]}" == logging_functions.sh ]]; do
         ((i++))
     done
+    # FIXME basename: invalid option -- 'b'
+    # FIXME caller_function=main
     caller_script=$(basename "${BASH_SOURCE[i]:-$0}")
     caller_function="${FUNCNAME[i]:-main}"
 
@@ -178,11 +180,6 @@ log() {
     fi
 
     # Construct the formatted line
-    # TODO maintain formatting rules even when elements are missing
-    ## Example: date time [script < function] log_level: text
-    ## if funciton is missing it would become date time [script] log_level: text
-    ## if Log level and function were msissing it would become date time [script] text
-    ## if log level, script and function were missing would become date time [script] text
     local formatted_line=""
     [[ "${show_date:-false}" == true ]] && formatted_line+="${current_date} "
     [[ "${show_time:-true}" == true ]] && formatted_line+="${current_time} "
@@ -221,27 +218,27 @@ writer() {
     local content=""
     local source=false
     local global=false
+    local name=""
+    local env_name=""
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --path)
                 if [[ "$2" =~ ^[a-zA-Z_]+$ ]]; then  # If only a word, set default path
-                    local name="$2"
-                    local env_name="${name^^}"  # Uppercase version
+                    name="$2"
+                    env_name="${name^^}"  # Uppercase version
                     path="${CONFIGS}/${name,,}.env"  # Lowercase path
                 else
                     path="$2"
+                    name=$(basename "$path" .env)
+                    env_name="${name^^}"
                 fi
                 shift 2
                 ;;
             --content)
                 content="$2"
                 shift 2
-                while [[ $# -gt 0 && $1 != --* ]]; do
-                    content+="\n$1"
-                    shift
-                done
                 ;;
             --source)
                 source=true
@@ -265,17 +262,17 @@ writer() {
     fi
 
     # Write content to file
-    {
-        echo -e "$content" | awk 'NR==1{print; next} {sub(/^[[:space:]]+/, ""); print}'
-    } > "$path"
+    echo -e "$content" | awk 'NR==1{print; next} {sub(/^[[:space:]]+/, ""); print}' > "$path"
 
     # Optionally update the global environment file
     if [[ $global == true ]]; then
         if ! grep -q "^export ENV_${env_name}=" "$ENV_GLOBAL"; then
-            echo "# $name" >> "$ENV_GLOBAL"
-            echo "export ENV_${env_name}=\"$path\"" >> "$ENV_GLOBAL"
-            echo "source $path" >> "$ENV_GLOBAL"  # Source the specific env file
-            echo "" >> "$ENV_GLOBAL"
+            {
+                echo "# $name"
+                echo "export ENV_${env_name}=\"$path\""
+                echo "source $path"
+                echo ""
+            } >> "$ENV_GLOBAL"
             log "Updated $ENV_GLOBAL with $name"
         else
             log "The global environment file already includes settings for $name."
@@ -287,3 +284,4 @@ writer() {
         source "$path"
     fi
 }
+
