@@ -13,7 +13,7 @@ fi
 
 # Step 3: Check if DEV_TYPE is already in /etc/environment
 if ! grep -q "^DEV_TYPE=" /etc/environment; then
-    echo "Device type from 'virt-what'" >> /etc/environment
+    echo "# Device type from 'virt-what'" >> /etc/environment
     echo "DEV_TYPE=$DEV_TYPE" >> /etc/environment
     echo >> /etc/environment
     echo "DEV_TYPE has been added to /etc/environment."

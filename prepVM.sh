@@ -38,9 +38,9 @@ apt upgrade -y
 
 # Check if the group exists
 if getent group "$SECURE_USER_GROUP" >/dev/null; then
-  echo "Group $SECURE_USER_GROUP exists."
+  log "Group $SECURE_USER_GROUP exists."
 else
-  echo "Group $SECURE_USER_GROUP does not exist."
+  log "Group $SECURE_USER_GROUP does not exist."
   
   # Create the group with the specified GID
   if groupadd -g "$SECURE_USER_ID" "$SECURE_USER_GROUP"; then
