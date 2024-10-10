@@ -34,7 +34,8 @@ WORD_RULE_2="([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):CYAN"
 WORD_RULE_3="([0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}):CYAN"
 
 # Highlight quoted strings
-WORD_RULE_4="(\"[^\"]*\"):YELLOW"
+# FIXME caused infinite loop
+# WORD_RULE_4="(\"[^\"]*\"):YELLOW"
 
 # Highlight filenames with common extensions
 WORD_RULE_5="(\w+\.(?:cpp|h|py|sh|conf|log|txt|service)):BOLD_CYAN"
