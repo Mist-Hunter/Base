@@ -25,4 +25,5 @@ bogons_array+=("198.18.0.0/15")     # Network Interconnect Device Benchmark Test
 bogons_array+=("198.51.100.0/24")   # TEST-NET-2 [RFC5737]
 bogons_array+=("203.0.113.0/24")    # TEST-NET-3 [RFC5737]
 
+ipset_process --label "BLOCK_LIST" --hash_type "ip" --ip_array $bogons_array
 ipset_process --label "BOGONS" --hash_type "ip" --ip_array $bogons_array
