@@ -76,7 +76,7 @@ else
 fi
 
 # allow DHCP if enabled
-dhcp_setting=$(sed -n "/name: ${LAN_NIC%${LAN_NIC#?}}*/,/^ *$/p" /etc/netplan/90-default.yaml | grep -m1 'dhcp4:' | awk '{print $2}')
+dhcp_setting=$( { sed -n "/name: ${LAN_NIC%${LAN_NIC#?}}*/,/^ *$/p" /etc/netplan/90-default.yaml | grep -m1 'dhcp4:' | awk '{print $2}' || echo "false"; } )
 if [ "$dhcp_setting" = "true" ]; then
     echo "The NIC '$LAN_NIC' is configured for DHCP. Applying DHCP rules."
     # Allow DHCP traffic (UDP ports 67 and 68)
