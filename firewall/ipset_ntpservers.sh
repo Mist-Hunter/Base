@@ -7,9 +7,11 @@
 
 config_file="/etc/systemd/timesyncd.conf"
 
+log "Starting NTP Servers"
+ipset create NTP_SERVERS hash:ip -exist
+
 if [[ -f "$config_file" ]]; then
-    log "Starting NTP Servers"
-    ipset create NTP_SERVERS hash:ip -exist
+
 
     ntp_servers=$(grep -oP '^\s*#?\s*NTP\s*=\s*\K.*' "$config_file")
     fallback_ntp_servers=$(grep -oP '^\s*#?\s*FallbackNTP\s*=\s*\K.*' "$config_file")
