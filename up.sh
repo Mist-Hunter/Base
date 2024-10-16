@@ -85,6 +85,8 @@ fi
 
 if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
 
+  # TODO is this supposed to handle oracle?
+
   # Bare metal RPi
  
   # Remote Exceptions.  http://3.230.113.73:9011/Allocom/USBridgeSig/rpi-usbs-5.4.51-v7+/ax88179_178a.ko Connecting to 3.230.113.73:9011... timed out.
