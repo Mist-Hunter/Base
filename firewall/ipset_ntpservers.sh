@@ -5,9 +5,11 @@
 # Example:
 # FallbackNTP=0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 
+# NOTE Don't use log in here! Not sourced
+
 config_file="/etc/systemd/timesyncd.conf"
 
-log "Starting NTP Servers"
+echo "Starting NTP Servers"
 ipset create NTP_SERVERS hash:ip -exist
 
 if [[ -f "$config_file" ]]; then
@@ -26,11 +28,11 @@ if [[ -f "$config_file" ]]; then
         while IFS= read -r ip; do
             if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
                 ipset add NTP_SERVERS "$ip" -exist || error_exit "Failed to create NTP_SERVERS ipset"
-                log "Added $ip to NTP_SERVERS"
+                echo "Added $ip to NTP_SERVERS"
             fi
         done <<<"$ips"
     done
 
 else
-    log "Error: Configuration file $config_file does not exist."
+    echo "Error: Configuration file $config_file does not exist."
 fi
