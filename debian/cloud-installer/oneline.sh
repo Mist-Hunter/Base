@@ -11,6 +11,7 @@ rm -f /etc/grub.d/40_custom && sed -i '/set superusers="root"/d' /etc/default/gr
 
 # if Gitea
 curl -fLO https://$GIT_SERVER_FQDN/$GIT_USER/Base/raw/branch/main/debian/cloud-installer/install.sh
+
 # if Github
 GIT_SERVER_FQDN="raw.githubusercontent.com"
 curl -fLO https://$GIT_SERVER_FQDN/$GIT_USER/Base/main/debian/cloud-installer/install.sh  

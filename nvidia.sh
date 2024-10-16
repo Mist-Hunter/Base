@@ -11,7 +11,6 @@
 
 # Blacklist. Un-blacklist "drm: provides Direct Rendering Manager support"
 
-
 if lspci | grep 'NVIDIA Corporation'; then
 
 echo "system, debian-base, nvidia.sh: installing NVIDIA Drivers."

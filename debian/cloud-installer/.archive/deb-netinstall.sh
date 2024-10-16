@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# NOTE This is an attempt to remove the features from install.sh that I don't need and make it more readable as a result
+
 # TODO check preseed first
 # TODO detect if preseed is URL and download and point
 # TODO check grub password!
