@@ -8,7 +8,7 @@ IPSET_REDUCE_ENTRIES=${IPSET_REDUCE_ENTRIES:-65535}
 # Helper function for error handling
 error_exit() {
     echo "Error: $1" >&2
-    exit 1
+    # exit 1
 }
 
 # Function to create a temporary ipset from IP array
