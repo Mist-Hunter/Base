@@ -23,7 +23,7 @@ if [[ -f "$config_file" ]]; then
         echo "$server = $ips"
         while IFS= read -r ip; do
             if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                ipset add NTP_SERVERS "$ip" -exist
+                ipset add NTP_SERVERS "$ip" -exist || error_exit "Failed to create NTP_SERVERS ipset"
                 log "Added $ip to NTP_SERVERS"
             fi
         done <<<"$ips"

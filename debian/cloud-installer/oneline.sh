@@ -9,7 +9,7 @@ source $ENV_GIT
 rm -f /etc/grub.d/40_custom && sed -i '/set superusers="root"/d' /etc/default/grub && sed -i '/password_pbkdf2 root/d' /etc/default/grub && update-grub
 
 # if Gitea
-curl -fLO https://$GIT_SERVER_FQDN/$GIT_USER/Base/raw/branch/main/debian/cloud-installer/install.sh
+# curl -fLO https://$GIT_SERVER_FQDN/$GIT_USER/Base/raw/branch/main/debian/cloud-installer/install.sh
 
 # if Github
 GIT_SERVER_FQDN="raw.githubusercontent.com"
