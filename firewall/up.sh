@@ -34,6 +34,7 @@ apt install iptables ipset iprange -y
 . $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh
 . $SCRIPTS/base/firewall/network-up.sh
 
+# FIXME in OracleCloud, git is comging via SSH which isn' open
 # Allow SSH if SSHD is running
 # if [[ $DEV_TYPE = "armv7l" ]] || [[ $DEV_TYPE = "aarch64" ]]; then
 #     # TODO: Check if SSHD exists, and add rules. https://linuxhint.com/check-if-ssh-is-running-on-linux/
@@ -133,20 +134,6 @@ ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-pre-up.d/lan-n
 WantedBy=network-pre.target
 EOT
 systemctl enable network-pre-up.service
-
-cat <<EOT > /etc/systemd/system/network-up.service
-[Unit]
-Description=Network Up Script
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-up.d/lan-nic"
-
-[Install]
-WantedBy=multi-user.target
-EOT
 
 cat <<EOT > /etc/systemd/system/network-up.service
 [Unit]
