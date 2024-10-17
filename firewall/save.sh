@@ -76,6 +76,7 @@ dedup() {
        
         while read -r count rule; do
             if [[ $count -gt 1 ]]; then
+                # FIXME unbound variable 'count' when duplicate exist
                 local escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
                 debug "Removing duplicate rule: $rule"
                 if ! iptables -t "$table" -D $(echo "$rule" | cut -d' ' -f2-); then
