@@ -2,16 +2,9 @@
 
 # Check if systemd-timesyncd is installed and running
 if ! command -v timedatectl &> /dev/null || ! systemctl is-active --quiet systemd-timesyncd; then
-    echo "systemd-timesyncd is not installed or not running."
-    read -p "Do you want to install and enable it? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        apt update && apt install -y systemd-timesyncd
-        systemctl enable --now systemd-timesyncd
-    else
-        echo "systemd-timesyncd is required for this script. Exiting."
-        exit 1
-    fi
+    echo "systemd-timesyncd is not installed or not running, installing"
+    apt install -y systemd-timesyncd
+    systemctl enable --now systemd-timesyncd
 fi
 
 echo "Starting NTP Servers"
