@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# systemctl status systemd-timesyncd
-
 # Check if systemd-timesyncd is installed and running
 if ! command -v timedatectl &> /dev/null || ! systemctl is-active --quiet systemd-timesyncd; then
     echo "systemd-timesyncd is not installed or not running."
@@ -19,8 +17,13 @@ fi
 echo "Starting NTP Servers"
 ipset create NTP_SERVERS hash:ip -exist
 
-# Get NTP servers from timedatectl
-ntp_servers=$(timedatectl show-timesync | grep -E '^(ServerName|FallbackNTPServers)=' | cut -d'=' -f2)
+# Get NTP servers from timedatectl with timeout and error handling
+ntp_servers=$(timeout 10s timedatectl show-timesync | grep -E '^(ServerName|FallbackNTPServers)=' | cut -d'=' -f2 | tr '\n' ' ')
+
+if [ $? -eq 124 ]; then
+    echo "Error: timedatectl command timed out. Using fallback NTP servers."
+    ntp_servers="0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org"
+fi
 
 if [ -n "$ntp_servers" ]; then
     echo "NTP Servers: $ntp_servers"
@@ -36,15 +39,19 @@ if [ -n "$ntp_servers" ]; then
         done <<< "$ips"
     done
 else
-    echo "Error: No NTP servers found."
-fi
-
-# Optionally, add the current ServerAddress as well
-server_address=$(timedatectl show-timesync | grep '^ServerAddress=' | cut -d'=' -f2)
-if [ -n "$server_address" ] && [[ $server_address =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "Adding current ServerAddress: $server_address"
-    ipset add NTP_SERVERS "$server_address" -exist || echo "Failed to add $server_address to NTP_SERVERS ipset"
-    echo "Added $server_address to NTP_SERVERS"
+    echo "Error: No NTP servers found. Using fallback NTP servers."
+    fallback_servers="0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org"
+    for server in $fallback_servers; do
+        echo "Processing fallback server: $server"
+        ips=$(dig +short "$server")
+        echo "$server = $ips"
+        while IFS= read -r ip; do
+            if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                ipset add NTP_SERVERS "$ip" -exist || echo "Failed to add $ip to NTP_SERVERS ipset"
+                echo "Added $ip to NTP_SERVERS"
+            fi
+        done <<< "$ips"
+    done
 fi
 
 echo "NTP Servers IPSet creation completed"
