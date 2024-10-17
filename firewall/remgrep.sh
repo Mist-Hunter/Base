@@ -2,7 +2,7 @@
 FILTER=$1
 
 log "Apt, firewall, remgrep.sh: Searching $FILTER:"
-iptables -S | grep $FILTER
+iptables -S | grep $FILTER || true
 
 IFS=$'\n'
 for rule in `iptables -S| grep $FILTER | sed -e 's/-A/-D/'`; do

@@ -35,6 +35,7 @@ for env_file in "${all_env_files[@]}"; do
                 
                 echo "Processing $ip_var from $fqdn_value (found in $env_file)"
                 # Get unique IPv4 addresses using getent, which will consider /etc/hosts also.
+                # FIXME get all IP addresses? example: github.com
                 if ! ip_list=$(getent ahosts "$fqdn_value" | awk '{print $1}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -u | tr '\n' ' '); then
                     echo "Failed to resolve $fqdn_value for $ip_var"                    
                 else
