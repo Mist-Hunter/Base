@@ -51,7 +51,7 @@ EOT
         mail -s "apt, debian, update.sh: results from $(hostname)" $ADMIN_EMAIL <$updateLog
         echo "apt, debian, update.sh: Reboot not needed, cleaning."
         . $SCRIPTS/apt/clean.sh #TODO get $SCRIPTS variable working in systemd units calling this. See updaterservice.sh
-        systemctl start neofetch-upgrade-count.service
+        # systemctl start neofetch-upgrade-count.service
     fi
 else
     echo "No updates available."
