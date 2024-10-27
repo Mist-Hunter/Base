@@ -3,7 +3,7 @@
 set -e
 
 ENV_GLOBAL="/root/.config/global.env"
-source $ENV_GLOBAL <-- Called before bash
+source $ENV_GLOBAL
 
 echo "Starting ipset manager"
 
