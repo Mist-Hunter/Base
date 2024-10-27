@@ -110,6 +110,8 @@ ln -sf $SCRIPTS/base/firewall/network-pre-up.sh /etc/network/if-pre-up.d/lan-nic
 # Link scripts to run after NIC comes up
 ln -sf $SCRIPTS/base/firewall/network-up.sh /etc/network/if-up.d/lan-nic
 ln -sf $SCRIPTS/base/firewall/ipset_ntpservers.sh /etc/network/if-up.d/lan-nic.d/ipset_ntpservers.sh
+
+# FIXME this doesn't seem to run
 ln -sf $SCRIPTS/base/firewall/ipset_fqdn_env_to_ipset.sh /etc/network/if-up.d/lan-nic.d/ipset_fqdn_env_to_ipset.sh
 
 # Link ipset scripts to check for network changes (DNS _fqdn changes) on a schedule
