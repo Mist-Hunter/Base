@@ -5,6 +5,8 @@ set -e
 ENV_GLOBAL="/root/.config/global.env"
 source $ENV_GLOBAL
 
+# NOTE Troubleshoot via logs @ cat /var/log/syslog | grep if-up
+
 echo "Starting ipset manager"
 
 # Import the ipset_process function
@@ -36,7 +38,11 @@ for env_file in "${all_env_files[@]}"; do
                 
                 echo "Processing $ip_var from $fqdn_value (found in $env_file)"
                 # Get unique IPv4 addresses using getent, which will consider /etc/hosts also.
+
                 # FIXME get all IP addresses? example: github.com
+                # TODO if fqdn_value contains github, then dig +short _nodes.github.com and all IPs
+                # TODO if fqdn_value contains gmail.com then dig +short TXT _spf.google.com >> dig +short TXT _netblocks.google.com, _netblocks2.google.com, _netblocks3.google.com >> and add all IPs
+
                 if ! ip_list=$(getent ahosts "$fqdn_value" | awk '{print $1}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -u | tr '\n' ' '); then
                     echo "Failed to resolve $fqdn_value for $ip_var"                    
                 else
