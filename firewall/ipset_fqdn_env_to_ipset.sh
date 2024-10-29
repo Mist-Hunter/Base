@@ -32,6 +32,7 @@ for env_file in "${all_env_files[@]}"; do
                 fqdn_var="${BASH_REMATCH[2]}"
                 fqdn_value="${BASH_REMATCH[3]}"
                 ip_var="${fqdn_var%FQDN}IP"
+                hash_type="ip"
                
                 # Remove any surrounding quotes and leading/trailing whitespace from fqdn_value
                 fqdn_value=$(echo "$fqdn_value" | tr -d '"' | tr -d "'" | xargs)
@@ -42,6 +43,7 @@ for env_file in "${all_env_files[@]}"; do
                 if [[ "$fqdn_value" == *"github"* ]]; then
                     ip_list=$(dig +short _nodes.github.com 2>/dev/null; dig +short github.com 2>/dev/null | sort -u | tr '\n' ' ')
                 elif [[ "$fqdn_value" == *"gmail.com"* || "$fqdn_value" == *"google.com"* ]]; then
+                    # FIXME this returns subnets, not IPs. change hash_type
                     ip_list=$(for domain in "spf.google.com" "_netblocks.google.com" "_netblocks2.google.com" "_netblocks3.google.com"; do 
                         dig +short TXT "$domain" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?'
                     done | sort -u | tr '\n' ' ')
@@ -50,7 +52,7 @@ for env_file in "${all_env_files[@]}"; do
                 fi
 
                 if [ -n "$ip_list" ]; then
-                    ipset_process --label "$ip_var" --hash_type "ip" --ip_array $ip_list
+                    ipset_process --label "$ip_var" --hash_type $hash_type --ip_array $ip_list
                     ip_count=$(echo "$ip_list" | wc -w)
                     echo "Processed $ip_count IP(s) for ipset $ip_var (resolved from $fqdn_value)"
                 else
