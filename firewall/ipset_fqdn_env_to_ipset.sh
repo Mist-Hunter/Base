@@ -43,10 +43,25 @@ for env_file in "${all_env_files[@]}"; do
                 if [[ "$fqdn_value" == *"github"* ]]; then
                     ip_list=$(dig +short _nodes.github.com 2>/dev/null; dig +short github.com 2>/dev/null | sort -u | tr '\n' ' ')
                 elif [[ "$fqdn_value" == *"gmail.com"* || "$fqdn_value" == *"google.com"* ]]; then
-                    # FIXME this returns subnets, not IPs. change hash_type
-                    ip_list=$(for domain in "spf.google.com" "_netblocks.google.com" "_netblocks2.google.com" "_netblocks3.google.com"; do 
-                        dig +short TXT "$domain" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?'
+                    # First get the specific IP for the domain
+                    specific_ips=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
+                    
+                    # Then get all Google netblocks (modified to properly extract CIDR blocks)
+                    all_netblocks=$(for domain in "spf.google.com" "_netblocks.google.com" "_netblocks2.google.com" "_netblocks3.google.com"; do
+                        dig +short TXT "$domain" 2>/dev/null | tr -d '"' | grep -o 'ip[46]:[^ ]*' | cut -d':' -f2
+                    done)
+                    
+                    # Filter netblocks to only include those containing our specific IPs
+                    ip_list=$(echo "$specific_ips" | while read -r ip; do
+                        echo "$all_netblocks" | while read -r netblock; do
+                            if [[ -n "$ip" && -n "$netblock" ]] && grepcidr "$netblock" <(echo "$ip") >/dev/null 2>&1; then
+                                echo "$netblock"
+                            fi
+                        done
                     done | sort -u | tr '\n' ' ')
+                    
+                    # Set hash type to 'net' for Google domains
+                    hash_type="net"
                 else
                     ip_list=$(getent ahosts "$fqdn_value" | awk '{print $1}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -u | tr '\n' ' ')
                 fi
