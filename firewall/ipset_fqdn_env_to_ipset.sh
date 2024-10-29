@@ -46,9 +46,9 @@ for env_file in "${all_env_files[@]}"; do
                     # First get the specific IP for the domain
                     specific_ips=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
                     
-                    # Then get all Google netblocks (modified to properly extract CIDR blocks)
+                    # Then get all Google netblocks
                     all_netblocks=$(for domain in "spf.google.com" "_netblocks.google.com" "_netblocks2.google.com" "_netblocks3.google.com"; do
-                        dig +short TXT "$domain" 2>/dev/null | tr -d '"' | grep -o 'ip[46]:[^ ]*' | cut -d':' -f2
+                        dig +short TXT "$domain" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?'
                     done)
                     
                     # Filter netblocks to only include those containing our specific IPs
@@ -65,6 +65,8 @@ for env_file in "${all_env_files[@]}"; do
                 else
                     ip_list=$(getent ahosts "$fqdn_value" | awk '{print $1}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -u | tr '\n' ' ')
                 fi
+
+                echo "hash_type=$hash_type, ip_list=$ip_list"
 
                 if [ -n "$ip_list" ]; then
                     ipset_process --label "$ip_var" --hash_type $hash_type --ip_array $ip_list
