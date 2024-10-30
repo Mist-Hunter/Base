@@ -45,6 +45,8 @@ for env_file in "${all_env_files[@]}"; do
 
                 # Single forking statement for all resolution types
                 if [[ "$fqdn_value" == *"github"* ]]; then
+                    # FIXME not capturing all Github
+                    # FIXME dig +short _nodes.github.com returns a fqnd 'github.github.io' 
                     ip_list=$(dig +short _nodes.github.com 2>/dev/null; dig +short github.com 2>/dev/null | sort -u | tr '\n' ' ')
                 elif [[ "$fqdn_value" == *"gmail.com"* || "$fqdn_value" == *"google.com"* ]]; then
                     # First get the specific IP for the domain
