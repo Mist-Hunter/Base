@@ -51,6 +51,7 @@ for env_file in "${all_env_files[@]}"; do
                     specific_ips=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
                     
                     # Then get all Google netblocks
+                    # https://www.sourceonetechnology.com/gmail-ip-address-ranges/
                     all_netblocks=$(for domain in "spf.google.com" "_netblocks.google.com" "_netblocks2.google.com" "_netblocks3.google.com"; do
                         dig +short TXT "$domain" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?'
                     done)

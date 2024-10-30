@@ -84,11 +84,14 @@ ipset_process() {
 
     # Compare and swap if necessary
     if [[ -n "$new_content" && "$new_content" != "$current_content" ]]; then        
-        ipset swap "$tmp_label" "$label" || error_exit "Failed to swap ipsets"
-        # NOTE reload current_conent with post-swap corrected data
-        current_content=$(ipset list "$label" --output save)
-        echo "$current_content" > "$file_path" || error_exit "Failed to write to $file_path"
-        echo "Updated $file_path"
+        if ! ipset swap "$tmp_label" "$label"; then
+            echo "Failed to swap ipsets. Attempting to overwrite netset file."
+            echo "$new_content" > "$file_path" || error_exit "Failed to write to $file_path"
+        else
+            current_content=$(ipset list "$label" --output save)
+            echo "$current_content" > "$file_path" || error_exit "Failed to write to $file_path"
+            echo "Updated $file_path"
+        fi
     elif [[ -n "$new_content" ]]; then
         echo "No changes detected for $label"
     fi
