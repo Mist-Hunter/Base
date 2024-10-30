@@ -56,7 +56,7 @@ for env_file in "${all_env_files[@]}"; do
                         dig +short TXT "$domain" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?'
                     done)
                     
-                    # Filter netblocks to only include those containing our specific IPs
+                    # Filter netblocks to only include those containing our specific IPs, example 173.194.0.0/16 from 173.194.203.108
                     ip_list=$(echo "$specific_ips" | while read -r ip; do
                         echo "$all_netblocks" | while read -r netblock; do
                             if [[ -n "$ip" && -n "$netblock" ]] && grepcidr "$netblock" <(echo "$ip") >/dev/null 2>&1; then
@@ -64,9 +64,15 @@ for env_file in "${all_env_files[@]}"; do
                             fi
                         done
                     done | sort -u | tr '\n' ' ')
-                    
-                    # Set hash type to 'net' for Google domains
-                    hash_type="net"
+                                   
+                    # Check if ip_list is empty
+                    if [ -z "$ip_list" ]; then
+                        # Catch empty ipset if specific_ips is outside of any all_netblocks, Ref: https://support.google.com/mail/thread/77689665/ip-addresses-of-smtp-gmail-com-from-google-s-designated-nameservers-are-outside-google-s-netblocks?hl=en
+                        echo "No netblocks found for $fqdn_value. Using specific IPs."
+                        ip_list="$specific_ips"
+                    else
+                        hash_type="net"  # Use net if we have netblocks
+                    fi
                 else
                     ip_list=$(getent ahosts "$fqdn_value" | awk '{print $1}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -u | tr '\n' ' ')
                 fi
