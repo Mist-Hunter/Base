@@ -9,6 +9,10 @@ source $ENV_GLOBAL
 
 echo "Starting ipset manager"
 
+if ! command -v grepcidr &> /dev/null; then
+  apt-get install grepcidr -y
+fi
+
 # Import the ipset_process function
 source $SCRIPTS/base/firewall/ipset_functions.sh
 
