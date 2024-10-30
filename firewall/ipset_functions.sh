@@ -85,7 +85,7 @@ ipset_process() {
     # Compare and swap if necessary
     if [[ -n "$new_content" && "$new_content" != "$current_content" ]]; then        
         if ! ipset swap "$tmp_label" "$label"; then
-            echo "Failed to swap ipsets. Attempting to overwrite netset file."
+            echo "Failed to swap ipsets. Attempting to overwrite netset file. Reboot will be required!!"
             echo "$new_content" | sed 's/_tmp//g' > "$file_path" || error_exit "Failed to write to $file_path"
         else
             current_content=$(ipset list "$label" --output save)
