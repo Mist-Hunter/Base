@@ -77,7 +77,7 @@ dedup() {
             debug "Removing duplicate rule: $delete_rule"
 
             # Run iptables -D to remove the rule
-            if ! iptables -t "$table" $delete_rule; then
+            if ! iptables $delete_rule; then
                 handle_error "Failed to remove rule: $delete_rule"
             fi
         done <<< "$duplicates"
