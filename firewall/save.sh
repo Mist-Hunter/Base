@@ -54,7 +54,7 @@ dedup() {
     local table=$1
     echo "Processing table: $table"
    
-    # Check if the table exists
+    # Check if the table exists and is not empty
     if ! iptables -t "$table" -L >/dev/null 2>&1; then
         handle_error "Table $table does not exist or is empty"
         return
@@ -64,44 +64,37 @@ dedup() {
     table_content=$(iptables-save | sed -n "/$table/,/COMMIT/p")
     debug "Table content for $table:\n$table_content"
    
-    # Optionally check for DOCKER-USER chain (for 'filter' table)
-    if [[ "$table" == "filter" ]]; then
-        check_docker_user_chain
-    fi
-   
-    # Find duplicates (lines that are identical)
+    # Check for duplicates in the table
     local duplicates
-    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -d)
+    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -dc)
 
-    # If duplicates are found
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
         echo "$duplicates"
        
-        # Iterate over the duplicates (just the rules, no count)
-        while IFS= read -r rule; do
-            debug "Removing duplicate rule: $rule"
-            
-            # Escape the rule to ensure special characters are handled correctly
-            local escaped_rule
-            escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
-            
-            # Extract the line number where the rule exists
-            rule_number=$(iptables -t "$table" -L --line-numbers | grep -F "$rule" | awk '{print $1}')
-            
-            # If a line number is found, delete the rule by its line number
-            if [[ -n "$rule_number" ]]; then
-                if ! iptables -t "$table" -D $rule_number; then
-                    handle_error "Failed to remove rule: $rule"
+        # Loop through duplicates
+        while read -r count rule; do
+            if [[ $count -gt 1 ]]; then
+                debug "Removing duplicate rule: $rule"
+
+                # Retrieve the line number of the duplicate rule
+                rule_number=$(iptables -t "$table" -L --line-numbers | grep -F "$rule" | awk '{print $1}')
+                
+                # If a line number is found, remove the rule
+                if [[ -n "$rule_number" ]]; then
+                    if ! iptables -t "$table" -D "$table" "$rule_number"; then
+                        handle_error "Failed to remove rule: $rule"
+                    fi
+                else
+                    handle_error "Rule not found for deletion: $rule"
                 fi
-            else
-                handle_error "Rule not found for deletion: $rule"
             fi
         done <<< "$duplicates"
     else
         echo "No duplicates found in $table table"
     fi
 }
+
 
 # Ensure log directory exists
 mkdir -p "$(dirname "${logs}/firewall.log")" || handle_error "Failed to create log directory"
