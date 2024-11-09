@@ -74,15 +74,25 @@ dedup() {
         echo "Duplicates found in $table table:"
         echo "$duplicates"
        
+    if [[ -n "$duplicates" ]]; then
+        echo "Duplicates found in $table table:"
+        echo "$duplicates"
+    
         while read -r count rule; do
             if [[ $count -gt 1 ]]; then
-                # FIXME unbound variable 'count' when duplicate exist
                 local escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
                 debug "Removing duplicate rule: $rule"
                 
-                # Remove the duplicate rule using the full rule (without cutting it)
-                if ! iptables -t "$table" -D $rule; then
-                    handle_error "Failed to remove rule: $rule"
+                # Retrieve the line number of the rule
+                rule_number=$(iptables -t "$table" -L --line-numbers | grep -F "$rule" | awk '{print $1}')
+                
+                if [[ -n "$rule_number" ]]; then
+                    # Remove the rule by line number
+                    if ! iptables -t "$table" -D $rule_number; then
+                        handle_error "Failed to remove rule: $rule"
+                    fi
+                else
+                    handle_error "Rule not found for deletion: $rule"
                 fi
             fi
         done <<< "$duplicates"
