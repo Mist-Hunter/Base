@@ -54,6 +54,7 @@ dedup() {
     local table=$1
     echo "Processing table: $table"
    
+    # Check if the table exists
     if ! iptables -t "$table" -L >/dev/null 2>&1; then
         handle_error "Table $table does not exist or is empty"
         return
@@ -63,25 +64,38 @@ dedup() {
     table_content=$(iptables-save | sed -n "/$table/,/COMMIT/p")
     debug "Table content for $table:\n$table_content"
    
+    # Optionally check for DOCKER-USER chain (for 'filter' table)
     if [[ "$table" == "filter" ]]; then
         check_docker_user_chain
     fi
    
+    # Find duplicates (lines that are identical)
     local duplicates
-    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -dc)
-   
+    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -d)
+
+    # If duplicates are found
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
         echo "$duplicates"
        
-        while read -r count rule; do
-            if [[ $count -gt 1 ]]; then
-                # FIXME unbound variable 'count' when duplicate exist
-                local escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
-                debug "Removing duplicate rule: $rule"
-                if ! iptables -t "$table" -D $(echo "$rule" | cut -d' ' -f2-); then
+        # Iterate over the duplicates (just the rules, no count)
+        while IFS= read -r rule; do
+            debug "Removing duplicate rule: $rule"
+            
+            # Escape the rule to ensure special characters are handled correctly
+            local escaped_rule
+            escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
+            
+            # Extract the line number where the rule exists
+            rule_number=$(iptables -t "$table" -L --line-numbers | grep -F "$rule" | awk '{print $1}')
+            
+            # If a line number is found, delete the rule by its line number
+            if [[ -n "$rule_number" ]]; then
+                if ! iptables -t "$table" -D $rule_number; then
                     handle_error "Failed to remove rule: $rule"
                 fi
+            else
+                handle_error "Rule not found for deletion: $rule"
             fi
         done <<< "$duplicates"
     else
