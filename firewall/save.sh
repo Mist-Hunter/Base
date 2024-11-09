@@ -73,10 +73,6 @@ dedup() {
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
         echo "$duplicates"
-       
-    if [[ -n "$duplicates" ]]; then
-        echo "Duplicates found in $table table:"
-        echo "$duplicates"
     
         while read -r count rule; do
             if [[ $count -gt 1 ]]; then
