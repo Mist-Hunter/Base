@@ -74,16 +74,15 @@ dedup() {
         echo "Duplicates found in $table table:"
         echo "$duplicates"
        
-        while read -r line; do
-            if [[ $line =~ ^[[:space:]]*([0-9]+)[[:space:]]*(.*)$ ]]; then
-                count="${BASH_REMATCH[1]}"
-                rule="${BASH_REMATCH[2]}"
-                if [[ $count -gt 1 ]]; then
-                    chain=$(echo "$rule" | awk '{print $2}')
-                    debug "Removing duplicate rule: $rule"
-                    if ! iptables -t "$table" -D "$chain" $(echo "$rule" | awk '{$1=$2=""; print substr($0,3)}'); then
-                        handle_error "Failed to remove rule: $rule"
-                    fi
+        while read -r count rule; do
+            if [[ $count -gt 1 ]]; then
+                # FIXME unbound variable 'count' when duplicate exist
+                local escaped_rule=$(echo "$rule" | sed 's/[]\/$*.^[]/\\&/g')
+                debug "Removing duplicate rule: $rule"
+                
+                # Remove the duplicate rule using the full rule (without cutting it)
+                if ! iptables -t "$table" -D $rule; then
+                    handle_error "Failed to remove rule: $rule"
                 fi
             fi
         done <<< "$duplicates"
