@@ -74,7 +74,7 @@ dedup() {
             local delete_rule
             delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
 
-            debug "Removing duplicate rule: $delete_rule"
+            log "Removing duplicate rule: $delete_rule"
 
             # Run iptables -D to remove the rule
             if ! iptables $delete_rule; then
