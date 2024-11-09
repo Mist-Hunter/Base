@@ -60,42 +60,31 @@ dedup() {
         return
     fi
    
-    local table_content
-    # Select from table to commit
-    table_content=$(iptables-save | awk "/$table/,/COMMIT/ { print }")
-    debug "Table content for $table:\n$table_content"
-   
-    # Check for duplicates in the table
+    # Grab the duplicate rules for the given table
     local duplicates
-    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -d)
+    duplicates=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-' | sort | uniq -d)
 
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
         echo "$duplicates"
-       
-        # Loop through duplicates
-        while read -r count rule; do
-            if [[ $count -gt 1 ]]; then
-                debug "Removing duplicate rule: $rule"
+        
+        # Iterate over each duplicate and remove it using -D
+        while IFS= read -r rule; do
+            # Replace -A with -D to delete the rule
+            local delete_rule
+            delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
 
-                # Retrieve the line number of the duplicate rule
-                rule_number=$(iptables -t "$table" -L --line-numbers | grep -F "$rule" | awk '{print $1}')
-                
-                # If a line number is found, remove the rule
-                if [[ -n "$rule_number" ]]; then
-                    if ! iptables -t "$table" -D "$table" "$rule_number"; then
-                        handle_error "Failed to remove rule: $rule"
-                    fi
-                else
-                    handle_error "Rule not found for deletion: $rule"
-                fi
+            debug "Removing duplicate rule: $delete_rule"
+
+            # Run iptables -D to remove the rule
+            if ! iptables -t "$table" $delete_rule; then
+                handle_error "Failed to remove rule: $delete_rule"
             fi
         done <<< "$duplicates"
     else
         echo "No duplicates found in $table table"
     fi
 }
-
 
 # Ensure log directory exists
 mkdir -p "$(dirname "${logs}/firewall.log")" || handle_error "Failed to create log directory"
