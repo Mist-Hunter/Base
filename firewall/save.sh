@@ -61,12 +61,13 @@ dedup() {
     fi
    
     local table_content
-    table_content=$(iptables-save | sed -n "/$table/,/COMMIT/p")
+    # Select from table to commit
+    table_content=$(iptables-save | awk "/$table/,/COMMIT/ { print }")
     debug "Table content for $table:\n$table_content"
    
     # Check for duplicates in the table
     local duplicates
-    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -dc)
+    duplicates=$(echo "$table_content" | grep '^-' | sort | uniq -d)
 
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
