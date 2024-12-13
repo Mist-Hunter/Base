@@ -91,7 +91,7 @@ dedup() {
 
     # Log if no duplicates were found
     if [ $duplicates_found -eq 0 ]; then
-        echo "No duplicates found in $table table"
+        log "No duplicates found in $table table"
     fi
 }
 
