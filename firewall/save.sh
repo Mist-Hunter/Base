@@ -22,7 +22,7 @@ log_message() {
     local message="$1"
     local timestamp
     timestamp=$(date +"%Y-%m-%d @ %H:%M:%S")
-    echo -e "# scripts, apt, firewall, save: added by $(whoami) on ${timestamp} - ${message}" | tee -a "${logs}/firewall.log"
+    log "# scripts, apt, firewall, save: added by $(whoami) on ${timestamp} - ${message}"
 }
 
 # Function to handle errors
@@ -41,11 +41,11 @@ debug() {
 
 # Function to check DOCKER-USER chain
 check_docker_user_chain() {
-    echo "Checking DOCKER-USER chain:"
+    log "Checking DOCKER-USER chain:"
     if iptables -L DOCKER-USER -n -v --line-numbers > /dev/null 2>&1; then
         iptables -L DOCKER-USER -n -v --line-numbers
     else
-        echo "DOCKER-USER chain does not exist or is empty"
+        log "DOCKER-USER chain does not exist or is empty"
     fi
 }
 
