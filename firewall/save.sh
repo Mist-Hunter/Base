@@ -60,23 +60,23 @@ dedup() {
         return
     fi
    
-    # Find and process duplicate rules
     iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-' | sort | uniq -c | awk '$1 > 1' | while read -r count rule; do
         # Calculate how many times to remove the rule (count - 1)
-        local remove_count=$((count - 1))
-        log "Removing rule: $rule $remove_count times"
-        
+        remove_count=$((count - 1))
+
+        echo "Removing rule: $rule $remove_count times"
+
         # Remove the rule the appropriate number of times
         for ((i = 0; i < remove_count; i++)); do
             # Replace -A with -D to delete the rule
-            local delete_rule
+            delete_rule
             delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
-            
+
             # Run iptables -D to remove the rule
             if ! eval "iptables $delete_rule"; then
-                handle_error "Failed to remove rule: $delete_rule"
+                echo "Failed to remove rule: $delete_rule"
             else
-                log "Removed rule: $delete_rule"
+                echo "Removed rule: $delete_rule"
             fi
         done
     done
