@@ -60,17 +60,41 @@ dedup() {
         return
     fi
    
-    # Find exact duplicate rules
-    iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-A' | sort | uniq -d | while read -r rule; do
-        # Remove duplicate rules
-        local delete_rule
-        delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
-        
-        log "Removing duplicate rule: $delete_rule"
-        
-        # Remove all occurrences except one
-        while iptables "$delete_rule" 2>/dev/null; do : ; done
-    done
+    # Capture duplicate rules with a timeout
+    local duplicates
+    duplicates=$(timeout 5s iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-A' | sort | uniq -d)
+    
+    if [[ -n "$duplicates" ]]; then
+        echo "Duplicates found in $table table:"
+        echo "$duplicates"
+       
+        # Use a timeout and explicit error handling
+        echo "$duplicates" | while IFS= read -r rule; do
+            # Count occurrences of this exact rule
+            local count
+            count=$(timeout 3s iptables-save | awk "/$table/,/COMMIT/ { print }" | grep -c "^$rule$")
+            
+            # Remove extra occurrences
+            if [[ $count -gt 1 ]]; then
+                local delete_rule
+                delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
+                log "Attempting to remove duplicate rule: $delete_rule"
+                
+                # Limit removal attempts
+                for ((i=1; i<count; i++)); do
+                    # Use timeout to prevent hanging
+                    if timeout 2s iptables $delete_rule; then
+                        log "Removed duplicate rule: $delete_rule"
+                    else
+                        log "Failed to remove rule (timeout or error): $delete_rule"
+                        break
+                    fi
+                done
+            fi
+        done
+    else
+        echo "No duplicates found in $table table"
+    fi
 }
 
 # Ensure log directory exists
