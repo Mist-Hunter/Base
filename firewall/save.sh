@@ -69,7 +69,6 @@ dedup() {
         # Remove the rule the appropriate number of times
         for ((i = 0; i < remove_count; i++)); do
             # Replace -A with -D to delete the rule
-            delete_rule
             delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
 
             # Run iptables -D to remove the rule
