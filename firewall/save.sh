@@ -60,7 +60,10 @@ dedup() {
         return
     fi
    
+    # Process the duplicates from the iptables-save output
     iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-' | sort | uniq -c | awk '$1 > 1' | while read -r count rule; do
+        local remove_count delete_rule
+        
         # Calculate how many times to remove the rule (count - 1)
         remove_count=$((count - 1))
 
@@ -80,6 +83,7 @@ dedup() {
         done
     done
 }
+
 
 # Ensure log directory exists
 mkdir -p "$(dirname "${logs}/firewall.log")" || handle_error "Failed to create log directory"
