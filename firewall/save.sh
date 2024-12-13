@@ -60,6 +60,9 @@ dedup() {
         return
     fi
    
+    # Flag to track if any duplicates were found
+    local duplicates_found=0
+
     # Process the duplicates from the iptables-save output
     iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-' | sort | uniq -c | awk '$1 > 1' | while read -r count rule; do
         local remove_count delete_rule
@@ -81,9 +84,16 @@ dedup() {
                 echo "Removed rule: $delete_rule"
             fi
         done
-    done
-}
 
+        # Set flag to indicate duplicates were found
+        duplicates_found=1
+    done
+
+    # Log if no duplicates were found
+    if [ $duplicates_found -eq 0 ]; then
+        echo "No duplicates found in $table table"
+    fi
+}
 
 # Ensure log directory exists
 mkdir -p "$(dirname "${logs}/firewall.log")" || handle_error "Failed to create log directory"
