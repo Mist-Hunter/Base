@@ -60,35 +60,39 @@ dedup() {
         return
     fi
    
-    # Use iptables-save to get the rules and identify duplicates
-    local duplicates
-    duplicates=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-' | sort | uniq -d)
+    # Use a more direct method to find and remove duplicates
+    local duplicate_rules
+    duplicate_rules=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-A' | sort | uniq -d)
     
-    if [[ -n "$duplicates" ]]; then
+    if [[ -n "$duplicate_rules" ]]; then
         echo "Duplicates found in $table table:"
-        echo "$duplicates"
+        echo "$duplicate_rules"
        
-        # Iterate over each unique duplicate rule and remove extras
-        while IFS= read -r rule; do
+        # Convert rules to an array
+        mapfile -t rules_array <<< "$duplicate_rules"
+        
+        # Iterate through unique duplicate rules
+        for unique_rule in "${rules_array[@]}"; do
             # Count occurrences of this exact rule
-            local count
-            count=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep -c "^$rule$")
+            local rule_count
+            rule_count=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep -c "^$unique_rule$")
             
             # Remove extra occurrences
-            if [[ $count -gt 1 ]]; then
-                # Remove all but one occurrence
-                for ((i=1; i<count; i++)); do
-                    local delete_rule
-                    delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
+            if [[ $rule_count -gt 1 ]]; then
+                local delete_rule
+                delete_rule=$(echo "$unique_rule" | sed 's/^-A /-D /')
+                
+                # Remove all but the first occurrence
+                for ((i=1; i<rule_count; i++)); do
                     log "Removing duplicate rule: $delete_rule"
                     
-                    # Use iptables directly instead of eval
-                    if ! iptables $delete_rule; then
+                    # Use iptables directly
+                    if ! iptables "$delete_rule"; then
                         handle_error "Failed to remove rule: $delete_rule"
                     fi
                 done
             fi
-        done < <(echo "$duplicates")
+        done
     else
         echo "No duplicates found in $table table"
     fi
