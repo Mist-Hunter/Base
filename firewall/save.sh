@@ -60,38 +60,23 @@ dedup() {
         return
     fi
    
-    # Capture duplicate rules with a timeout
-    local duplicates
-    duplicates=$(timeout 5s iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-A' | sort | uniq -d)
+    # Find duplicate rules
+    local duplicate_rule
+    duplicate_rule=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-A' | sort | uniq -d)
     
-    if [[ -n "$duplicates" ]]; then
+    if [[ -n "$duplicate_rule" ]]; then
         echo "Duplicates found in $table table:"
-        echo "$duplicates"
+        echo "$duplicate_rule"
        
-        # Use a timeout and explicit error handling
-        echo "$duplicates" | while IFS= read -r rule; do
-            # Count occurrences of this exact rule
-            local count
-            count=$(timeout 3s iptables-save | awk "/$table/,/COMMIT/ { print }" | grep -c "^$rule$")
-            
-            # Remove extra occurrences
-            if [[ $count -gt 1 ]]; then
-                local delete_rule
-                delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
-                log "Attempting to remove duplicate rule: $delete_rule"
-                
-                # Limit removal attempts
-                for ((i=1; i<count; i++)); do
-                    # Use timeout to prevent hanging
-                    if timeout 2s iptables $delete_rule; then
-                        log "Removed duplicate rule: $delete_rule"
-                    else
-                        log "Failed to remove rule (timeout or error): $delete_rule"
-                        break
-                    fi
-                done
-            fi
-        done
+        # Convert to delete rule
+        local delete_rule
+        delete_rule=$(echo "$duplicate_rule" | sed 's/^-A /-D /')
+        
+        # Remove duplicates directly
+        log "Removing duplicate rule: $delete_rule"
+        
+        # Attempt to remove duplicates
+        while iptables $delete_rule; do : ; done
     else
         echo "No duplicates found in $table table"
     fi
