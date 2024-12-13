@@ -52,7 +52,7 @@ check_docker_user_chain() {
 # Function to deduplicate iptables rules
 dedup() {
     local table=$1
-    echo "Processing table: $table"
+    log "Processing table: $table"
    
     # Check if the table exists and is not empty
     if ! iptables -t "$table" -L >/dev/null 2>&1; then
@@ -70,7 +70,7 @@ dedup() {
         # Calculate how many times to remove the rule (count - 1)
         remove_count=$((count - 1))
 
-        echo "Removing rule: $rule $remove_count times"
+        log "Removing rule: $rule $remove_count times"
 
         # Remove the rule the appropriate number of times
         for ((i = 0; i < remove_count; i++)); do
@@ -79,9 +79,9 @@ dedup() {
 
             # Run iptables -D to remove the rule
             if ! eval "iptables $delete_rule"; then
-                echo "Failed to remove rule: $delete_rule"
+                log "Failed to remove rule: $delete_rule"
             else
-                echo "Removed rule: $delete_rule"
+                log "Removed rule: $delete_rule"
             fi
         done
 
