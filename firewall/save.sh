@@ -67,6 +67,8 @@ dedup() {
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
         echo "$duplicates"
+
+        # FIXME Duplicates accurately found, but something hangs in while
         
         # Iterate over each duplicate and remove it using -D
         while IFS= read -r rule; do
@@ -76,10 +78,10 @@ dedup() {
 
             log "Removing duplicate rule: $delete_rule"
 
-            # Run iptables -D to remove the rule
-            if ! eval "iptables $delete_rule"; then
-                handle_error "Failed to remove rule: $delete_rule"
-            fi
+            # # Run iptables -D to remove the rule
+            # if ! eval "iptables $delete_rule"; then
+            #     handle_error "Failed to remove rule: $delete_rule"
+            # fi
         done <<< "$duplicates"
     else
         echo "No duplicates found in $table table"
