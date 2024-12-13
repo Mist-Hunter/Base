@@ -60,29 +60,35 @@ dedup() {
         return
     fi
    
-    # Grab the duplicate rules for the given table
+    # Use iptables-save to get the rules and identify duplicates
     local duplicates
     duplicates=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep '^-' | sort | uniq -d)
-
+    
     if [[ -n "$duplicates" ]]; then
         echo "Duplicates found in $table table:"
         echo "$duplicates"
-
-        # FIXME Duplicates accurately found, but something hangs in while
-        
-        # Iterate over each duplicate and remove it using -D
+       
+        # Iterate over each unique duplicate rule and remove extras
         while IFS= read -r rule; do
-            # Replace -A with -D to delete the rule
-            local delete_rule
-            delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
-
-            log "Removing duplicate rule: $delete_rule"
-
-            # # Run iptables -D to remove the rule
-            # if ! eval "iptables $delete_rule"; then
-            #     handle_error "Failed to remove rule: $delete_rule"
-            # fi
-        done <<< "$duplicates"
+            # Count occurrences of this exact rule
+            local count
+            count=$(iptables-save | awk "/$table/,/COMMIT/ { print }" | grep -c "^$rule$")
+            
+            # Remove extra occurrences
+            if [[ $count -gt 1 ]]; then
+                # Remove all but one occurrence
+                for ((i=1; i<count; i++)); do
+                    local delete_rule
+                    delete_rule=$(echo "$rule" | sed 's/^-A /-D /')
+                    log "Removing duplicate rule: $delete_rule"
+                    
+                    # Use iptables directly instead of eval
+                    if ! iptables $delete_rule; then
+                        handle_error "Failed to remove rule: $delete_rule"
+                    fi
+                done
+            fi
+        done < <(echo "$duplicates")
     else
         echo "No duplicates found in $table table"
     fi
