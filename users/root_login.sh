@@ -26,7 +26,7 @@ EOT
 
     echo "Autologin enabled for current terminal ($tty_dev)."
 
-    # NOTE video device may not exist at time base template is run
+    # NOTE video device may not exist at time base template is run (this may need to be re-run)
     # Check if the physical video console is available
     if ! ls /dev/fb* > /dev/null 2>&1; then
         echo "No framebuffer devices found."
