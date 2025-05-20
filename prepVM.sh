@@ -351,7 +351,7 @@ present_secrets "GRUB Password:$new_password"
 #kernel_version=$(uname -r)
 #module_path="/lib/modules/${kernel_version}/kernel/drivers"
 
-if ! [[ "$DEV_TYPE" == "$(uname -m)" ]] && ! [[ "$DESKTOP" == "true" ]];; then
+if ! [[ "$DEV_TYPE" == "$(uname -m)" ]] && ! [[ "$DESKTOP" == "true" ]]; then
     echo "The system was identified as virtualized. DEV_TYPE is: $DEV_TYPE"
 
     block_modules=(
