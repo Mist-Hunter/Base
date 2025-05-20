@@ -65,34 +65,35 @@ else
 fi
 
 # Setup Locale 
-if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
-    # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
-    echo "Locale '$LANG' is not set."
-    apt install locales --no-install-recommends -y # 20.7 MB
-    sed -i "s/^# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
-    locale-gen # Manual > dpkg-reconfigure locales NOTE: local-gen $LANG doesn't work. Only works with sed.
-else
-    echo "Locale '$LANG' is set."
-fi
+# FIXME this seems to break in Trixie
+# if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
+#     # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
+#     echo "Locale '$LANG' is not set."
+#     apt install locales --no-install-recommends -y # 20.7 MB
+#     sed -i "s/^# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
+#     locale-gen # Manual > dpkg-reconfigure locales NOTE: local-gen $LANG doesn't work. Only works with sed.
+# else
+#     echo "Locale '$LANG' is set."
+# fi
 
-# https://salsa.debian.org/elmig-guest/localepurge
-# https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
-# https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
-# NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
-echo "Purging unnecessary locales..."
-apt-get install localepurge --no-install-recommends -y
-lang_prefix="${LANG%%_*}"
-cat <<EOT > /etc/locale.nopurge
-MANDELETE
-DONTBOTHERNEWLOCALE
-SHOWFREEDSPACE
-VERBOSE
-$lang_prefix
-$LANG
-EOT
-localepurge
-apt-get remove --purge -y localepurge
-echo "Locale setup and purge completed."
+# # https://salsa.debian.org/elmig-guest/localepurge
+# # https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
+# # https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
+# # NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
+# echo "Purging unnecessary locales..."
+# apt-get install localepurge --no-install-recommends -y
+# lang_prefix="${LANG%%_*}"
+# cat <<EOT > /etc/locale.nopurge
+# MANDELETE
+# DONTBOTHERNEWLOCALE
+# SHOWFREEDSPACE
+# VERBOSE
+# $lang_prefix
+# $LANG
+# EOT
+# localepurge
+# apt-get remove --purge -y localepurge
+# echo "Locale setup and purge completed."
 
 # Set Timezone
 timedatectl set-timezone $TZ
