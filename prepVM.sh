@@ -2,6 +2,8 @@
 
 # Handles hardware tuning and base security settings.
 
+# TODO prepVM become prepENV?
+
 # export DEBIAN_FRONTEND=noninteractive NOTE was blocking read prompts in scripts
 source /etc/default/grub
 source /etc/environment
@@ -13,6 +15,7 @@ apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exi
 DEV_TYPE=$(virt-what)
 if [[ $DEV_TYPE = "" ]]; then
     # If physical, replace with Proc architecture
+    # TODO if physical, note somewhere?
     DEV_TYPE=$(uname -m)
 fi
 
@@ -65,35 +68,35 @@ else
 fi
 
 # Setup Locale 
-# FIXME this seems to break in Trixie
-# if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
-#     # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
-#     echo "Locale '$LANG' is not set."
-#     apt install locales --no-install-recommends -y # 20.7 MB
-#     sed -i "s/^# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
-#     locale-gen # Manual > dpkg-reconfigure locales NOTE: local-gen $LANG doesn't work. Only works with sed.
-# else
-#     echo "Locale '$LANG' is set."
-# fi
+# FIXME this seems to break in Trixie. Works after reboot. Maybe needs xterm?
+if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
+    # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
+    echo "Locale '$LANG' is not set."
+    apt install locales --no-install-recommends -y # 20.7 MB
+    sed -i "s/^# $LANG UTF-8/$LANG UTF-8/" /etc/locale.gen
+    locale-gen # Manual > dpkg-reconfigure locales NOTE: local-gen $LANG doesn't work. Only works with sed.
+else
+    echo "Locale '$LANG' is set."
+fi
 
-# # https://salsa.debian.org/elmig-guest/localepurge
-# # https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
-# # https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
-# # NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
-# echo "Purging unnecessary locales..."
-# apt-get install localepurge --no-install-recommends -y
-# lang_prefix="${LANG%%_*}"
-# cat <<EOT > /etc/locale.nopurge
-# MANDELETE
-# DONTBOTHERNEWLOCALE
-# SHOWFREEDSPACE
-# VERBOSE
-# $lang_prefix
-# $LANG
-# EOT
-# localepurge
-# apt-get remove --purge -y localepurge
-# echo "Locale setup and purge completed."
+# https://salsa.debian.org/elmig-guest/localepurge
+# https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
+# https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
+# NOTE Reff: https://packages.debian.org/bookworm/localepurge >> "This tool is a hack which is *not* integrated with the system's package management system and therefore is not for the faint of heart."
+echo "Purging unnecessary locales..."
+apt-get install localepurge --no-install-recommends -y
+lang_prefix="${LANG%%_*}"
+cat <<EOT > /etc/locale.nopurge
+MANDELETE
+DONTBOTHERNEWLOCALE
+SHOWFREEDSPACE
+VERBOSE
+$lang_prefix
+$LANG
+EOT
+localepurge
+apt-get remove --purge -y localepurge
+echo "Locale setup and purge completed."
 
 # Set Timezone
 timedatectl set-timezone $TZ
@@ -348,6 +351,7 @@ present_secrets "GRUB Password:$new_password"
 #kernel_version=$(uname -r)
 #module_path="/lib/modules/${kernel_version}/kernel/drivers"
 
+# TODO block_modules should vary based on KCM or BareMetal
 block_modules=(
 "ahci"
 "ata_generic"
@@ -434,52 +438,57 @@ module_description=(
 "usd: handles support for USB Devices"
 )
 
-# Empty the blacklist
-if [ -f $MOD_BLACKLIST ]; then
-    mv "$MOD_BLACKLIST" "${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak" 
-    echo "Moved $MOD_BLACKLIST to ${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak"
+if ! [[ "$DEV_TYPE" == "$(uname -m)" ]]; then
+    echo "The system was identified as virtualized. DEV_TYPE is: $DEV_TYPE"
+
+    # Empty the blacklist
+    if [ -f $MOD_BLACKLIST ]; then
+        mv "$MOD_BLACKLIST" "${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak" 
+        echo "Moved $MOD_BLACKLIST to ${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak"
+    fi
+
+    touch $MOD_BLACKLIST
+    echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.txt , https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/blacklisting_a_module" >> $MOD_BLACKLIST 
+    echo "" >> $MOD_BLACKLIST 
+
+    for i in "${!block_modules[@]}"; do
+        echo "beginning module $block_modules[$i]"
+
+        # Check if the module exists
+        if ! modinfo -n "${block_modules[$i]}" >/dev/null 2>&1; then
+            echo "${block_modules[$i]} module not found, skipping."
+            continue
+        fi
+
+        # Check if the module is built-in
+        if modinfo -F builtin "${block_modules[$i]}" | grep -q "^y$"; then
+            echo "${block_modules[$i]} is a built-in module, skipping."
+            continue
+        fi
+
+        # Check if the module is already blacklisted
+        if [ -n "$MOD_BLACKLIST" ] && grep -qw "${block_modules[$i]}" "$MOD_BLACKLIST"; then
+            echo "${block_modules[$i]} already in $MOD_BLACKLIST"
+        else
+            # Remove the module if it is not built-in and not blacklisted
+            modprobe -r "${block_modules[$i]}" 2>/dev/null
+
+            # Add the module to the blacklist
+            echo "# ${module_description[$i]}" >> "$MOD_BLACKLIST"
+            echo "blacklist ${block_modules[$i]}" >> "$MOD_BLACKLIST"
+            echo "install ${block_modules[$i]} /bin/true" >> "$MOD_BLACKLIST"
+            echo "" >> "$MOD_BLACKLIST"
+
+            echo "${block_modules[$i]} has been blacklisted."
+        fi
+    done
+
+    echo "$MOD_BLACKLIST contents:"
+    cat $MOD_BLACKLIST
+    echo "Updating initramfs"
+    update-initramfs -u
+
 fi
-
-touch $MOD_BLACKLIST
-echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.txt , https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/blacklisting_a_module" >> $MOD_BLACKLIST 
-echo "" >> $MOD_BLACKLIST 
-
-for i in "${!block_modules[@]}"; do
-    echo "beginning module $block_modules[$i]"
-
-    # Check if the module exists
-    if ! modinfo -n "${block_modules[$i]}" >/dev/null 2>&1; then
-        echo "${block_modules[$i]} module not found, skipping."
-        continue
-    fi
-
-    # Check if the module is built-in
-    if modinfo -F builtin "${block_modules[$i]}" | grep -q "^y$"; then
-        echo "${block_modules[$i]} is a built-in module, skipping."
-        continue
-    fi
-
-    # Check if the module is already blacklisted
-    if [ -n "$MOD_BLACKLIST" ] && grep -qw "${block_modules[$i]}" "$MOD_BLACKLIST"; then
-        echo "${block_modules[$i]} already in $MOD_BLACKLIST"
-    else
-        # Remove the module if it is not built-in and not blacklisted
-        modprobe -r "${block_modules[$i]}" 2>/dev/null
-
-        # Add the module to the blacklist
-        echo "# ${module_description[$i]}" >> "$MOD_BLACKLIST"
-        echo "blacklist ${block_modules[$i]}" >> "$MOD_BLACKLIST"
-        echo "install ${block_modules[$i]} /bin/true" >> "$MOD_BLACKLIST"
-        echo "" >> "$MOD_BLACKLIST"
-
-        echo "${block_modules[$i]} has been blacklisted."
-    fi
-done
-
-echo "$MOD_BLACKLIST contents:"
-cat $MOD_BLACKLIST
-echo "Updating initramfs"
-update-initramfs -u
 
 ### Clean up 
 # Remove foregn man pages
