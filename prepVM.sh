@@ -438,7 +438,8 @@ module_description=(
 "usd: handles support for USB Devices"
 )
 
-if ! [[ "$DEV_TYPE" == "$(uname -m)" ]]; then
+# TODO add OR override = true (for VM with GUI)
+if ! [[ "$DEV_TYPE" == "$(uname -m)" ]] && ! [[ "$DESKTOP" == "true" ]];; then
     echo "The system was identified as virtualized. DEV_TYPE is: $DEV_TYPE"
 
     # Empty the blacklist
