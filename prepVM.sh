@@ -3,7 +3,6 @@
 # Handles hardware tuning and base security settings.
 
 # TODO prepVM become prepENV?
-
 # NOTE if you need to override blacklist function, export DESKTOP="true" 
 
 # export DEBIAN_FRONTEND=noninteractive NOTE was blocking read prompts in scripts
@@ -17,7 +16,6 @@ apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exi
 DEV_TYPE=$(virt-what)
 if [[ $DEV_TYPE = "" ]]; then
     # If physical, replace with Proc architecture
-    # TODO if physical, note somewhere?
     DEV_TYPE=$(uname -m)
 fi
 
@@ -95,9 +93,9 @@ if [[ "$(tty)" == *"TTY_DEV"* ]]; then
 fi
 EOT
 sed -i "s|TTY_DEV|$tty_dev|g" ~/.bashrc
+export TERM=xterm-256color
 
 # Setup Locale 
-# FIXME this seems to break in Trixie. Works after reboot. Maybe needs xterm?
 if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
     # MAN: https://www.unix.com/man-page/linux/8/locale-gen/
     echo "Locale '$LANG' is not set."
