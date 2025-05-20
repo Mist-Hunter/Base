@@ -4,6 +4,7 @@
 
 # export DEBIAN_FRONTEND=noninteractive NOTE was blocking read prompts in scripts
 source /etc/default/grub
+source /etc/environment
 
 apt update
 
@@ -73,6 +74,7 @@ if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
 else
     echo "Locale '$LANG' is set."
 fi
+
 # https://salsa.debian.org/elmig-guest/localepurge
 # https://salsa.debian.org/elmig-guest/localepurge/-/raw/master/debian/README.Debian?ref_type=heads
 # https://salsa.debian.org/elmig-guest/localepurge/-/blob/master/debian/README.dpkg-path?ref_type=heads
