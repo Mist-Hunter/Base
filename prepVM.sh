@@ -4,6 +4,8 @@
 
 # TODO prepVM become prepENV?
 
+# NOTE if you need to override blacklist function, export DESKTOP="true" 
+
 # export DEBIAN_FRONTEND=noninteractive NOTE was blocking read prompts in scripts
 source /etc/default/grub
 source /etc/environment
