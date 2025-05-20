@@ -67,6 +67,33 @@ else
   echo "User '$SECURE_USER' created successfully."
 fi
 
+# Remove dhcp6 from dhclient.conf. This doesn't seem to affect ram consumption.
+# sed 's/dhcp6\.[a-z-]\+\(, \)\?//g' /etc/dhcp/dhclient.conf
+
+# Add color to LS by uncommenting default bashrc
+sed -i '/^# export LS_OPTIONS/s/^# //' ~/.bashrc
+sed -i '/^# eval/s/^# //' ~/.bashrc
+sed -i '/^# alias ls/s/^# //' ~/.bashrc
+sed -i '/^# alias ll/s/^# //' ~/.bashrc
+sed -i '/^# alias l/s/^# //' ~/.bashrc
+sed -i '/^# alias rm/s/^# //' ~/.bashrc
+sed -i '/^# alias cp/s/^# //' ~/.bashrc
+sed -i '/^# alias mv/s/^# //' ~/.bashrc
+
+# Add Auto-Resize Terminal & set to Xterm 
+tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial) 
+apt install xterm --no-install-recommends -y # 12.9 MB
+cat <<'EOT' >> ~/.bashrc
+
+# Auto-Resize for Xterm.js / Serial Terminals # https://dannyda.com/2020/06/14/how-to-fix-proxmox-ve-pve-virtual-machine-xterm-js-cant-resize-window-and-no-color/
+# If any active terminal is serial, resize
+if [[ "$(tty)" == *"TTY_DEV"* ]]; then
+    trap "resize >/dev/null" DEBUG
+    export TERM=xterm-256color
+fi
+EOT
+sed -i "s|TTY_DEV|$tty_dev|g" ~/.bashrc
+
 # Setup Locale 
 # FIXME this seems to break in Trixie. Works after reboot. Maybe needs xterm?
 if ! locale -a 2>/dev/null | grep -qF "$LANG"; then
@@ -102,33 +129,6 @@ echo "Locale setup and purge completed."
 timedatectl set-timezone $TZ
 echo "$TZ" > /etc/timezone
 timedatectl
-
-# Remove dhcp6 from dhclient.conf. This doesn't seem to affect ram consumption.
-# sed 's/dhcp6\.[a-z-]\+\(, \)\?//g' /etc/dhcp/dhclient.conf
-
-# Add color to LS by uncommenting default bashrc
-sed -i '/^# export LS_OPTIONS/s/^# //' ~/.bashrc
-sed -i '/^# eval/s/^# //' ~/.bashrc
-sed -i '/^# alias ls/s/^# //' ~/.bashrc
-sed -i '/^# alias ll/s/^# //' ~/.bashrc
-sed -i '/^# alias l/s/^# //' ~/.bashrc
-sed -i '/^# alias rm/s/^# //' ~/.bashrc
-sed -i '/^# alias cp/s/^# //' ~/.bashrc
-sed -i '/^# alias mv/s/^# //' ~/.bashrc
-
-# Add Auto-Resize Terminal & set to Xterm 
-tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial) 
-apt install xterm --no-install-recommends -y # 12.9 MB
-cat <<'EOT' >> ~/.bashrc
-
-# Auto-Resize for Xterm.js / Serial Terminals # https://dannyda.com/2020/06/14/how-to-fix-proxmox-ve-pve-virtual-machine-xterm-js-cant-resize-window-and-no-color/
-# If any active terminal is serial, resize
-if [[ "$(tty)" == *"TTY_DEV"* ]]; then
-    trap "resize >/dev/null" DEBUG
-    export TERM=xterm-256color
-fi
-EOT
-sed -i "s|TTY_DEV|$tty_dev|g" ~/.bashrc
 
 # Load TCP BBR congestion control module and ensure it loads on boot
 modprobe tcp_bbr
