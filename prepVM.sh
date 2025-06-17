@@ -82,7 +82,6 @@ sed -i '/^# alias mv/s/^# //' ~/.bashrc
 
 # Add Auto-Resize Terminal & set to Xterm 
 tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial) 
-# TODO testing if this is even needed: apt install xterm --no-install-recommends -y # 12.9 MB
 cat <<'EOT' >> ~/.bashrc
 
 # Auto-Resize for Xterm.js / Serial Terminals # https://dannyda.com/2020/06/14/how-to-fix-proxmox-ve-pve-virtual-machine-xterm-js-cant-resize-window-and-no-color/
