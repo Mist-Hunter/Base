@@ -1,15 +1,13 @@
 #!/bin/bash
 # https://wiki.debian.org/LXQt
+# https://packages.debian.org/search?suite=trixie&keywords=sddm
 
-apt install --no-install-recommends \
-    xserver-xorg-core \
-    lxqt-core \
-    lxqt-themes \
-    lxqt-config \
-    lxqt-notificationd \
-    qterminal \
-    openbox \
-    emptty
+apt remove libpam-passwdqc
+apt install lxqt-core xserver-xorg-core xserver-xorg xinit
 
-# Remove
-# HexChat, FireFox ESR
+passwd user
+echo "exec startlxqt" > ~/.xinitrc
+
+# Set Theme
+#cp ~/.config/lxqt/lxqt.conf ~/.config/lxqt/lxqt.conf.backup
+sed -i -E '/^\[General\]$/,/^\[/ { /^\s*theme\s*=/ s/=.*/=ambiance/ }' ~/.config/lxqt/lxqt.conf
