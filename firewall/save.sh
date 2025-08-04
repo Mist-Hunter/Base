@@ -7,10 +7,6 @@
 
 set -euo pipefail
 
-# Source global variables
-# shellcheck disable=SC1090
-source "/root/.config/global.env"
-
 # Initialize error flag
 SAVE_ERROR=0
 
@@ -55,7 +51,6 @@ deduplicate_table_rules() {
     local append_rules
     append_rules=$(grep '^-A' "$temp_rules_file")
 
-    # This awk command is the safe way to deduplicate, as it preserves the original rule order.
     local deduped_append_rules
     deduped_append_rules=$(echo "$append_rules" | awk '!seen[$0]++')
 
@@ -110,6 +105,17 @@ deduplicate_table_rules() {
 
 # Main function to contain the script's primary logic.
 main() {
+    local GLOBAL_ENV_FILE="/root/.config/global.env"
+
+    # Verify the global environment file exists before sourcing it.
+    if [[ ! -f "$GLOBAL_ENV_FILE" ]]; then
+        echo "ERROR: Global environment file not found: $GLOBAL_ENV_FILE" >&2
+        return 1
+    fi
+    
+    # shellcheck disable=SC1090
+    source "$GLOBAL_ENV_FILE"
+
     if [[ -z "${logs:-}" ]]; then
         handle_error "\$logs variable is not set. Cannot determine log path."
         return 1
