@@ -33,16 +33,16 @@ deduplicate_table_rules() {
     local temp_rules_file temp_restore_file
     temp_rules_file=$(mktemp)
     temp_restore_file=$(mktemp)
-    
-    trap 'rm -f "$temp_rules_file" "$temp_restore_file"' RETURN
 
     if ! iptables-save -t "$table" > "$temp_rules_file"; then
         handle_error "Failed to save rules for table $table."
+        rm -f "$temp_rules_file" "$temp_restore_file"
         return 1
     fi
 
     if ! grep -q '^-A' "$temp_rules_file"; then
         log_message "No append rules (-A) to process in table '$table'. Skipping."
+        rm -f "$temp_rules_file" "$temp_restore_file"
         return 0
     fi
     
@@ -83,6 +83,7 @@ deduplicate_table_rules() {
 
         if ! iptables-restore --table="$table" < "$temp_restore_file"; then
             handle_error "Failed to apply deduplicated rules for table $table."
+            rm -f "$temp_rules_file" "$temp_restore_file"
             return 1
         else
             log_message "Successfully applied deduplicated rules for table $table."
@@ -95,11 +96,13 @@ deduplicate_table_rules() {
                 log_message "Verification successful: No remaining duplicates found in table '$table'."
             else
                 handle_error "Verification FAILED: Duplicates still exist in table '$table'."
+                rm -f "$temp_rules_file" "$temp_restore_file"
                 return 1
             fi
         fi
     fi
 
+    rm -f "$temp_rules_file" "$temp_restore_file"
     return 0
 }
 
