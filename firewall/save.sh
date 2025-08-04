@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# Description: This script saves the current iptables rules, deduplicates them, and verifies the changes.
+# Description: This script saves the current iptables rules, safely deduplicates them while preserving rule order, and verifies the changes.
+#              It can be executed directly or sourced by other scripts without exiting the parent shell.
 # Usage: ./save.sh
-# Dependencies: iptables, iptables-save, iptables-restore
+# Dependencies: iptables, iptables-save, iptables-restore, awk
 
 set -euo pipefail
 
@@ -37,8 +38,7 @@ deduplicate_table_rules() {
     temp_rules_file=$(mktemp)
     temp_restore_file=$(mktemp)
     
-    # Ensure temporary files are removed on exit
-    trap 'rm -f "$temp_rules_file" "$temp_restore_file"' EXIT HUP INT QUIT TERM
+    trap 'rm -f "$temp_rules_file" "$temp_restore_file"' RETURN
 
     if ! iptables-save -t "$table" > "$temp_rules_file"; then
         handle_error "Failed to save rules for table $table."
@@ -55,12 +55,12 @@ deduplicate_table_rules() {
     local append_rules
     append_rules=$(grep '^-A' "$temp_rules_file")
 
+    # This awk command is the safe way to deduplicate, as it preserves the original rule order.
+    local deduped_append_rules
+    deduped_append_rules=$(echo "$append_rules" | awk '!seen[$0]++')
+
     local original_rule_count
     original_rule_count=$(echo "$append_rules" | wc -l)
-    
-    local deduped_append_rules
-    deduped_append_rules=$(echo "$append_rules" | sort -u)
-
     local deduped_rule_count
     deduped_rule_count=$(echo "$deduped_append_rules" | wc -l)
 
@@ -73,13 +73,11 @@ deduplicate_table_rules() {
         duplicate_lines=$(echo "$append_rules" | sort | uniq -d)
         if [[ -n "$duplicate_lines" ]]; then
             log_message "The following duplicate lines were found and will be consolidated:"
-            # Log each duplicate rule found
             echo "$duplicate_lines" | while IFS= read -r line; do
                 log_message "  -> $line"
             done
         fi
         
-        # Reconstruct the full iptables-restore format file
         {
             echo "$non_append_lines" | grep -v '^COMMIT'
             echo "$deduped_append_rules"
@@ -94,7 +92,6 @@ deduplicate_table_rules() {
         else
             log_message "Successfully applied deduplicated rules for table $table."
             
-            # Verify removal of duplicates from the live ruleset
             log_message "Verifying removal of duplicates from live ruleset..."
             local remaining_dupes
             remaining_dupes=$(iptables-save -t "$table" | grep '^-A' | sort | uniq -d)
@@ -111,45 +108,48 @@ deduplicate_table_rules() {
     return 0
 }
 
-
-# --- Main Script Logic ---
-
-if [[ -z "${logs:-}" ]]; then
-    handle_error "\$logs variable is not set. Cannot determine log path."
-    exit 1
-fi
-
-mkdir -p "$(dirname "${logs}/firewall.log")" || { handle_error "Failed to create log directory"; exit 1; }
-
-log_message "Starting iptables save operation"
-
-tables=('filter' 'nat' 'mangle')
-failed_tables=()
-
-for table in "${tables[@]}"; do
-    if ! deduplicate_table_rules "$table"; then
-        failed_tables+=("$table")
+# Main function to contain the script's primary logic.
+main() {
+    if [[ -z "${logs:-}" ]]; then
+        handle_error "\$logs variable is not set. Cannot determine log path."
+        return 1
     fi
-done
 
-if [[ ${#failed_tables[@]} -gt 0 ]]; then
-    handle_error "Issues encountered while processing these tables: ${failed_tables[*]}"
+    mkdir -p "$(dirname "${logs}/firewall.log")" || { handle_error "Failed to create log directory"; return 1; }
+
+    log_message "Starting iptables save operation"
+
+    local tables=('filter' 'nat' 'mangle')
+    local failed_tables=()
+
+    for table in "${tables[@]}"; do
+        if ! deduplicate_table_rules "$table"; then
+            failed_tables+=("$table")
+        fi
+    done
+
+    if [[ ${#failed_tables[@]} -gt 0 ]]; then
+        handle_error "Issues encountered while processing these tables: ${failed_tables[*]}"
+    fi
+
+    if [ $SAVE_ERROR -eq 0 ]; then
+        log_message "Saving current iptables rules to ${logs}/firewall.log"
+        iptables-save >> "${logs}/firewall.log" || handle_error "Failed to save iptables rules to log"
+
+        log_message "Saving current iptables rules to /etc/iptables.up.rules"
+        iptables-save > /etc/iptables.up.rules || handle_error "Failed to save iptables rules to /etc/iptables.up.rules"
+    fi
+
+    if [ $SAVE_ERROR -eq 0 ]; then
+        log_message "iptables save operation completed successfully"
+    else
+        log_message "iptables save operation completed with errors"
+    fi
+
+    return $SAVE_ERROR
+}
+
+# This block ensures that main() is called only when the script is executed directly.
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main
 fi
-
-# Proceed with saving rules only if no errors occurred during deduplication
-if [ $SAVE_ERROR -eq 0 ]; then
-    log_message "Saving current iptables rules to ${logs}/firewall.log"
-    iptables-save >> "${logs}/firewall.log" || handle_error "Failed to save iptables rules to log"
-
-    log_message "Saving current iptables rules to /etc/iptables.up.rules"
-    iptables-save > /etc/iptables.up.rules || handle_error "Failed to save iptables rules to /etc/iptables.up.rules"
-fi
-
-# Log the completion of the save operation
-if [ $SAVE_ERROR -eq 0 ]; then
-    log_message "iptables save operation completed successfully"
-else
-    log_message "iptables save operation completed with errors"
-fi
-
-exit $SAVE_ERROR
