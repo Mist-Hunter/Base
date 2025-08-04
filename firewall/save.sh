@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Description: This script saves the current iptables rules, safely deduplicates them while preserving rule order, and verifies the changes.
-#              It can be executed directly or sourced by other scripts without exiting the parent shell.
-# Usage: ./save.sh
+#              It can be executed directly or sourced by other scripts.
+# Usage: ./save.sh  OR  . ./save.sh
 # Dependencies: iptables, iptables-save, iptables-restore, awk
 
 set -euo pipefail
@@ -107,7 +107,6 @@ deduplicate_table_rules() {
 main() {
     local GLOBAL_ENV_FILE="/root/.config/global.env"
 
-    # Verify the global environment file exists before sourcing it.
     if [[ ! -f "$GLOBAL_ENV_FILE" ]]; then
         echo "ERROR: Global environment file not found: $GLOBAL_ENV_FILE" >&2
         return 1
@@ -155,7 +154,5 @@ main() {
     return $SAVE_ERROR
 }
 
-# This block ensures that main() is called only when the script is executed directly.
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    main
-fi
+# Call the main function to run the script's logic.
+main
