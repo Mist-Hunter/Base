@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Description: This script saves the current iptables rules, deduplicates them, and performs additional checks.
-# Usage: ./save.sh
+# Usage: ./save.sh [--debug | -d]
 # Dependencies: iptables, iptables-save, iptables-restore
 
 set -euo pipefail
@@ -14,8 +14,23 @@ source "/root/.config/global.env"
 SAVE_ERROR=0
 DEDUP_ERROR=0
 
-# Debug flag - Set to 1 to enable debug output
-DEBUG=${DEBUG:-0}
+# Debug flag - Default to 0 (off)
+DEBUG=0
+
+# --- Argument Parsing ---
+# Loop through arguments
+for arg in "$@"; do
+    case "$arg" in
+        --debug|-d)
+            DEBUG=1
+            ;;
+        *)
+            echo "Usage: $0 [--debug | -d]"
+            exit 1
+            ;;
+    esac
+done
+# --- End Argument Parsing ---
 
 # Function to log messages
 log_message() {
