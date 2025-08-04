@@ -30,26 +30,27 @@ deduplicate_table_rules() {
     local table=$1
     log_message "Processing table: $table for deduplication"
 
-    local temp_rules_file temp_restore_file
-    temp_rules_file=$(mktemp)
-    temp_restore_file=$(mktemp)
+    # Use highly unique variable names to avoid shell environment conflicts.
+    local DEDUPE_RULES_FILE_$$ DEDUPE_RESTORE_FILE_$$
+    DEDUPE_RULES_FILE_$$=$(mktemp)
+    DEDUPE_RESTORE_FILE_$$=$(mktemp)
 
-    if ! iptables-save -t "$table" > "$temp_rules_file"; then
+    if ! iptables-save -t "$table" > "$DEDUPE_RULES_FILE_$$"; then
         handle_error "Failed to save rules for table $table."
-        rm -f "$temp_rules_file" "$temp_restore_file"
+        rm -f "$DEDUPE_RULES_FILE_$$" "$DEDUPE_RESTORE_FILE_$$"
         return 1
     fi
 
-    if ! grep -q '^-A' "$temp_rules_file"; then
+    if ! grep -q '^-A' "$DEDUPE_RULES_FILE_$$"; then
         log_message "No append rules (-A) to process in table '$table'. Skipping."
-        rm -f "$temp_rules_file" "$temp_restore_file"
+        rm -f "$DEDUPE_RULES_FILE_$$" "$DEDUPE_RESTORE_FILE_$$"
         return 0
     fi
     
     local non_append_lines
-    non_append_lines=$(grep -v '^-A' "$temp_rules_file")
+    non_append_lines=$(grep -v '^-A' "$DEDUPE_RULES_FILE_$$")
     local append_rules
-    append_rules=$(grep '^-A' "$temp_rules_file")
+    append_rules=$(grep '^-A' "$DEDUPE_RULES_FILE_$$")
 
     local deduped_append_rules
     deduped_append_rules=$(echo "$append_rules" | awk '!seen[$0]++')
@@ -77,13 +78,13 @@ deduplicate_table_rules() {
             echo "$non_append_lines" | grep -v '^COMMIT'
             echo "$deduped_append_rules"
             echo "COMMIT"
-        } > "$temp_restore_file"
+        } > "$DEDUPE_RESTORE_FILE_$$"
         
         log_message "Applying deduplicated rules for table $table..."
 
-        if ! iptables-restore --table="$table" < "$temp_restore_file"; then
+        if ! iptables-restore --table="$table" < "$DEDUPE_RESTORE_FILE_$$"; then
             handle_error "Failed to apply deduplicated rules for table $table."
-            rm -f "$temp_rules_file" "$temp_restore_file"
+            rm -f "$DEDUPE_RULES_FILE_$$" "$DEDUPE_RESTORE_FILE_$$"
             return 1
         else
             log_message "Successfully applied deduplicated rules for table $table."
@@ -96,13 +97,13 @@ deduplicate_table_rules() {
                 log_message "Verification successful: No remaining duplicates found in table '$table'."
             else
                 handle_error "Verification FAILED: Duplicates still exist in table '$table'."
-                rm -f "$temp_rules_file" "$temp_restore_file"
+                rm -f "$DEDUPE_RULES_FILE_$$" "$DEDUPE_RESTORE_FILE_$$"
                 return 1
             fi
         fi
     fi
 
-    rm -f "$temp_rules_file" "$temp_restore_file"
+    rm -f "$DEDUPE_RULES_FILE_$$" "$DEDUPE_RESTORE_FILE_$$"
     return 0
 }
 
