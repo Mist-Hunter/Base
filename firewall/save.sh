@@ -68,7 +68,7 @@ check_docker_user_chain() {
         iptables -L DOCKER-USER -n -v --line-numbers
     else
         log "DOCKER-USER chain does not exist or is empty"
-    Sfi
+    fi
 }
 
 # Improved function to deduplicate iptables rules using iptables-restore
