@@ -18,8 +18,6 @@ DEDUP_ERROR=0
 DEBUG=0
 
 # Argument Parsing
-local_arg_parse_failed=0
-
 for arg in "$@"; do
     case "$arg" in
         --debug|-d)
@@ -29,7 +27,6 @@ for arg in "$@"; do
             echo "Error: Unknown argument '$arg'" >&2
             echo "Usage: $0 [--debug | -d]" >&2
             SAVE_ERROR=1
-            local_arg_parse_failed=1
             break
             ;;
     esac
@@ -40,7 +37,8 @@ log_message() {
     local message="$1"
     local timestamp
     timestamp=$(date +"%Y-%m-%d @ %H:%M:%S")
-    log "# scripts, apt, firewall, save: added by $(whoami) on ${timestamp} - ${message}"
+    # Assuming 'log' is an alias or function; if not, replace with `echo`
+    echo "# scripts, apt, firewall, save: added by $(whoami) on ${timestamp} - ${message}"
 }
 
 # Function to handle errors
@@ -57,122 +55,122 @@ debug() {
     fi
 }
 
-# Function to check DOCKER-USER chain
-check_docker_user_chain() {
-    log "Checking DOCKER-USER chain:"
-    if iptables -L DOCKER-USER -n -v --line-numbers > /dev/null 2>&1; then
-        iptables -L DOCKER-USER -n -v --line-numbers
-    else
-        log "DOCKER-USER chain does not exist or is empty"
-    fi
-}
-
-# Improved function to deduplicate iptables rules using iptables-restore
+# Function to deduplicate iptables rules
 dedup_improved() {
     local table=$1
-    log "Processing table: $table for deduplication"
+    log_message "Processing table: $table for deduplication"
     debug "Starting dedup_improved for table: $table"
 
-    # Check if the table exists and is not empty
-    if ! iptables -t "$table" -L >/dev/null 2>&1; then
-        handle_error "Table $table does not exist or is empty. Skipping deduplication for this table."
-        debug "Table $table does not exist or is empty. Exiting dedup_improved for this table."
-        return 0
-    fi
-
-    local temp_rules_file temp_deduped_file temp_rules_no_comments
+    local temp_rules_file temp_restore_file
     temp_rules_file=$(mktemp)
-    temp_deduped_file=$(mktemp)
-    temp_rules_no_comments=$(mktemp)
-
-    trap "rm -f \"$temp_rules_file\" \"$temp_deduped_file\" \"$temp_rules_no_comments\"; debug \"Cleaned up temp files: $temp_rules_file, $temp_deduped_file, $temp_rules_no_comments\"" EXIT # Ensure cleanup
-
-    debug "Temporary files created: $temp_rules_file, $temp_deduped_file, $temp_rules_no_comments"
+    temp_restore_file=$(mktemp)
+    
+    # Ensure temporary files are removed on exit
+    trap 'rm -f "$temp_rules_file" "$temp_restore_file"' EXIT HUP INT QUIT TERM
 
     # Dump the current rules for the specific table
-    debug "Dumping current rules for table $table to $temp_rules_file"
     if ! iptables-save -t "$table" > "$temp_rules_file"; then
         handle_error "Failed to save rules for table $table."
-        debug "Failed to save rules for table $table. Exiting dedup_improved."
         return 1
     fi
-    debug "Finished dumping rules for table $table. Size: $(wc -l < "$temp_rules_file") lines."
 
-    # Deduplicate rules by extracting, stripping comments, sorting, and getting unique rules.
-    awk "/\*$table/,/COMMIT/ { print }" "$temp_rules_file" | \
-    grep '^-A' | \
-    sed -E 's/ -m comment --comment ".*"//' | \
-    sort -u > "$temp_deduped_file"
+    # Check if there are any append rules (-A) to process
+    if ! grep -q '^-A' "$temp_rules_file"; then
+        log_message "No append rules (-A) to process in table '$table'. Skipping."
+        return 0
+    fi
+    
+    # Separate append rules from everything else (chain defs, other rules, etc.)
+    local non_append_lines
+    non_append_lines=$(grep -v '^-A' "$temp_rules_file")
+    local append_rules
+    append_rules=$(grep '^-A' "$temp_rules_file")
 
-    # Count original and deduplicated rules
     local original_rule_count
-    original_rule_count=$(grep '^-A' "$temp_rules_file" | wc -l)
+    original_rule_count=$(echo "$append_rules" | wc -l)
+    
+    # Deduplicate append rules (exact duplicates, including comments)
+    local deduped_append_rules
+    deduped_append_rules=$(echo "$append_rules" | sort -u)
+
     local deduped_rule_count
-    deduped_rule_count=$(wc -l < "$temp_deduped_file")
-    debug "Original rule count for $table (including comments): $original_rule_count"
-    debug "Deduped rule count for $table (after stripping comments): $deduped_rule_count"
+    deduped_rule_count=$(echo "$deduped_append_rules" | wc -l)
+
+    debug "Original -A rule count for $table: $original_rule_count"
+    debug "Deduplicated -A rule count for $table: $deduped_rule_count"
 
     if [[ $original_rule_count -eq $deduped_rule_count ]]; then
-        log "No duplicates found in $table table (ignoring comments)."
-        debug "No duplicates found in $table table. Skipping iptables-restore."
+        log_message "No duplicate -A rules found in $table table."
     else
-        log "Deduplicated $table table: Removed $((original_rule_count - deduped_rule_count)) duplicate rules (ignoring comments)."
+        log_message "Deduplicated $table table: Removed $((original_rule_count - deduped_rule_count)) duplicate -A rules."
         
-        # Reconstruct the full iptables-restore format for the table
-        debug "Reconstructing iptables-restore format for table $table in $temp_rules_file"
-        echo "*$table" > "$temp_rules_file"
-        cat "$temp_deduped_file" >> "$temp_rules_file"
-        echo "COMMIT" >> "$temp_rules_file"
-        debug "Reconstruction complete. New rules file size: $(wc -l < "$temp_rules_file") lines."
+        # Reconstruct the full iptables-restore format file
+        debug "Reconstructing iptables-restore format for table $table in $temp_restore_file"
+        {
+            # Write all original lines that weren't -A rules, excluding the final COMMIT
+            echo "$non_append_lines" | grep -v '^COMMIT'
+            # Write the unique -A rules
+            echo "$deduped_append_rules"
+            # Write the final COMMIT
+            echo "COMMIT"
+        } > "$temp_restore_file"
+        
+        log_message "Applying deduplicated rules for table $table..."
+        debug "Executing command: iptables-restore --table=\"$table\" < \"$temp_restore_file\""
 
-        log "Applying deduplicated rules for table $table..."
-        # Atomically replace the rules for the table
-        local restore_cmd="iptables-restore -t \"$table\" \"$temp_rules_file\""
-        debug "Executing command: $restore_cmd"
-        if ! eval "$restore_cmd"; then
+        # Atomically replace the rules for the table using the corrected command
+        if ! iptables-restore --table="$table" < "$temp_restore_file"; then
             handle_error "Failed to apply deduplicated rules for table $table."
-            debug "Failed to apply deduplicated rules for table $table. Exiting dedup_improved."
             return 1
         else
-            log "Successfully applied deduplicated rules for table $table."
-            debug "Successfully applied deduplicated rules for table $table."
+            log_message "Successfully applied deduplicated rules for table $table."
         fi
     fi
 
-    debug "Finished dedup_improved for table: $table"
     return 0
 }
 
-# Ensure log directory exists
-mkdir -p "$(dirname "${logs}/firewall.log")" || handle_error "Failed to create log directory"
 
-# Main Script Logic guarded by error flag
-if [[ $SAVE_ERROR -eq 0 ]]; then
-    log_message "Starting iptables save operation"
+# --- Main Script Logic ---
 
-    # Deduplication process
-    tables=('filter' 'nat' 'mangle')
-    failed_tables=()
+# Guard execution based on argument parsing
+if [[ $SAVE_ERROR -ne 0 ]]; then
+    log_message "Skipping iptables save operation due to argument parsing error."
+    exit 1
+fi
 
-    for table in "${tables[@]}"; do
-        if ! dedup_improved "$table"; then
-            failed_tables+=("$table")
-            handle_error "Error processing table: $table"
-        fi
-    done
+# Ensure log directory exists (assuming $logs is set in global.env)
+if [[ -z "${logs:-}" ]]; then
+    handle_error "\$logs variable is not set. Cannot determine log path."
+    exit 1
+fi
+mkdir -p "$(dirname "${logs}/firewall.log")" || { handle_error "Failed to create log directory"; exit 1; }
 
-    if [[ ${#failed_tables[@]} -gt 0 ]]; then
-        handle_error "Issues encountered with these tables: ${failed_tables[*]}"
+
+log_message "Starting iptables save operation"
+
+# Deduplication process
+tables=('filter' 'nat' 'mangle')
+failed_tables=()
+
+for table in "${tables[@]}"; do
+    if ! dedup_improved "$table"; then
+        failed_tables+=("$table")
+        # dedup_improved already calls handle_error, so no need to call it again
     fi
+done
 
-    # Save current iptables rules (after deduplication)
+if [[ ${#failed_tables[@]} -gt 0 ]]; then
+    handle_error "Issues encountered while processing these tables: ${failed_tables[*]}"
+fi
+
+# Proceed only if no errors occurred during deduplication
+if [ $SAVE_ERROR -eq 0 ]; then
     log_message "Saving current iptables rules to ${logs}/firewall.log"
     iptables-save >> "${logs}/firewall.log" || handle_error "Failed to save iptables rules to log"
 
     log_message "Saving current iptables rules to /etc/iptables.up.rules"
     iptables-save > /etc/iptables.up.rules || handle_error "Failed to save iptables rules to /etc/iptables.up.rules"
-else
-    log_message "Skipping iptables save operation due to argument parsing error."
 fi
 
 # Log the completion of the save operation
@@ -180,5 +178,7 @@ if [ $SAVE_ERROR -eq 0 ]; then
     log_message "iptables save operation completed successfully"
 else
     log_message "iptables save operation completed with errors"
-    true
 fi
+
+# Exit with status reflecting success or failure
+exit $SAVE_ERROR
