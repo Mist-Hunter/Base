@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # Description: This script saves the current iptables rules, safely deduplicates them while preserving rule order, and verifies the changes.
-#              It can be executed directly or sourced by other scripts.
+#              It can be executed directly or sourced by other scripts without exiting the parent shell.
 # Usage: ./save.sh  OR  . ./save.sh
 # Dependencies: iptables, iptables-save, iptables-restore, awk
 
-set -euo pipefail
+set -uo pipefail
 
 # Initialize error flag
 SAVE_ERROR=0
