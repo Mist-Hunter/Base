@@ -108,6 +108,14 @@ deduplicate_table_rules() {
 
 # Main function to contain the script's primary logic.
 main() {
+    # Temporarily disable the shell's DEBUG trap to prevent interference.
+    local old_debug_trap
+    old_debug_trap=$(trap -p DEBUG || true)
+    trap - DEBUG
+
+    # Ensure the original DEBUG trap is restored when this function returns.
+    trap "$old_debug_trap" RETURN
+
     local GLOBAL_ENV_FILE="/root/.config/global.env"
 
     if [[ ! -f "$GLOBAL_ENV_FILE" ]]; then
@@ -159,5 +167,3 @@ main() {
 
 # Call the main function to run the script's logic.
 main
-
-echo "DEBUG DONE"
