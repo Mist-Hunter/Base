@@ -159,3 +159,5 @@ main() {
 
 # Call the main function to run the script's logic.
 main
+
+echo "DEBUG DONE"
