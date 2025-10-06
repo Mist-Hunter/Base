@@ -158,75 +158,62 @@ fi
 # Colors persist until next color token (no auto-reset)
 # Based on: https://github.com/fastfetch-cli/fastfetch/blob/dev/src/logo/builtin.c
 
+# === DISTRO-SPECIFIC COLOR MAPPINGS ===
+# Logo color tokens ($1-$9) map to distro-specific colors
+# Colors persist until next color token (no auto-reset)
+# Based on: https://github.com/fastfetch-cli/fastfetch/blob/dev/src/logo/builtin.c
+
 case "$os_id" in
     debian)
+        # FF_COLOR_FG_RED, FF_COLOR_FG_WHITE
         C1="${ESC}[31m"   # Red
         C2="${ESC}[37m"   # White
-        C3="${ESC}[31m"
-        C4="${ESC}[37m"
-        C5="${ESC}[31m"
-        C6="${ESC}[37m"
-        C7="${ESC}[37m"
-        C8="${ESC}[90m"
-        C9="${ESC}[30m"
         ;;
     ubuntu)
-        C1="${ESC}[38;5;202m"  # Orange
-        C2="${ESC}[37m"        # White
-        C3="${ESC}[38;5;202m"
-        C4="${ESC}[37m"
-        C5="${ESC}[38;5;202m"
-        C6="${ESC}[37m"
-        C7="${ESC}[37m"
-        C8="${ESC}[90m"
-        C9="${ESC}[30m"
+        # FF_COLOR_FG_RED, FF_COLOR_FG_RED
+        C1="${ESC}[31m"   # Red
+        C2="${ESC}[31m"   # Red
         ;;
-    arch)
-        C1="${ESC}[36m"   # Cyan
-        C2="${ESC}[36m"   # Cyan
-        C3="${ESC}[36m"
-        C4="${ESC}[34m"
-        C5="${ESC}[35m"
-        C6="${ESC}[36m"
-        C7="${ESC}[37m"
-        C8="${ESC}[90m"
-        C9="${ESC}[30m"
-        ;;
-    fedora)
+    kubuntu)
+        # FF_COLOR_FG_BLUE, FF_COLOR_FG_WHITE
         C1="${ESC}[34m"   # Blue
         C2="${ESC}[37m"   # White
-        C3="${ESC}[34m"
-        C4="${ESC}[37m"
-        C5="${ESC}[34m"
-        C6="${ESC}[37m"
-        C7="${ESC}[37m"
-        C8="${ESC}[90m"
-        C9="${ESC}[30m"
         ;;
-    alpine)
-        C1="${ESC}[34m"   # Blue
+    pfsense)
+        # Not in the C file - using generic
+        C1="${ESC}[31m"   # Red
         C2="${ESC}[37m"   # White
-        C3="${ESC}[36m"
-        C4="${ESC}[34m"
-        C5="${ESC}[35m"
-        C6="${ESC}[36m"
-        C7="${ESC}[37m"
-        C8="${ESC}[90m"
-        C9="${ESC}[30m"
+        ;;
+    proxmox|pve)
+        # FF_COLOR_FG_WHITE, FF_COLOR_FG_256 "202" (orange)
+        C1="${ESC}[37m"      # White
+        C2="${ESC}[38;5;202m"  # Orange (256-color)
+        ;;
+    openwrt)
+        # FF_COLOR_FG_BLUE
+        C1="${ESC}[34m"   # Blue
+        C2="${ESC}[34m"   # Blue (single color logo)
+        ;;
+    q4os)
+        # FF_COLOR_FG_BLUE, FF_COLOR_FG_RED
+        C1="${ESC}[34m"   # Blue
+        C2="${ESC}[31m"   # Red
         ;;
     *)
-        # Generic fallback for unknown distros
+        # Generic fallback
         C1="${ESC}[32m"   # Green
         C2="${ESC}[37m"   # White
-        C3="${ESC}[32m"
-        C4="${ESC}[34m"
-        C5="${ESC}[35m"
-        C6="${ESC}[36m"
-        C7="${ESC}[37m"
-        C8="${ESC}[90m"
-        C9="${ESC}[30m"
         ;;
 esac
+
+# Set remaining color slots (most logos only use $1 and $2)
+C3="${C1}"
+C4="${C2}"
+C5="${C1}"
+C6="${C2}"
+C7="${ESC}[37m"
+C8="${ESC}[90m"
+C9="${ESC}[30m"
 
 # === TOKEN REPLACEMENT (no bashism) ===
 # Replace color tokens with ANSI codes
