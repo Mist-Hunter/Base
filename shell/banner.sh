@@ -207,6 +207,7 @@ fi
 
 case "$os_id" in
     debian)
+        # FIXME this should be bold white, bold red, but isn't
         # FF_COLOR_FG_RED, FF_COLOR_FG_WHITE
         C1="${ESC}[91m"   # Bold Bright Red
         C2="${ESC}[97m"   # Bold Bright White
