@@ -326,6 +326,8 @@ while [ "$i" -le "$max_lines" ]; do
     printf " %s%s%s %s\n" "$logo_line" "$N" "$padstr" "$info_line"
     i=$((i+1))
 done
+# One empty pad line
+printf "\n"
 
 # Cleanup
 rm -f "$logo_tmp" "$info_tmp" "$stripped_logo"
