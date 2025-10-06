@@ -270,8 +270,8 @@ ${R}Local IP${N}:  $local_ip
 ${R}Date${N}:      $current_date
 ${R}Uptime${N}:    $uptime
 
-${B}███${R}███${Y}███${G}███${C}███${M}███${W}███${N}
-${B}███${R}███${Y}███${G}███${C}███${M}███${W}███${N}"
+${Blk}███${R}███${G}███${Y}███${B}███${M}███${C}███${W}███${N}
+${Blk}███${R}███${G}███${Y}███${B}███${M}███${C}███${W}███${N}"
 
 # === SIDE-BY-SIDE RENDER ===
 logo_tmp="/tmp/banner_logo_$$"
