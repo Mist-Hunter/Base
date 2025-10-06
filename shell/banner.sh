@@ -126,7 +126,28 @@ fi
 # IPs
 local_ip=$(ip -4 a 2>/dev/null | awk '/inet / && !/127.0.0.1/ {print $2; exit}' | cut -d/ -f1)
 [ -z "$local_ip" ] && local_ip="N/A"
-public_ip=$(timeout 2 wget -qO- http://icanhazip.com 2>/dev/null || echo "N/A")
+
+# Public IP and Location
+public_ip_base=$(timeout 2 wget -qO- http://icanhazip.com 2>/dev/null || echo "N/A")
+
+if [ "$public_ip_base" != "N/A" ]; then
+    # Use ipinfo.io to get location data in JSON
+    location_json=$(timeout 2 wget -qO- "http://ipinfo.io/${public_ip_base}/json" 2>/dev/null)
+    
+    # POSIX way to parse a simple JSON line for city
+    # Note: This is fragile and assumes 'city' is on its own line and before other fields.
+    # For complex JSON, jq is strongly recommended.
+    city=$(printf '%s' "$location_json" | grep '"city":' | head -n 1 | awk -F'"' '{print $4}')
+    
+    if [ -n "$city" ]; then
+        public_ip="${public_ip_base} (${city})"
+    else
+        public_ip="$public_ip_base"
+    fi
+else
+    public_ip="N/A"
+fi
+
 
 # === LOGO FETCH OR FALLBACK ===
 os_id=$(echo "$os" | awk '{print tolower($1)}')
@@ -232,20 +253,24 @@ logo_processed=$(
 # No additional processing - use as-is
 logo="$logo_processed"
 
+
+# TODO implement: Location in parenthesis on public IP; ie (city)" "$(curl --silent ipinfo.io/$(curl --silent https://ipinfo.io/ip) | jq -r '.city','.region','.country' | tr '\n' ' ' )
+# TODO implement date & time above updtime
 # === INFO BLOCK ===
 info="${R}OS${N}:        $os
 ${R}Host${N}:      $host
 ${R}Kernel${N}:    $kernel
 ${R}Shell${N}:     $shell
+
+${R}CPU${N}:       $cpu
+${R}Memory${N}:    $memory
+${R}Disk (/)${N}:  $disk
+${R}Swap${N}:      $swap
+
+${R}Public IP${N}: $public_ip
+${R}Local IP${N}:  $local_ip
 ${R}Uptime${N}:    $uptime
 
-${Y}CPU${N}:       $cpu
-${Y}Memory${N}:    $memory
-${Y}Disk (/)${N}:  $disk
-${Y}Swap${N}:      $swap
-
-${G}Local IP${N}:  $local_ip
-${G}Public IP${N}: $public_ip
 ${B}█${R}█${Y}█${G}█${C}█${M}█${W}█${N}█"
 
 # === SIDE-BY-SIDE RENDER ===
