@@ -54,6 +54,16 @@
 # === ESC + COLORS ===
 ESC=$(printf '\033')
 
+# Dark (non-bold) variants for top row
+BlkD="${ESC}[0;30m"  # Dark Black
+RD="${ESC}[0;31m"    # Dark Red
+GD="${ESC}[0;32m"    # Dark Green
+YD="${ESC}[0;33m"    # Dark Yellow
+BD="${ESC}[0;34m"    # Dark Blue
+MD="${ESC}[0;35m"    # Dark Magenta
+CD="${ESC}[0;36m"    # Dark Cyan
+WD="${ESC}[0;37m"    # Dark White (renders as Gray)
+
 # Base ANSI colors for info display
 R="${ESC}[1;31m"  # Bold Red
 Y="${ESC}[1;33m"  # Bold Yellow
@@ -63,6 +73,16 @@ M="${ESC}[1;35m"  # Bold Magenta
 C="${ESC}[1;36m"  # Bold Cyan
 W="${ESC}[1;37m"  # Bold White
 N="${ESC}[0m"     # Reset
+
+# Bright (bold) variants for bottom row
+BlkB="${ESC}[0;90m"  # Bright Black (Gray)
+RB="${ESC}[0;91m"    # Bright Red
+GB="${ESC}[0;92m"    # Bright Green
+YB="${ESC}[0;93m"    # Bright Yellow
+BB="${ESC}[0;94m"    # Bright Blue
+MB="${ESC}[0;95m"    # Bright Magenta
+CB="${ESC}[0;96m"    # Bright Cyan
+WB="${ESC}[0;97m"    # Bright White
 
 # === SYSTEM INFO ===
 # OS
@@ -270,8 +290,8 @@ ${R}Local IP${N}:  $local_ip
 ${R}Date${N}:      $current_date
 ${R}Uptime${N}:    $uptime
 
-${Blk}███${R}███${G}███${Y}███${B}███${M}███${C}███${W}███${N}
-${Blk}███${R}███${G}███${Y}███${B}███${M}███${C}███${W}███${N}"
+${B}███${R}███${Y}███${G}███${C}███${M}███${W}███${N}
+${B}███${R}███${Y}███${G}███${C}███${M}███${W}███${N}"
 
 # === SIDE-BY-SIDE RENDER ===
 logo_tmp="/tmp/banner_logo_$$"
