@@ -208,8 +208,8 @@ fi
 case "$os_id" in
     debian)
         # FF_COLOR_FG_RED, FF_COLOR_FG_WHITE
-        C1="${ESC}[91m"   # Bright Red
-        C2="${ESC}[97m"   # Bright White
+        C1="${ESC}[1;91m"   # Bold Bright Red
+        C2="${ESC}[1;97m"   # Bold Bright White
         ;;
     ubuntu)
         # FF_COLOR_FG_RED, FF_COLOR_FG_RED
