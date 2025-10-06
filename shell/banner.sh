@@ -88,6 +88,7 @@ days=$((uptime_sec / 86400))
 hours=$((uptime_sec % 86400 / 3600))
 mins=$((uptime_sec % 3600 / 60))
 uptime="${days}d ${hours}h ${mins}m"
+current_date=$(date '+%Y-%m-%d %H:%M:%S')
 
 # CPU
 cpu=$(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2 | sed 's/^[ \t]*//' || echo "Unknown CPU")
@@ -253,9 +254,6 @@ logo_processed=$(
 # No additional processing - use as-is
 logo="$logo_processed"
 
-
-# TODO implement: Location in parenthesis on public IP; ie (city)" "$(curl --silent ipinfo.io/$(curl --silent https://ipinfo.io/ip) | jq -r '.city','.region','.country' | tr '\n' ' ' )
-# TODO implement date & time above updtime
 # === INFO BLOCK ===
 info="${R}OS${N}:        $os
 ${R}Host${N}:      $host
@@ -269,6 +267,7 @@ ${R}Swap${N}:      $swap
 
 ${R}Public IP${N}: $public_ip
 ${R}Local IP${N}:  $local_ip
+${R}Date${N}:      $current_date
 ${R}Uptime${N}:    $uptime
 
 ${B}█${R}█${Y}█${G}█${C}█${M}█${W}█${N}█"
