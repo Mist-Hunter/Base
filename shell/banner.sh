@@ -298,6 +298,9 @@ logo_tmp="/tmp/banner_logo_$$"
 info_tmp="/tmp/banner_info_$$"
 stripped_logo="${logo_tmp}.stripped"
 
+# One empty pad line
+printf "\n"
+
 printf '%s\n' "$logo" > "$logo_tmp"
 printf '%s\n' "$info" > "$info_tmp"
 
