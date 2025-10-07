@@ -1,18 +1,12 @@
 #!/bin/bash
-
-# Refference: https://ss64.com/bash/syntax-prompt.html
-
+# Reference: https://ss64.com/bash/syntax-prompt.html
 # DEV_TYPE is expected system variable see /apt/virt-what
-
-# user coloring based on privillage level. Root is red, anything else green.
-
+# user coloring based on privilege level. Root is red, anything else green.
 # hostname coloring based DEV_TYPE. Color on left, DEV_TYPE value on right
 # brown = lxc
 # green = kvm,,xen,xen-hvm,aws
 # red   = x86_64,aarch64,x86_64,armv7l
-
-# FIXME verify DEV_TYPE exists and veriy PS1 doesn't
-
+# FIXME verify DEV_TYPE exists and verify PS1 doesn't
 # TODO @ symbol could related to matching subnet color code (red, orange etc)
 # TODO @ .domain search with hostname color, domain dark color
 
@@ -36,6 +30,15 @@ DOMAIN_NAME=".${HOSTNAME_FQDN#*.}"    # Extract domain by removing text up to th
 # If FQDN is the same as the short name, there is no domain.
 if [ "$HOSTNAME_FQDN" == "$HOSTNAME_SHORT" ]; then
     DOMAIN_NAME=""
+    
+    # Try to get domain from DHCP if hostname doesn't provide it
+    for iface in $(ls /sys/class/net/ 2>/dev/null | grep -v lo); do
+        DHCP_DOMAIN=$(dhcpcd -U "$iface" 2>/dev/null | grep "domain_name=" | cut -d'=' -f2)
+        if [ -n "$DHCP_DOMAIN" ]; then
+            DOMAIN_NAME=".${DHCP_DOMAIN}"
+            break
+        fi
+    done
 fi
 
 # Determine user color
