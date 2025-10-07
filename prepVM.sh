@@ -259,10 +259,12 @@ harden_service() {
 }
 
 # Standard safe hardening (NO ProtectKernelTunables for most)
+# --> Caused systemd[2773]: Failed to allocate manager object: Read-only file system 
+## ErrProtectControlGroups=yes
+
 SAFE='[Service]
 PrivateTmp=yes
 ProtectKernelModules=yes
-ProtectControlGroups=yes
 RestrictRealtime=yes
 LockPersonality=yes
 SystemCallArchitectures=native'
