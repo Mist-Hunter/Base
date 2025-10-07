@@ -94,7 +94,16 @@ else
 fi
 
 # Host
-host=$(cat /sys/class/dmi/id/product_name 2>/dev/null || hostname)
+host_name=$(cat /sys/class/dmi/id/product_name 2>/dev/null)
+host_version=$(cat /sys/class/dmi/id/product_version 2>/dev/null)
+
+if [ -n "$host_name" ] && [ -n "$host_version" ] && [ "$host_version" != "None" ] && [ "$host_version" != "Not Specified" ]; then
+    host="${host_name} (${host_version})"
+elif [ -n "$host_name" ] && [ "$host_name" != "None" ] && [ "$host_name" != "Not Specified" ]; then
+    host="$host_name"
+else
+    host=$(hostname)
+fi
 
 # Kernel
 kernel=$(uname -r)
