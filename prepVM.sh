@@ -303,7 +303,8 @@ echo ""
 echo "This should prevent read-only filesystem issues."
 
 # Lynis FINT-4350 File Integrity
-. $SCRIPTS/apt/aide/up.sh
+# NOTE May be breaking module blacklist
+# . $SCRIPTS/apt/aide/up.sh
 
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
