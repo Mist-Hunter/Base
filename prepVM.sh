@@ -250,6 +250,7 @@ done
 
 # Lynix BOOT-5264 ---------------------------------------------------------------------------
 # Hardens systemd services flagged as UNSAFE
+# FIXME systemd[2773]: Failed to allocate manager object: Read-only file system
 echo "Applying safe systemd hardening (network services excluded)..."
 
 harden_service() {
@@ -258,10 +259,12 @@ harden_service() {
 }
 
 # Standard safe hardening (NO ProtectKernelTunables for most)
+# --> Caused systemd[2773]: Failed to allocate manager object: Read-only file system 
+## ErrProtectControlGroups=yes
+
 SAFE='[Service]
 PrivateTmp=yes
 ProtectKernelModules=yes
-ProtectControlGroups=yes
 RestrictRealtime=yes
 LockPersonality=yes
 SystemCallArchitectures=native'
@@ -298,8 +301,23 @@ echo "Safe to restart:"
 echo "  systemctl restart cron.service dbus.service"
 echo ""
 echo "This should prevent read-only filesystem issues."
+
+# Lynis FINT-4350 File Integrity
+. $SCRIPTS/apt/aide/up.sh
+
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
+
+# Lynis Configure password hashing rounds in /etc/login.defs [AUTH-9230] 
+sed -i 's|# SHA_CRYPT_|SHA_CRYPT_|g' /etc/login.defs 
+
+# Lynis Default umask in /etc/login.defs could be more strict like 027 [AUTH-9328] 
+sed -i '/UMASK/s/022/027/g' /etc/login.defs
+
+# Lynis Configure minimum and maximum password age in /etc/login.defs [AUTH-9286]
+#sed -i '/^PASS_MAX_DAYS/c\PASS_MAX_DAYS   90' /etc/login.defs
+sed -i '/^PASS_MIN_DAYS/c\PASS_MIN_DAYS   1' /etc/login.defs
+#sed -i '/^PASS_WARN_AGE/c\PASS_WARN_AGE   7' /etc/login.defs
 
 # Lynis nstall fail2ban to automatically ban hosts that commit multiple authentication errors. [DEB-0880]
 # . $SCRIPTS/apt/fail2ban/up.sh                                 # <--- 1 Point, 20 Mb of RAM. Not using SSH. Skipping.
