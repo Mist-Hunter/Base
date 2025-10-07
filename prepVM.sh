@@ -254,6 +254,7 @@ for tool in cc gcc g++ make clang; do command -v $tool; done
 
 # Lynix BOOT-5264 ---------------------------------------------------------------------------
 # Hardens systemd services flagged as UNSAFE
+
 echo "Starting systemd service hardening..."
 
 # Cron service hardening
@@ -358,6 +359,9 @@ EOF
 echo "Reloading systemd daemon..."
 systemctl daemon-reload
 
+# Disable set -e for service testing section
+set +e
+
 # Test each service (non-failing check)
 echo ""
 echo "Testing services..."
@@ -389,6 +393,9 @@ for service in "${services[@]}"; do
     fi
 done
 
+# Re-enable set -e
+set -e
+
 echo ""
 echo "Checking security scores..."
 echo "Run 'systemd-analyze security SERVICE_NAME' to see improvements"
@@ -416,7 +423,6 @@ echo "To revert a service, remove its override:"
 echo "  rm -rf /etc/systemd/system/SERVICE_NAME.d/"
 echo "  systemctl daemon-reload"
 echo "  systemctl restart SERVICE_NAME"
-
 
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
