@@ -60,13 +60,16 @@ EOT
 else
 cat <<EOT >> ~/.bashrc
 
-#Shell / Prompt Configuration (bash-it replacement)
+# FastFetch Replacement
 . $scripts/base/shell/prompt.sh
+
+#Shell / Prompt Configuration (bash-it replacement)
+. $scripts/base/shell/banner.sh
 EOT
 fi
 
 # FastFetch
-. $SCRIPTS/apt/fastfetch/up.sh
+# . $SCRIPTS/apt/fastfetch/up.sh
 
 # Setup Update Service
 . $SCRIPTS/base/debian/updaterservice.sh

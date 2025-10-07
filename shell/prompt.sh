@@ -14,6 +14,7 @@
 # FIXME verify DEV_TYPE exists and veriy PS1 doesn't
 
 # TODO @ symbol could related to matching subnet color code (red, orange etc)
+# TODO @ .domain search with hostname color, domain dark color
 
 # Define colors with ANSI_ prefix
 ANSI_RED='\[\033[01;31m\]'
