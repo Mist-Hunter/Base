@@ -248,6 +248,176 @@ done
 
 # TODO: Lynis enable process accounting [ACCT-9622]
 
+# Lynis HRDN-7222 https://cisofy.com/lynis/controls/HRDN-7222/
+apt remove build-essential
+for tool in cc gcc g++ make clang; do command -v $tool; done
+
+# Lynix BOOT-5264 ---------------------------------------------------------------------------
+# Hardens systemd services flagged as UNSAFE
+echo "Starting systemd service hardening..."
+
+# Cron service hardening
+echo "Hardening cron.service..."
+mkdir -p /etc/systemd/system/cron.service.d
+tee /etc/systemd/system/cron.service.d/hardening.conf > /dev/null <<'EOF'
+[Service]
+# Security restrictions
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+NoNewPrivileges=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+
+# Cron needs to write to these locations
+ReadWritePaths=/var/spool/cron /var/spool/cron/crontabs
+EOF
+
+# Getty (TTY) service hardening - lighter restrictions needed for terminal access
+echo "Hardening getty@tty1.service..."
+mkdir -p /etc/systemd/system/getty@tty1.service.d
+tee /etc/systemd/system/getty@tty1.service.d/hardening.conf > /dev/null <<'EOF'
+[Service]
+# Limited security restrictions for TTY access
+PrivateTmp=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+EOF
+
+# Serial getty hardening
+echo "Hardening serial-getty@ttyS0.service..."
+mkdir -p /etc/systemd/system/serial-getty@ttyS0.service.d
+tee /etc/systemd/system/serial-getty@ttyS0.service.d/hardening.conf > /dev/null <<'EOF'
+[Service]
+PrivateTmp=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+EOF
+
+# QEMU guest agent hardening
+echo "Hardening qemu-guest-agent.service..."
+mkdir -p /etc/systemd/system/qemu-guest-agent.service.d
+tee /etc/systemd/system/qemu-guest-agent.service.d/hardening.conf > /dev/null <<'EOF'
+[Service]
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+NoNewPrivileges=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX
+SystemCallArchitectures=native
+
+# QEMU agent needs device access
+ReadWritePaths=/dev
+EOF
+
+# Network service hardening
+echo "Hardening network-ipset-firehol-updater.service..."
+mkdir -p /etc/systemd/system/network-ipset-firehol-updater.service.d
+tee /etc/systemd/system/network-ipset-firehol-updater.service.d/hardening.conf > /dev/null <<'EOF'
+[Service]
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+NoNewPrivileges=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+SystemCallArchitectures=native
+
+# Needs to write firewall rules
+ReadWritePaths=/var/lib /run
+EOF
+
+# rc-local service hardening (if it exists)
+echo "Hardening rc-local.service..."
+mkdir -p /etc/systemd/system/rc-local.service.d
+tee /etc/systemd/system/rc-local.service.d/hardening.conf > /dev/null <<'EOF'
+[Service]
+PrivateTmp=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+EOF
+
+# Reload systemd configuration
+echo "Reloading systemd daemon..."
+systemctl daemon-reload
+
+# Test each service (non-failing check)
+echo ""
+echo "Testing services..."
+services=(
+    "cron.service"
+    "getty@tty1.service"
+    "serial-getty@ttyS0.service"
+    "qemu-guest-agent.service"
+    "network-ipset-firehol-updater.service"
+    "rc-local.service"
+)
+
+failed_services=()
+
+for service in "${services[@]}"; do
+    echo -n "Checking $service... "
+    if systemctl is-active --quiet "$service" 2>/dev/null; then
+        echo "restarting..."
+        if systemctl restart "$service" 2>/dev/null; then
+            echo "  ✓ $service restarted successfully"
+        else
+            echo "  ✗ $service failed to restart"
+            failed_services+=("$service")
+        fi
+    elif systemctl is-enabled --quiet "$service" 2>/dev/null; then
+        echo "enabled but not running (OK)"
+    else
+        echo "not active/enabled (skipping)"
+    fi
+done
+
+echo ""
+echo "Checking security scores..."
+echo "Run 'systemd-analyze security SERVICE_NAME' to see improvements"
+echo ""
+
+# Show before/after for cron
+if command -v systemd-analyze &> /dev/null; then
+    echo "New security score for cron.service:"
+    systemd-analyze security cron.service 2>/dev/null | head -n 1 || echo "Could not analyze"
+fi
+
+echo ""
+if [ ${#failed_services[@]} -eq 0 ]; then
+    echo "✓ All services hardened successfully!"
+    echo "Re-run Lynis to see improved BOOT-5264 results"
+else
+    echo "⚠ Some services failed. Review these:"
+    printf '%s\n' "${failed_services[@]}"
+    echo ""
+    echo "Check logs with: journalctl -u SERVICE_NAME"
+fi
+
+echo ""
+echo "To revert a service, remove its override:"
+echo "  rm -rf /etc/systemd/system/SERVICE_NAME.d/"
+echo "  systemctl daemon-reload"
+echo "  systemctl restart SERVICE_NAME"
+
+
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
 
