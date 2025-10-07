@@ -65,7 +65,7 @@ log_tails() {
         if [ -f "$file" ] && [ -r "$file" ]; then
             # Use tail and while loop to process each line
             tail -f "$file" | while IFS= read -r line; do
-                log "$line" "$(basename "$file")"
+                log "$line" "$(basename -- "$file")"
             done &
             export tail_pids+=($!)
         else
@@ -139,7 +139,7 @@ log() {
     # FIXME basename: invalid option -- 'b'
     # FIXME caller_function=main
     
-    caller_script=$(basename "${BASH_SOURCE[i]:-$0}")
+    caller_script=$(basename -- "${BASH_SOURCE[i]:-$0}")
     caller_function="${FUNCNAME[i]:-main}"
 
     # Check if a single parameter is provided without flags
@@ -234,7 +234,7 @@ writer() {
                     path="${CONFIGS}/${name,,}.env"  # Lowercase path
                 else
                     path="$2"
-                    name=$(basename "$path" .env)
+                    name=$(basename -- "$path" .env)
                     env_name="${name^^}"
                 fi
                 shift 2
@@ -287,4 +287,3 @@ writer() {
         source "$path"
     fi
 }
-
