@@ -19,16 +19,24 @@
 # Define colors with ANSI_ prefix
 ANSI_RED='\[\033[01;31m\]'
 ANSI_GREEN='\[\033[01;32m\]'
+ANSI_DARK_GREEN='\[\033[0;32m\]'       # Added dark green color
 ANSI_BROWN='\[\033[01;33m\]'
 ANSI_LIGHT_BLUE='\[\033[1;34m\]'
 ANSI_DARK_GRAY='\[\033[1;30m\]'
-ANSI_PURPLE='\[\033[1;35m\]' 
+ANSI_PURPLE='\[\033[1;35m\]'
 ANSI_BOLD_YELLOW='\[\033[1;33m\]'
 ANSI_DEFAULT='\[\033[00m\]'
 
-# Get the current username and hostname
+# Get the current username, hostname, and domain name
 USER=$(whoami)
-HOSTNAME=$(hostname)
+HOSTNAME_SHORT=$(hostname -s)         # Get short hostname for comparison
+HOSTNAME_FQDN=$(hostname -f)          # Get Fully Qualified Domain Name
+DOMAIN_NAME=".${HOSTNAME_FQDN#*.}"    # Extract domain by removing text up to the first '.'
+
+# If FQDN is the same as the short name, there is no domain.
+if [ "$HOSTNAME_FQDN" == "$HOSTNAME_SHORT" ]; then
+    DOMAIN_NAME=""
+fi
 
 # Determine user color
 if [ "$USER" == "root" ]; then
@@ -53,5 +61,5 @@ case "$DEV_TYPE" in
         ;;
 esac
 
-# Set the prompt (PS1) with colored username and hostname
-export PS1="${USER_COLOR}\u${ANSI_DARK_GRAY}@\[\033[00m\]${HOSTNAME_COLOR}\h\[\033[00m\] ${ANSI_LIGHT_BLUE}\w${ANSI_DEFAULT} ${ANSI_BOLD_YELLOW}\$${ANSI_DEFAULT} "
+# Set the prompt (PS1) with colored username, hostname, and the new domain part
+export PS1="${USER_COLOR}\u${ANSI_DARK_GRAY}@\[\033[00m\]${HOSTNAME_COLOR}\h${ANSI_DARK_GREEN}${DOMAIN_NAME}\[\033[00m\] ${ANSI_LIGHT_BLUE}\w${ANSI_DEFAULT} ${ANSI_BOLD_YELLOW}\$${ANSI_DEFAULT} "
