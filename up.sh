@@ -61,10 +61,10 @@ else
 cat <<EOT >> ~/.bashrc
 
 # FastFetch Replacement
-. $scripts/base/shell/prompt.sh
+. $scripts/base/shell/banner.sh
 
 #Shell / Prompt Configuration (bash-it replacement)
-. $scripts/base/shell/banner.sh
+. $scripts/base/shell/prompt.sh
 EOT
 fi
 
