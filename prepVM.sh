@@ -248,13 +248,8 @@ done
 
 # TODO: Lynis enable process accounting [ACCT-9622]
 
-# Lynis HRDN-7222 https://cisofy.com/lynis/controls/HRDN-7222/
-apt remove build-essential
-for tool in cc gcc g++ make clang; do command -v $tool; done
-
 # Lynix BOOT-5264 ---------------------------------------------------------------------------
 # Hardens systemd services flagged as UNSAFE
-
 echo "Applying safe systemd hardening (network services excluded)..."
 
 harden_service() {
