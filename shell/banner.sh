@@ -145,8 +145,14 @@ else
 fi
 
 # IPs
-local_ip=$(ip -4 a 2>/dev/null | awk '/inet / && !/127.0.0.1/ {print $2; exit}' | cut -d/ -f1)
-[ -z "$local_ip" ] && local_ip="N/A"
+local_ip_line=$(ip -4 a 2>/dev/null | awk '/inet / && !/127.0.0.1/ {print $2, $NF; exit}')
+if [ -n "$local_ip_line" ]; then
+    local_ip=$(echo "$local_ip_line" | cut -d' ' -f1 | cut -d/ -f1)
+    local_iface=$(echo "$local_ip_line" | cut -d' ' -f2)
+    local_ip="${local_ip} (${local_iface})"
+else
+    local_ip="N/A"
+fi
 
 # Public IP and Location
 public_ip_base=$(timeout 2 wget -qO- http://icanhazip.com 2>/dev/null || echo "N/A")
