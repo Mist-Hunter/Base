@@ -8,193 +8,140 @@ MOD_BLACKLIST="/etc/modprobe.d/blacklist.conf"
 if ! [[ "$DEV_TYPE" == "$(uname -m)" ]] && ! [[ "$DESKTOP" == "true" ]]; then
     echo "The system was identified as virtualized. DEV_TYPE is: $DEV_TYPE"
 
-    # ---------------------------------------------
-    # Define modules to block
-    # ---------------------------------------------
     block_modules=(
-        ahci
-        ata_generic
-        ata_piix
-        bochs_drm
-        cdrom
-        cfg80211
-        dccp
-        drm
-        ehci_hcd
-        ehci_pci
-        evdev
-        firewire_core
-        firewire-ohci
-        floppy
-        freevxfs
-        hfs
-        hfsplus
-        iTCO_wdt
-        i2c_i801
-        i2c_smbus
-        jffs2
-        joydev
-        libata
-        pciehp
-        pcspkr
-        psmouse
-        rds
-        sctp
-        shpchp
-        sr_mod
-        snd_hda_intel
-        squashfs
-        tipc
-        uhci_hcd
-        udf
-        usb_common
-        usb_storage
-        usbcore
+    "ahci"
+    "ata_generic"
+    "ata_piix"
+    "bochs_drm"
+    "cdrom"
+    "cfg80211"
+    "dccp"
+    "drm"
+    "ehci"
+    "ehci_hcd"
+    "ehci_pci"
+    "evdev"
+    "firewire_core"
+    "firewire-ohci"
+    "floppy"
+    "freevxfs"
+    "hcd"
+    "hfs"
+    "hfsplus"
+    "iTCO_wdt"
+    "i2c_i801"
+    "i2c_smbus"
+    "jffs2"
+    "joydev"
+    "libata"
+    "pciehp"
+    "pcspkr"
+    "psmouse"
+    "rds"
+    "sctp"
+    "shpchp"
+    "sr_mod"
+    "snd_hda_intel"
+    "squashfs"
+    "tipc"
+    "uhci_hcd"
+    "udf"
+    "usb_common"
+    "usb_storage"
+    "usbcore"
+    "usd"
     )
 
     module_description=(
-        "ahci: handles AHCI SATA host controller"
-        "ata_generic: handles generic ATA host controllers"
-        "ata_piix: handles Intel PIIX/ICH ATA host controllers"
-        "bochs_drm: provides DRM support for the bochs emulator"
-        "cdrom: handles CD-ROM drive support"
-        "cfg80211: IEEE 802.11 wireless configuration"
-        "dccp: Datagram Congestion Control Protocol"
-        "drm: Direct Rendering Manager support"
-        "ehci_hcd: EHCI USB host controller"
-        "ehci_pci: EHCI USB PCI driver"
-        "evdev: Input event support"
-        "firewire_core: FireWire core"
-        "firewire-ohci: FireWire OHCI driver"
-        "floppy: Floppy disk support"
-        "freevxfs: FreeVxFS filesystem"
-        "hfs: HFS filesystem"
-        "hfsplus: HFS+ filesystem"
-        "iTCO_wdt: Intel TCO Watchdog"
-        "i2c_i801: Intel SMBus controller"
-        "i2c_smbus: SMBus over I2C"
-        "jffs2: Journalling Flash File System v2"
-        "joydev: Joystick support"
-        "libata: SCSI to ATA translation layer"
-        "pciehp: PCI hotplug"
-        "pcspkr: PC speaker"
-        "psmouse: PS/2 mouse support"
-        "rds: Reliable Datagram Sockets"
-        "sctp: Stream Control Transmission Protocol"
-        "shpchp: PCI hotplug controller"
-        "sr_mod: SCSI CD-ROM support"
-        "snd_hda_intel: Intel HDA audio"
-        "squashfs: SquashFS filesystem"
-        "tipc: Transparent Inter-Process Communication"
-        "uhci_hcd: USB 1.1 UHCI"
-        "udf: UDF filesystem"
-        "usb_common: USB common core"
-        "usb_storage: USB mass storage"
-        "usbcore: USB core"
+    "ahci: handles AHCI SATA host controller"
+    "ata_generic: handles generic ATA host controllers"
+    "ata_piix: handles Intel PIIX/ICH ATA host controllers"
+    "bochs_drm: provides DRM support for the bochs emulator"
+    "cdrom: handles CD-ROM drive support"
+    "cfg80211: implements the IEEE 802.11 wireless LAN configuration and management"
+    "dccp: implements the Datagram Congestion Control Protocol"
+    "drm: provides Direct Rendering Manager support"
+    "ehci: handles USB Enhanced Host Controller Interface"
+    "ehci_hcd: handles EHCI USB host controller"
+    "ehci_pci: handles EHCI USB PCI driver"
+    "evdev: handles input event support for devices"
+    "firewire_core: handles support for FireWire (IEEE 1394) interfaces [STRG-1846]"
+    "firewire-ohci: handles OHCI-1394 host controller driver for FireWire [STRG-1846]"
+    "floppy: handles floppy disk drive support"
+    "freevxfs: implements the freevxfs filesystem"
+    "hcd: handles Host Controller Driver for USB"
+    "hfs: implements the HFS filesystem"
+    "hfsplus: implements the HFS+ filesystem"
+    "iTCO_wdt: handles Intel TCO Watchdog Timer support"
+    "i2c_i801: handles Intel SMBus controller driver"
+    "i2c_smbus: provides SMBus access through the I2C subsystem"
+    "jffs2: implements the Journalling Flash File System version 2"
+    "joydev: provides support for Joystick devices"
+    "libata: implements the SCSI to ATA Translation Layer"
+    "pciehp: handles PCI Hot Plug Controller Driver"
+    "pcspkr: handles the PC speaker sound"
+    "psmouse: handles PS/2 mouse support"
+    "rds: implements the Reliable Datagram Sockets protocol"
+    "sctp: implements the Stream Control Transmission Protocol"
+    "shpchp: handles PCI Hot Plug Controller Driver"
+    "sr_mod: handles SCSI CD-ROM support"
+    "snd_hda_intel: implements Intel High Definition Audio codec support"
+    "squashfs: implements the SquashFS filesystem"
+    "tipc: implements the Transparent Inter-Process Communication protocol"
+    "uhci_hcd: handles Universal Host Controller Interface for USB 1.1"
+    "udf: implements the Universal Disk Format filesystem"
+    "usb_common: handles common functionality for USB drivers"
+    "usb_storage: handles USB Mass Storage support"
+    "usbcore: handles the core USB functionality"
+    "usd: handles support for USB Devices"
     )
 
-    # ---------------------------------------------
-    # Rebuild /etc/modprobe.d/blacklist.conf
-    # ---------------------------------------------
-    if [ -f "$MOD_BLACKLIST" ]; then
-        mv "$MOD_BLACKLIST" "${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak"
-        echo "Moved $MOD_BLACKLIST to backup."
+    # Empty the blacklist
+    if [ -f $MOD_BLACKLIST ]; then
+        mv "$MOD_BLACKLIST" "${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak" 
+        echo "Moved $MOD_BLACKLIST to ${MOD_BLACKLIST}.$(date +'%Y%m%d%H%M%S').bak"
     fi
 
-    {
-        echo "# Kernel module blacklist"
-        echo "# Generated on $(date)"
-        echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.txt"
-        echo
-    } > "$MOD_BLACKLIST"
+    touch $MOD_BLACKLIST
+    echo "# https://www.kernel.org/doc/Documentation/admin-guide/kernel-parameters.txt , https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/blacklisting_a_module" >> $MOD_BLACKLIST 
+    echo "" >> $MOD_BLACKLIST 
 
     for i in "${!block_modules[@]}"; do
-        mod="${block_modules[$i]}"
-        desc="${module_description[$i]}"
+        echo "beginning module $block_modules[$i]"
 
-        # Check if module exists (may not on minimal templates)
-        if ! modinfo -n "$mod" >/dev/null 2>&1; then
-            echo "$mod not found, skipping."
+        # Check if the module exists
+        if ! modinfo -n "${block_modules[$i]}" >/dev/null 2>&1; then
+            echo "${block_modules[$i]} module not found, skipping."
             continue
         fi
 
-        # Check if built-in
-        if modinfo -F builtin "$mod" 2>/dev/null | grep -q '^y$'; then
-            echo "$mod is built-in, skipping."
+        # Check if the module is built-in
+        if modinfo -F builtin "${block_modules[$i]}" | grep -q "^y$"; then
+            echo "${block_modules[$i]} is a built-in module, skipping."
             continue
         fi
 
-        echo "# $desc" >> "$MOD_BLACKLIST"
-        echo "blacklist $mod" >> "$MOD_BLACKLIST"
-        echo "install $mod /bin/true" >> "$MOD_BLACKLIST"
-        echo >> "$MOD_BLACKLIST"
+        # Check if the module is already blacklisted
+        if [ -n "$MOD_BLACKLIST" ] && grep -qw "${block_modules[$i]}" "$MOD_BLACKLIST"; then
+            echo "${block_modules[$i]} already in $MOD_BLACKLIST"
+        else
+            # Remove the module if it is not built-in and not blacklisted
+            modprobe -r "${block_modules[$i]}" 2>/dev/null
+
+            # Add the module to the blacklist
+            echo "# ${module_description[$i]}" >> "$MOD_BLACKLIST"
+            echo "blacklist ${block_modules[$i]}" >> "$MOD_BLACKLIST"
+            echo "install ${block_modules[$i]} /bin/true" >> "$MOD_BLACKLIST"
+            echo "" >> "$MOD_BLACKLIST"
+
+            echo "${block_modules[$i]} has been blacklisted."
+        fi
     done
 
-    echo "---------------------------------------------"
-    echo "Blacklist file written to $MOD_BLACKLIST"
-    echo "---------------------------------------------"
+    echo "$MOD_BLACKLIST contents:"
+    cat $MOD_BLACKLIST
+    echo "Updating initramfs"
+    update-initramfs -u
 
-    # ---------------------------------------------
-    # Update GRUB kernel cmdline for early blocking
-    # ---------------------------------------------
-    KVER="$(uname -r)"
-    if [ ! -d "/lib/modules/$KVER" ]; then
-        echo "⚠️  /lib/modules/$KVER is missing — attempting kernel image reinstall..."
-        apt-get update -y
-        apt-get install --reinstall -y "linux-image-$KVER" || true
-    fi
-
-    BLACKLIST_CMDLINE=$(IFS=, ; echo "${block_modules[*]}")
-    GRUB_FILE="/etc/default/grub"
-
-    if ! grep -q '^GRUB_CMDLINE_LINUX_DEFAULT=' "$GRUB_FILE"; then
-        echo 'GRUB_CMDLINE_LINUX_DEFAULT=""' >> "$GRUB_FILE"
-    fi
-
-    if grep -q 'modprobe\.blacklist=' "$GRUB_FILE"; then
-        sed -i "s/modprobe\.blacklist=[^\" ]*/modprobe.blacklist=${BLACKLIST_CMDLINE}/" "$GRUB_FILE"
-    else
-        sed -i "s/^\(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*\)\"/\1 modprobe.blacklist=${BLACKLIST_CMDLINE}\"/" "$GRUB_FILE"
-    fi
-
-    echo "✅ Updated GRUB_CMDLINE_LINUX_DEFAULT with modprobe.blacklist=${BLACKLIST_CMDLINE}"
-
-    echo "Regenerating GRUB and initramfs..."
-    update-grub
-    if [ -d "/lib/modules/$KVER" ]; then
-        update-initramfs -u
-    else
-        echo "⚠️  Skipping initramfs update because /lib/modules/$KVER is missing."
-    fi
-
-    echo "---------------------------------------------"
-    echo "Module blacklisting completed successfully."
-    echo "Reboot is required for changes to take effect."
 fi
 
-# The path to your blacklist file
-BLACKLIST_FILE="/etc/modprobe.d/blacklist.conf"
-
-# Check if the blacklist file exists
-if [ ! -f "$BLACKLIST_FILE" ]; then
-    echo "Error: Blacklist file not found at $BLACKLIST_FILE"
-    exit 1
-fi
-
-echo "Checking status of modules in $BLACKLIST_FILE..."
-echo "---------------------------------------------"
-
-# Read the file line by line
-# We use 'grep' to find lines that start with 'blacklist' and 'awk' to grab the second word (the module name)
-grep "^blacklist" "$BLACKLIST_FILE" | awk '{print $2}' | while read -r module; do
-    # Check if the module is currently loaded by grepping the output of 'lsmod'
-    # The '\b' ensures we match the whole word only (e.g., 'usb' won't match 'usbcore')
-    if lsmod | grep -q "\b$module\b"; then
-        echo "⚠️  STATUS: LOADED   - $module"
-    else
-        echo "✅ STATUS: Unloaded - $module"
-    fi
-done
-
-echo "---------------------------------------------"
-echo "Check complete."
