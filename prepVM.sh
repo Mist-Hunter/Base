@@ -142,22 +142,6 @@ cat <<EOT >> /etc/security/limits.conf
 * soft core 0
 EOT
 
-# NOTE using new method cp $SCRIPTS/base/sysctl_vm.conf /etc/sysctl.d/99-virtual-docker-host.conf
-
-# TODO: Check if swap partition / file exists, if not, turn swapiness to 0
-# Check if swapon -s has no output
-# if ! swapon -s | grep -q .; then
-#     # Set vm.swappiness to 0 in /etc/sysctl.d/vm.conf using sed
-#     sed -i 's/^vm.swappiness.*/vm.swappiness = 0/' /etc/sysctl.d/vm.conf
-
-#     # Apply the sysctl settings
-#     sysctl --system
-
-#     echo "Swappiness set to 0 because no swap is in use."
-# else
-#     echo "Swap is in use, swappiness remains unchanged."
-# fi
-
 sysctl --system
 
 # Lynis Install a PAM module for password strength testing like pam_cracklib or pam_passwdqc [AUTH-9262] #TODO: Neither are present in Debian 12?
@@ -423,11 +407,11 @@ source "$SCRIPTS/base/sysctl_profiles.sh"
 case "$DEV_TYPE" in
     kvm|vmware|virtualbox|qemu)
         apply_module_blacklist "headless_vm"
-        # NOTE DEBUG ipset break. apply_sysctl_profile "virtual-docker-host"
+        apply_sysctl_profile "virtual-docker-host"
         ;;
     x86_64|amd64)
         apply_module_blacklist "physical_server"
-        # NOTE DEBUG ipset break. apply_sysctl_profile "physical-web-server"
+        apply_sysctl_profile "physical-web-server"
         ;;
 esac
 
@@ -456,7 +440,8 @@ else
 fi
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
-. $SCRIPTS/apt/auditd/up.sh
+# FIXME is this breaking and rebooting the system?
+# . $SCRIPTS/apt/auditd/up.sh
 
 # Lynis FINT-4350 File Integrity, 2.3 MB of ram
 # FIXME still breaking module blacklisting. 
