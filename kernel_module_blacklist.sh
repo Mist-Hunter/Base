@@ -122,9 +122,6 @@ blacklist_module() {
 # ───────────────────────────────────────────────
 # Profile Application Function
 # ───────────────────────────────────────────────
-# ───────────────────────────────────────────────
-# Profile Application Function
-# ───────────────────────────────────────────────
 apply_module_blacklist() {
     local profile="$1"
     echo -e "\n🎛️ Applying profile: $profile"
@@ -136,29 +133,28 @@ apply_module_blacklist() {
         headless_vm)
             echo "Applying 🧰 Headless VM profile (most aggressive)..."
             buckets=(
-                FS_MODULES      # No floppy/cdrom/hfs
-                NET_MODULES     # No wireless/dccp/tipc
-                USB_MODULES     # No USB storage/controllers
-                DRM_MODULES     # No graphics/DRM
-                INPUT_MODULES   # No joystick/psmouse/pcspkr
-                PLATFORM_MODULES# No physical watchdog/smbus/pcie
-                MISC_MODULES    # No sound/autofs
+                "FS_MODULES"
+                "NET_MODULES"
+                "USB_MODULES"
+                "DRM_MODULES"
+                "INPUT_MODULES"
+                "PLATFORM_MODULES"
+                "MISC_MODULES"
             )
             ;;
 
         physical_server)
             echo "Applying 🖧 Physical Server profile..."
             buckets=(
-                NET_MODULES     # Disable wireless
-                DRM_MODULES     # Disable graphics if headless
-                INPUT_MODULES   # Disable joystick, pc speaker
-                MISC_MODULES    # Disable sound
+                "NET_MODULES"
+                "DRM_MODULES"
+                "INPUT_MODULES"
+                "MISC_MODULES"
             )
             ;;
 
         desktop)
             echo "Applying 🖥️ Desktop profile (least aggressive)..."
-            # For a desktop, you might blacklist very little or nothing.
             buckets=()
             ;;
 
@@ -196,6 +192,8 @@ apply_module_blacklist() {
         for mod in "${!BUCKET[@]}"; do
             blacklist_module "$mod" "${BUCKET[$mod]}"
         done
+        # Clear the nameref to avoid conflicts
+        declare -n BUCKET=""
     done
 
     echo -e "\n📄 Final $MOD_BLACKLIST contents:"
