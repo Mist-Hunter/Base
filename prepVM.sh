@@ -337,6 +337,17 @@ apt install libpam-tmpdir --no-install-recommends -y            # <--- 1 Point
 # Lynis Install needrestart, alternatively to debian-goodies, so that you can run needrestart after upgrades to determine which daemons are using old versions of libraries and need restarting. [DEB-0831]
 apt install needrestart --no-install-recommends -y              # <--- 1 Point. O zerpoints > debian-goodies
 
+# Configure needrestart to be non-interactive
+cat > /etc/needrestart/conf.d/no-prompt.conf << 'EOF'
+# Restart services automatically without prompting
+$nrconf{restart} = 'a';
+
+# Don't ask about restarting kernel (just notify)
+$nrconf{kernelhints} = -1;
+EOF
+
+echo "needrestart configured for automatic, non-interactive mode"
+
 # Lynis enable logging to an external logging host for archiving purposes and additional protection [LOGG-2154] 
 # # <--- 1 Point. Moved to /atp/snmp/up.sh
 
