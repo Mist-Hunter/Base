@@ -42,8 +42,10 @@ declare -A NET_MODULES=(
     [stp]="Spanning Tree Protocol"
     [mrp]="MRP protocol"
     [llc]="802.2 LLC"
-    [nfnetlink]="Netfilter netlink interface"
 )
+
+# FIXME breaks ipset
+# [nfnetlink]="Netfilter netlink interface"
 
 # USB-related modules
 declare -A USB_MODULES=(
