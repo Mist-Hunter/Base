@@ -302,7 +302,7 @@ function setinconfig() {
     local VALUE=""
     local DESCRIPTION=""
     local NEW_LINE=""
-    
+
     # Parse command line flags
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -329,7 +329,8 @@ function setinconfig() {
         esac
     done
 
-    NEW_LINE="${KEY}\t${VALUE}" # Use tab for separation, consistent with login.defs style
+    # Use tab for separation, consistent with login.defs style
+    NEW_LINE="${KEY}\t${VALUE}" 
 
     # Check if required arguments are present
     if [[ -z "$FILE" || -z "$KEY" || -z "$VALUE" ]]; then
@@ -337,7 +338,7 @@ function setinconfig() {
         echo "Usage: setinconfig -f <file> -k <key> -v <value> [-d \"<description>\"]" >&2
         return 1
     fi
-    
+
     # --- Logic to Manage the Configuration Line ---
 
     # 1. Check if the line exists and is correct (Idempotence check)
@@ -353,11 +354,12 @@ function setinconfig() {
         echo "UPDATED: '${KEY}' in '${FILE}' replaced or uncommented with value '${VALUE}'."
     else
         # 3. Setting is missing entirely. Append it with documentation.
-        local APPEND_CONTENT="\n" # Start with a blank line for separation
-
-        # Add description if provided
+        local APPEND_CONTENT=""
+        
+        # Add description and leading newline IF provided
         if [[ -n "$DESCRIPTION" ]]; then
-            APPEND_CONTENT+="# ${DESCRIPTION}\n"
+            # Start with a blank line for separation, then add the description
+            APPEND_CONTENT+="\n# ${DESCRIPTION}\n"
         fi
         
         # Append the content to the file using -e for newline processing
