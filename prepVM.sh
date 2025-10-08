@@ -141,13 +141,8 @@ cat <<EOT >> /etc/security/limits.conf
 * hard core 0
 * soft core 0
 EOT
-cat <<EOT >> /etc/sysctl.d/9999-disable-core-dump.conf
-fs.suid_dumpable=0
-kernel.core_pattern=|/bin/false
-EOT
-sysctl -p /etc/sysctl.d/9999-disable-core-dump.conf
 
-cp $SCRIPTS/base/sysctl_vm.conf /etc/sysctl.d/99-virtual-docker-host.conf
+# NOTE using new method cp $SCRIPTS/base/sysctl_vm.conf /etc/sysctl.d/99-virtual-docker-host.conf
 
 # TODO: Check if swap partition / file exists, if not, turn swapiness to 0
 # Check if swapon -s has no output
@@ -432,20 +427,18 @@ echo "GRUB configuration updated successfully."
 # Display the password and wait for user acknowledgment
 present_secrets "GRUB Password:$new_password"
 
-# Kernel Module Blacklisting
-echo "Applying kernel module blacklist based on device type..."
+# Kernel Module Blacklisting & Sysctl Settings
 source "$SCRIPTS/base/kernel_module_blacklist.sh"
+source "$SCRIPTS/base/sysctl_profiles.sh"
 
-# Select a profile based on the detected device type
 case "$DEV_TYPE" in
     kvm|vmware|virtualbox|qemu)
-        apply_profile "headless_vm"
+        apply_module_blacklist "headless_vm"
+        apply_sysctl_profile "virtual-docker-host"
         ;;
     x86_64|amd64)
-        apply_profile "physical_server"
-        ;;
-    *)
-        echo "⚠️ Unknown DEV_TYPE '$DEV_TYPE'. No blacklist profile applied."
+        apply_module_blacklist "physical_server"
+        apply_sysctl_profile "physical-web-server"
         ;;
 esac
 

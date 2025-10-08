@@ -125,7 +125,7 @@ blacklist_module() {
 # ───────────────────────────────────────────────
 # Profile Application Function
 # ───────────────────────────────────────────────
-apply_profile() {
+apply_module_blacklist() {
     local profile="$1"
     echo -e "\n🎛️ Applying profile: $profile"
 

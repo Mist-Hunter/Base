@@ -13,6 +13,7 @@ SYSCTL_PROFILE_CONF="/etc/sysctl.d/10-sysctl-profile.conf"
 # -----------------------------------------------------------------------------
 
 # <<< MODIFIED >>> Contains expanded security hardening settings.
+# Lynis  [KRNL-5820] if not required, consider explicit disabling of core dump in /etc/security/limits.conf file
 read -r -d '' BASE_SECURITY <<'EOF'
 # --- Base Security Settings ---
 kernel.dmesg_restrict = 1
@@ -32,6 +33,7 @@ net.ipv6.conf.all.accept_redirects = 0
 net.ipv6.conf.default.accept_redirects = 0
 net.ipv4.conf.all.send_redirects = 0
 fs.suid_dumpable = 0
+kernel.core_pattern = |/bin/false
 dev.tty.ldisc_autoload = 0
 EOF
 
