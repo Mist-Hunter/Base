@@ -52,44 +52,22 @@ apt install netselect-apt -y
 netselect-apt
 apt upgrade -y
 
-# Check if the group exists
-if getent group "$SECURE_USER_GROUP" >/dev/null; then
-  log "Group $SECURE_USER_GROUP exists."
-else
-  log "Group $SECURE_USER_GROUP does not exist."
-  
-  # Create the group with the specified GID
-  if groupadd -g "$SECURE_USER_ID" "$SECURE_USER_GROUP"; then
-    echo "Group $SECURE_USER_GROUP created with GID $SECURE_USER_ID."
-  else
-    echo "Failed to create group $SECURE_USER_GROUP with GID $SECURE_USER_ID."
-    exit 1  # Exit with a non-zero status code to indicate an error
-  fi
-fi
+# Create secure user and group if needed
+getent group "$SECURE_USER_GROUP" >/dev/null || \
+    groupadd -g "$SECURE_USER_ID" "$SECURE_USER_GROUP" || \
+    { echo "Failed to create group $SECURE_USER_GROUP"; exit 1; }
 
-# Check if the user already exists
-if id -u "$SECURE_USER" >/dev/null 2>&1; then
-  echo "User '$SECURE_USER' already exists."
-else
-  # Create the user
-  useradd -m -s $SHELL -G "$SECURE_USER_GROUP" "$SECURE_USER"
-
-  # Print the user creation details
-  echo "User '$SECURE_USER' created successfully."
-fi
+id -u "$SECURE_USER" &>/dev/null || \
+    useradd -m -s "$SHELL" -G "$SECURE_USER_GROUP" "$SECURE_USER" && \
+    echo "✓ User $SECURE_USER created"
 
 # Remove dhcp6 from dhclient.conf. This doesn't seem to affect ram consumption.
 # sed 's/dhcp6\.[a-z-]\+\(, \)\?//g' /etc/dhcp/dhclient.conf
 
-# Add color to LS by uncommenting default bashrc
-sed -i '/^# export LS_OPTIONS/s/^# //' ~/.bashrc
-sed -i '/^# eval/s/^# //' ~/.bashrc
-sed -i '/^# alias ls/s/^# //' ~/.bashrc
-sed -i '/^# alias ll/s/^# //' ~/.bashrc
-sed -i '/^# alias l/s/^# //' ~/.bashrc
-sed -i '/^# alias rm/s/^# //' ~/.bashrc
-sed -i '/^# alias cp/s/^# //' ~/.bashrc
-sed -i '/^# alias mv/s/^# //' ~/.bashrc
+# Enable color ls aliases in bashrc
+for pattern in "export LS_OPTIONS" "eval" "alias ls" "alias ll" "alias l" "alias rm" "alias cp" "alias mv"; do
+    sed -i "/^# $pattern/s/^# //" ~/.bashrc
+done
 
 # Add Auto-Resize Terminal & set to Xterm 
 tty_dev=$(awk -F': ' '/uart:/ && !/uart:unknown/ {print "ttyS" $1; exit}' /proc/tty/driver/serial) 
@@ -176,22 +154,14 @@ set_perms 600 /boot/grub/grub.cfg /etc/crontab
 set_perms 700 /etc/cron.{d,daily,hourly,weekly,monthly}
 set_perms 750 -R /home
 
-# Lynis Harden compilers like restricting access to root user only [HRDN-7222]
-# No point changes, but whatever. Removing compilers could break apt, apt-get
-# NOTE: These changes may be overwritten by package updates
-compilePerm=("as" "gcc" "g++" "cc" "c++" "x86_64-linux-gnu-gcc" "x86_64-linux-gnu-g++" "x86_64-linux-gnu-as")
-permissions=700
-for compiler in "${compilePerm[@]}"
-do
-    compilePath="/usr/bin/$compiler"
-    echo "Processing: $compilePath"
-    if [ -e "$compilePath" ]; then
-        chmod $permissions "$compilePath"
-        chown root:root "$compilePath"
-        echo "  ✓ Changed permissions of $compilePath to $permissions, and chowned to root:root"
-    else
-        echo "  ⓘ $compilePath does not exist"
-    fi
+# Lynis: Harden compilers [HRDN-7222]
+# NOTE: Package updates may overwrite these permissions
+for compiler in as gcc g++ cc c++ x86_64-linux-gnu-{gcc,g++,as}; do
+    [[ -e "/usr/bin/$compiler" ]] && \
+        chmod 700 "/usr/bin/$compiler" && \
+        chown root:root "/usr/bin/$compiler" && \
+        echo "✓ /usr/bin/$compiler → 700" || \
+        echo "⊘ /usr/bin/$compiler (not found)"
 done
 
 # Lynis BOOT-5264: Harden systemd services
@@ -284,13 +254,7 @@ apt install apt-listbugs --no-install-recommends -y             # <--- 1 Point
 apt install debsums --no-install-recommends -y                  # <--- 1 Point
 
 # Enable daily debsums checking via cron
-if grep -q "^CRON_CHECK=" /etc/default/debsums; then
-    # If line exists, replace it
-    sed -i 's/^CRON_CHECK=.*/CRON_CHECK=daily/' /etc/default/debsums
-else
-    # If line doesn't exist, add it
-    echo "CRON_CHECK=daily" >> /etc/default/debsums
-fi
+setinconfig -f /etc/default/debsums -k CRON_CHECK -v daily
 
 # Lynis Install libpam-tmpdir to set $TMP and $TMPDIR for PAM sessions [DEB-0280]
 apt install libpam-tmpdir --no-install-recommends -y            # <--- 1 Point
