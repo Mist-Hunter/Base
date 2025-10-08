@@ -310,7 +310,7 @@ echo "This should prevent read-only filesystem issues."
 apt install acct --no-install-recommends -y
 
 # Lynis TOOL-5002
-apt install ansible-core --no-install-recommends # <---- 0 points?
+apt install ansible-core --no-install-recommends -y # <---- 0 points?
 
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
