@@ -651,3 +651,31 @@ fi
 # echo "systems, debian-base, prepVM.sh: rebooting in $sleep seconds"
 # sleep $sleep
 # reboot
+
+
+# # The path to your blacklist file
+# BLACKLIST_FILE="/etc/modprobe.d/blacklist.conf"
+
+# # Check if the blacklist file exists
+# if [ ! -f "$BLACKLIST_FILE" ]; then
+#     echo "Error: Blacklist file not found at $BLACKLIST_FILE"
+#     exit 1
+# fi
+
+# echo "Checking status of modules in $BLACKLIST_FILE..."
+# echo "---------------------------------------------"
+
+# # Read the file line by line
+# # We use 'grep' to find lines that start with 'blacklist' and 'awk' to grab the second word (the module name)
+# grep "^blacklist" "$BLACKLIST_FILE" | awk '{print $2}' | while read -r module; do
+#     # Check if the module is currently loaded by grepping the output of 'lsmod'
+#     # The '\b' ensures we match the whole word only (e.g., 'usb' won't match 'usbcore')
+#     if lsmod | grep -q "\b$module\b"; then
+#         echo "⚠️  STATUS: LOADED   - $module"
+#     else
+#         echo "✅ STATUS: Unloaded - $module"
+#     fi
+# done
+
+# echo "---------------------------------------------"
+# echo "Check complete."
