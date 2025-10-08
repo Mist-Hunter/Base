@@ -12,7 +12,7 @@ source /etc/environment
 apt update
 
 #'Notice: Some sources can be modernized. Run 'apt modernize-sources' to do so.'
-apt modernize-sources
+apt modernize-sources -y
 
 # Permanently record DEV_TYPE
 apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
@@ -315,46 +315,18 @@ apt install ansible-core --no-install-recommends -y # <---- 0 points?
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
 
-# Lynis Configure password hashing rounds in /etc/login.defs [AUTH-9230] 
-# TODO Dupe
-sed -i 's|# SHA_CRYPT_|SHA_CRYPT_|g' /etc/login.defs 
-
-# Lynis Default umask in /etc/login.defs could be more strict like 027 [AUTH-9328] 
-# TODO Dupe
-sed -i '/UMASK/s/022/027/g' /etc/login.defs
-
 # Lynis Configure minimum and maximum password age in /etc/login.defs [AUTH-9286]
-#sed -i '/^PASS_MAX_DAYS/c\PASS_MAX_DAYS   90' /etc/login.defs
-sed -i '/^PASS_MIN_DAYS/c\PASS_MIN_DAYS   1' /etc/login.defs
-#sed -i '/^PASS_WARN_AGE/c\PASS_WARN_AGE   7' /etc/login.defs
+LOGIN_DEFS="/etc/login.defs"
+setinconfig -f "${LOGIN_DEFS}" -k PASS_MAX_DAYS -v 90 -d "Maximum days for password use (AUTH-9286)"
+setinconfig -f "${LOGIN_DEFS}" -k PASS_MIN_DAYS -v 1
+setinconfig -f "${LOGIN_DEFS}" -k PASS_WARN_AGE -v 7
+
+# Lynis Default umask in /etc/login.defs could not be found and defaults usually to 022, which could be more strict like 027 [AUTH-9328]
+setinconfig -f "${LOGIN_DEFS}" -k UMASK -v 027 -d "Stricter umask for new files/dirs (AUTH-9328)"
 
 # Lynis Configure password hashing rounds in /etc/login.defs [AUTH-9230]
-# Lynis  Default umask in /etc/login.defs could not be found and defaults usually to 022, which could be more strict like 027 [AUTH-9328]  
-LOGIN_DEFS="/etc/login.defs"
-SETTINGS=(
-    "SHA_CRYPT_MIN_ROUNDS 5000"
-    "SHA_CRYPT_MAX_ROUNDS 10000"
-    "UMASK           027"
-)
-
-echo "Hardening /etc/login.defs..."
-
-for setting in "${SETTINGS[@]}"; do
-    # Extract the key (e.g., "UMASK") from the full setting
-    key=$(echo "$setting" | awk '{print $1}')
-
-    # Check if the key already exists in the file
-    if grep -q "^\s*$key" "$LOGIN_DEFS"; then
-        # If it exists, update the line
-        sudo sed -i "s/^\s*$key.*/$setting/" "$LOGIN_DEFS"
-        echo " ✓ Updated $key."
-    else
-        # If it doesn't exist, append the full setting to the file
-        echo "$setting" | sudo tee -a "$LOGIN_DEFS" > /dev/null
-        echo " ✓ Added $key."
-    fi
-done
-echo "Finished hardening /etc/login.defs."
+setinconfig -f "${LOGIN_DEFS}" -k SHA_CRYPT_MIN_ROUNDS -v 5000 -d "Minimum rounds for SHA password hashing (AUTH-9230)"
+setinconfig -f "${LOGIN_DEFS}" -k SHA_CRYPT_MAX_ROUNDS -v 10000
 
 # Lynis nstall fail2ban to automatically ban hosts that commit multiple authentication errors. [DEB-0880]
 # . $SCRIPTS/apt/fail2ban/up.sh                                 # <--- 1 Point, 20 Mb of RAM. Not using SSH. Skipping.
@@ -646,36 +618,3 @@ fi
 # FIXME still breaking module blacklisting. 
 # NOTE May be breaking module blacklist. Moved after. aideinit may need a reboot to kick in update-initramfs -u before moduleblack list
 # . $SCRIPTS/apt/aide/up.sh # <---- 0 points?
-
-# sleep="5s"
-# echo "systems, debian-base, prepVM.sh: rebooting in $sleep seconds"
-# sleep $sleep
-# reboot
-
-
-# # The path to your blacklist file
-# BLACKLIST_FILE="/etc/modprobe.d/blacklist.conf"
-
-# # Check if the blacklist file exists
-# if [ ! -f "$BLACKLIST_FILE" ]; then
-#     echo "Error: Blacklist file not found at $BLACKLIST_FILE"
-#     exit 1
-# fi
-
-# echo "Checking status of modules in $BLACKLIST_FILE..."
-# echo "---------------------------------------------"
-
-# # Read the file line by line
-# # We use 'grep' to find lines that start with 'blacklist' and 'awk' to grab the second word (the module name)
-# grep "^blacklist" "$BLACKLIST_FILE" | awk '{print $2}' | while read -r module; do
-#     # Check if the module is currently loaded by grepping the output of 'lsmod'
-#     # The '\b' ensures we match the whole word only (e.g., 'usb' won't match 'usbcore')
-#     if lsmod | grep -q "\b$module\b"; then
-#         echo "⚠️  STATUS: LOADED   - $module"
-#     else
-#         echo "✅ STATUS: Unloaded - $module"
-#     fi
-# done
-
-# echo "---------------------------------------------"
-# echo "Check complete."

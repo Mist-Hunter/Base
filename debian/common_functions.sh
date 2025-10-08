@@ -287,3 +287,81 @@ writer() {
         source "$path"
     fi
 }
+
+# Function: setinconfig
+# Description: Ensures a specific key=value line exists in a file.
+#              It uses CLI flags for clarity and handles existing,
+#              commented-out, and missing lines idempotently.
+#
+# Usage:
+#   setinconfig -f /path/to/file -k KEY -v VALUE [-d "Description"]
+#
+function setinconfig() {
+    local FILE=""
+    local KEY=""
+    local VALUE=""
+    local DESCRIPTION=""
+    local NEW_LINE=""
+    
+    # Parse command line flags
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            -f|--file)
+                FILE="$2"
+                shift 2
+                ;;
+            -k|--key)
+                KEY="$2"
+                shift 2
+                ;;
+            -v|--value)
+                VALUE="$2"
+                shift 2
+                ;;
+            -d|--desc)
+                DESCRIPTION="$2"
+                shift 2
+                ;;
+            *)
+                echo "Unknown parameter passed: $1" >&2
+                return 1
+                ;;
+        esac
+    done
+
+    NEW_LINE="${KEY}\t${VALUE}" # Use tab for separation, consistent with login.defs style
+
+    # Check if required arguments are present
+    if [[ -z "$FILE" || -z "$KEY" || -z "$VALUE" ]]; then
+        echo "Error: Missing required arguments. Use -f, -k, and -v." >&2
+        echo "Usage: setinconfig -f <file> -k <key> -v <value> [-d \"<description>\"]" >&2
+        return 1
+    fi
+    
+    # --- Logic to Manage the Configuration Line ---
+
+    # 1. Check if the line exists and is correct (Idempotence check)
+    if grep -q "^${KEY}[[:space:]]*${VALUE}" "$FILE"; then
+        echo "PASS: '${KEY}' in '${FILE}' is already set correctly."
+        return 0
+    fi
+
+    # 2. Check if the setting exists, either commented or with a wrong value
+    if grep -q "^#\?[\t ]*${KEY}" "$FILE"; then
+        # Use sed to replace the existing (or commented) line with the new line.
+        sed -i -E "s/^#?\s*(${KEY})\s*.*$/\1\t${VALUE}/" "$FILE"
+        echo "UPDATED: '${KEY}' in '${FILE}' replaced or uncommented with value '${VALUE}'."
+    else
+        # 3. Setting is missing entirely. Append it with documentation.
+        local APPEND_CONTENT="\n" # Start with a blank line for separation
+
+        # Add description if provided
+        if [[ -n "$DESCRIPTION" ]]; then
+            APPEND_CONTENT+="# ${DESCRIPTION}\n"
+        fi
+        
+        # Append the content to the file using -e for newline processing
+        echo -e "${APPEND_CONTENT}${NEW_LINE}" >> "$FILE"
+        echo "ADDED: '${KEY}' appended to '${FILE}' with value '${VALUE}'. (Description: ${DESCRIPTION:-\"None\"})"
+    fi
+}
