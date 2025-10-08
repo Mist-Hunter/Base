@@ -467,7 +467,7 @@ else
 fi
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
-. $SCRIPTS/apt/audit/up.sh
+. $SCRIPTS/apt/auditd/up.sh
 
 # Lynis FINT-4350 File Integrity, 2.3 MB of ram
 # FIXME still breaking module blacklisting. 
