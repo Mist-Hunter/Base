@@ -22,11 +22,13 @@ declare -A FS_MODULES=(
     [udf]="UDF filesystem"
     [libata]="SCSI-to-ATA translation layer"
     [sr_mod]="SCSI CD-ROM support"
-    [vfat]="FAT filesystem (vfat)"
-    [fat]="FAT filesystem core"
-    [nls_ascii]="FAT NLS ascii"
-    [nls_cp437]="FAT NLS cp437"
 )
+
+# FIXME the modules below break booting.
+# [vfat]="FAT filesystem (vfat)"
+# [fat]="FAT filesystem core"
+# [nls_ascii]="FAT NLS ascii"
+# [nls_cp437]="FAT NLS cp437"
 
 # Network-related modules
 declare -A NET_MODULES=(
