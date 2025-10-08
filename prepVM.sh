@@ -301,19 +301,57 @@ echo "  systemctl restart cron.service dbus.service"
 echo ""
 echo "This should prevent read-only filesystem issues."
 
+# Lynis enable process accounting for command logging [ACCT-9622]
+# Provides forensic tools like 'lastcomm' with negligible resource usage.
+# The service enables a kernel feature and does not run as a persistent daemon.
+apt install acct --no-install-recommends -y
+
+# Lynis TOOL-5002
+apt install ansible-core --no-install-recommends # <---- 0 points?
+
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
 
 # Lynis Configure password hashing rounds in /etc/login.defs [AUTH-9230] 
+# TODO Dupe
 sed -i 's|# SHA_CRYPT_|SHA_CRYPT_|g' /etc/login.defs 
 
 # Lynis Default umask in /etc/login.defs could be more strict like 027 [AUTH-9328] 
+# TODO Dupe
 sed -i '/UMASK/s/022/027/g' /etc/login.defs
 
 # Lynis Configure minimum and maximum password age in /etc/login.defs [AUTH-9286]
 #sed -i '/^PASS_MAX_DAYS/c\PASS_MAX_DAYS   90' /etc/login.defs
 sed -i '/^PASS_MIN_DAYS/c\PASS_MIN_DAYS   1' /etc/login.defs
 #sed -i '/^PASS_WARN_AGE/c\PASS_WARN_AGE   7' /etc/login.defs
+
+# Lynis Configure password hashing rounds in /etc/login.defs [AUTH-9230]
+# Lynis  Default umask in /etc/login.defs could not be found and defaults usually to 022, which could be more strict like 027 [AUTH-9328]  
+LOGIN_DEFS="/etc/login.defs"
+SETTINGS=(
+    "SHA_CRYPT_MIN_ROUNDS 5000"
+    "SHA_CRYPT_MAX_ROUNDS 10000"
+    "UMASK           027"
+)
+
+echo "Hardening /etc/login.defs..."
+
+for setting in "${SETTINGS[@]}"; do
+    # Extract the key (e.g., "UMASK") from the full setting
+    key=$(echo "$setting" | awk '{print $1}')
+
+    # Check if the key already exists in the file
+    if grep -q "^\s*$key" "$LOGIN_DEFS"; then
+        # If it exists, update the line
+        sudo sed -i "s/^\s*$key.*/$setting/" "$LOGIN_DEFS"
+        echo " ✓ Updated $key."
+    else
+        # If it doesn't exist, append the full setting to the file
+        echo "$setting" | sudo tee -a "$LOGIN_DEFS" > /dev/null
+        echo " ✓ Added $key."
+    fi
+done
+echo "Finished hardening /etc/login.defs."
 
 # Lynis nstall fail2ban to automatically ban hosts that commit multiple authentication errors. [DEB-0880]
 # . $SCRIPTS/apt/fail2ban/up.sh                                 # <--- 1 Point, 20 Mb of RAM. Not using SSH. Skipping.
@@ -330,6 +368,15 @@ apt install apt-listbugs --no-install-recommends -y             # <--- 1 Point
 
 # Lynis Install debsums for the verification of installed package files against MD5 checksums. [DEB-0875]
 apt install debsums --no-install-recommends -y                  # <--- 1 Point
+
+# Enable daily debsums checking via cron
+if grep -q "^CRON_CHECK=" /etc/default/debsums; then
+    # If line exists, replace it
+    sed -i 's/^CRON_CHECK=.*/CRON_CHECK=daily/' /etc/default/debsums
+else
+    # If line doesn't exist, add it
+    echo "CRON_CHECK=daily" >> /etc/default/debsums
+fi
 
 # Lynis Install libpam-tmpdir to set $TMP and $TMPDIR for PAM sessions [DEB-0280]
 apt install libpam-tmpdir --no-install-recommends -y            # <--- 1 Point
@@ -442,6 +489,7 @@ if ! [[ "$DEV_TYPE" == "$(uname -m)" ]] && ! [[ "$DESKTOP" == "true" ]]; then
     "ehci_pci"
     "evdev"
     "firewire_core"
+    "firewire-ohci"
     "floppy"
     "freevxfs"
     "hcd"
@@ -484,7 +532,8 @@ if ! [[ "$DEV_TYPE" == "$(uname -m)" ]] && ! [[ "$DESKTOP" == "true" ]]; then
     "ehci_hcd: handles EHCI USB host controller"
     "ehci_pci: handles EHCI USB PCI driver"
     "evdev: handles input event support for devices"
-    "firewire_core: handles support for FireWire (IEEE 1394) interfaces"
+    "firewire_core: handles support for FireWire (IEEE 1394) interfaces [STRG-1846]"
+    "firewire-ohci: handles OHCI-1394 host controller driver for FireWire [STRG-1846]"
     "floppy: handles floppy disk drive support"
     "freevxfs: implements the freevxfs filesystem"
     "hcd: handles Host Controller Driver for USB"
@@ -590,9 +639,9 @@ fi
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
 . $SCRIPTS/apt/audit/up.sh
 
-# Lynis FINT-4350 File Integrity
+# Lynis FINT-4350 File Integrity, 2.3 MB of ram
 # NOTE May be breaking module blacklist. Moved after. aideinit may need a reboot to kick in update-initramfs -u before moduleblack list
-. $SCRIPTS/apt/aide/up.sh
+# . $SCRIPTS/apt/aide/up.sh # <---- 0 points?
 
 # sleep="5s"
 # echo "systems, debian-base, prepVM.sh: rebooting in $sleep seconds"
