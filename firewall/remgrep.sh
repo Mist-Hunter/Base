@@ -1,6 +1,6 @@
 #!/bin/bash
 FILTER=$1
-source "$SCRIPTS/base/debian/logging_functions.sh"
+# source "$SCRIPTS/base/debian/common_functions.sh"
 
 log "Apt, firewall, remgrep.sh: Searching $FILTER:"
 iptables -S | grep $FILTER || true

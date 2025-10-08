@@ -131,7 +131,7 @@ log() {
     local caller_script
     local caller_function
 
-    while [[ "${BASH_SOURCE[i]}" == */logging_functions.sh || "${BASH_SOURCE[i]}" == logging_functions.sh ]]; do
+    while [[ "${BASH_SOURCE[i]}" == */common_functions.sh || "${BASH_SOURCE[i]}" == common_functions.sh ]]; do
         ((i++))
     done
 
