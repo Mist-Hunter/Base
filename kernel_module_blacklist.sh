@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MOD_BLACKLIST="/etc/modprobe.d/blacklist.conf"
+MOD_BLACKLIST="/etc/modprobe.d/10-kernel-module-blacklist.conf"
 
 # ───────────────────────────────────────────────
 # Define module buckets
 # ───────────────────────────────────────────────
-
 
 # Filesystem-related modules (legacy/unused filesystems, CD/floppy)
 declare -A FS_MODULES=(
