@@ -11,6 +11,9 @@ source /etc/environment
 
 apt update
 
+#'Notice: Some sources can be modernized. Run 'apt modernize-sources' to do so.'
+apt modernize-sources
+
 # Permanently record DEV_TYPE
 apt install virt-what --no-install-recommends -y # 276 kB # dmidecode adding exim4?
 DEV_TYPE=$(virt-what)
@@ -640,6 +643,7 @@ fi
 . $SCRIPTS/apt/audit/up.sh
 
 # Lynis FINT-4350 File Integrity, 2.3 MB of ram
+# FIXME still breaking module blacklisting. 
 # NOTE May be breaking module blacklist. Moved after. aideinit may need a reboot to kick in update-initramfs -u before moduleblack list
 # . $SCRIPTS/apt/aide/up.sh # <---- 0 points?
 
