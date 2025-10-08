@@ -264,9 +264,10 @@ harden_service() {
 # --> Caused systemd[2773]: Failed to allocate manager object: Read-only file system 
 ## ErrProtectControlGroups=yes
 
+# ProtectKernelModules=yes
+
 SAFE='[Service]
 PrivateTmp=yes
-ProtectKernelModules=yes
 RestrictRealtime=yes
 LockPersonality=yes
 SystemCallArchitectures=native'
@@ -282,7 +283,6 @@ done
 # QEMU guest agent - minimal hardening only
 harden_service "qemu-guest-agent.service" '[Service]
 PrivateTmp=yes
-ProtectKernelModules=yes
 RestrictRealtime=yes
 LockPersonality=yes'
 
