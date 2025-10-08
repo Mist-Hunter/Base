@@ -577,7 +577,7 @@ else
 fi
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
-. $SCRIPTS/apt/aduitd/up.sh
+. $SCRIPTS/apt/audit/up.sh
 
 # Lynis FINT-4350 File Integrity
 # NOTE May be breaking module blacklist. Moved after. aideinit may need a reboot to kick in update-initramfs -u before moduleblack list
