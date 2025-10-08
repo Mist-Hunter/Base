@@ -228,21 +228,20 @@ do
 done
 
 # Lynis Harden compilers like restricting access to root user only [HRDN-7222]
-# No point changes, but whaterver. Removing compilers could break apt, apt-get
-# TODO: These changes are getting overwriten?
-compilePerm=("as" "cc" "gss" "x86_64-linux-gnu-as" "x86_64-linux-gnu-as")
+# No point changes, but whatever. Removing compilers could break apt, apt-get
+# NOTE: These changes may be overwritten by package updates
+compilePerm=("as" "gcc" "g++" "cc" "c++" "x86_64-linux-gnu-gcc" "x86_64-linux-gnu-g++" "x86_64-linux-gnu-as")
 permissions=700
 for compiler in "${compilePerm[@]}"
 do
-:
     compilePath="/usr/bin/$compiler"
-    echo "$compilePath"
+    echo "Processing: $compilePath"
     if [ -e "$compilePath" ]; then
-        chmod -R $permissions "$compilePath"
-        chown root:root $compilePath
-        echo "Changed permissions of $compilePath to $permissions, and chowned for root:root"
+        chmod $permissions "$compilePath"
+        chown root:root "$compilePath"
+        echo "  ✓ Changed permissions of $compilePath to $permissions, and chowned to root:root"
     else
-        echo "$pathFile does not exist"
+        echo "  ⓘ $compilePath does not exist"
     fi
 done
 
