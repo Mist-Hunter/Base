@@ -253,56 +253,56 @@ done
 # Lynix BOOT-5264 ---------------------------------------------------------------------------
 # Hardens systemd services flagged as UNSAFE
 # FIXME systemd[2773]: Failed to allocate manager object: Read-only file system
-echo "Applying safe systemd hardening (network services excluded)..."
+# echo "Applying safe systemd hardening (network services excluded)..."
 
-harden_service() {
-    mkdir -p "/etc/systemd/system/${1}.d"
-    echo "$2" > "/etc/systemd/system/${1}.d/hardening.conf"
-}
+# harden_service() {
+#     mkdir -p "/etc/systemd/system/${1}.d"
+#     echo "$2" > "/etc/systemd/system/${1}.d/hardening.conf"
+# }
 
-# Standard safe hardening (NO ProtectKernelTunables for most)
-# --> Caused systemd[2773]: Failed to allocate manager object: Read-only file system 
-## ErrProtectControlGroups=yes
+# # Standard safe hardening (NO ProtectKernelTunables for most)
+# # --> Caused systemd[2773]: Failed to allocate manager object: Read-only file system 
+# ## ErrProtectControlGroups=yes
 
-# ProtectKernelModules=yes
+# # ProtectKernelModules=yes
 
-SAFE='[Service]
-PrivateTmp=yes
-RestrictRealtime=yes
-LockPersonality=yes
-SystemCallArchitectures=native'
+# SAFE='[Service]
+# PrivateTmp=yes
+# RestrictRealtime=yes
+# LockPersonality=yes
+# SystemCallArchitectures=native'
 
-# Apply to services that DON'T touch network/sysctl
-for svc in cron dbus emergency getty@tty1 rc-local rescue \
-           serial-getty@ttyS0 systemd-ask-password-console \
-           systemd-ask-password-wall systemd-bsod systemd-initctl \
-           systemd-rfkill user@0; do
-    harden_service "${svc}.service" "$SAFE"
-done
+# # Apply to services that DON'T touch network/sysctl
+# for svc in cron dbus emergency getty@tty1 rc-local rescue \
+#            serial-getty@ttyS0 systemd-ask-password-console \
+#            systemd-ask-password-wall systemd-bsod systemd-initctl \
+#            systemd-rfkill user@0; do
+#     harden_service "${svc}.service" "$SAFE"
+# done
 
-# QEMU guest agent - minimal hardening only
-harden_service "qemu-guest-agent.service" '[Service]
-PrivateTmp=yes
-RestrictRealtime=yes
-LockPersonality=yes'
+# # QEMU guest agent - minimal hardening only
+# harden_service "qemu-guest-agent.service" '[Service]
+# PrivateTmp=yes
+# RestrictRealtime=yes
+# LockPersonality=yes'
 
-# DO NOT harden these - they need full system access:
-# - ifup@ens18.service (needs to write to /proc/sys/net)
-# - network-ipset-firehol-updater.service (needs full network stack access)
+# # DO NOT harden these - they need full system access:
+# # - ifup@ens18.service (needs to write to /proc/sys/net)
+# # - network-ipset-firehol-updater.service (needs full network stack access)
 
-systemctl daemon-reload
+# systemctl daemon-reload
 
-echo ""
-echo "✓ Safe hardening applied (network services excluded)"
-echo ""
-echo "Excluded from hardening:"
-echo "  - ifup@ens18.service (needs sysctl access)"
-echo "  - network-ipset-firehol-updater.service (needs network stack)"
-echo ""
-echo "Safe to restart:"
-echo "  systemctl restart cron.service dbus.service"
-echo ""
-echo "This should prevent read-only filesystem issues."
+# echo ""
+# echo "✓ Safe hardening applied (network services excluded)"
+# echo ""
+# echo "Excluded from hardening:"
+# echo "  - ifup@ens18.service (needs sysctl access)"
+# echo "  - network-ipset-firehol-updater.service (needs network stack)"
+# echo ""
+# echo "Safe to restart:"
+# echo "  systemctl restart cron.service dbus.service"
+# echo ""
+# echo "This should prevent read-only filesystem issues."
 
 # Lynis enable process accounting for command logging [ACCT-9622]
 # Provides forensic tools like 'lastcomm' with negligible resource usage.
