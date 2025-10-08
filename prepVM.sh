@@ -302,10 +302,6 @@ echo "  systemctl restart cron.service dbus.service"
 echo ""
 echo "This should prevent read-only filesystem issues."
 
-# Lynis FINT-4350 File Integrity
-# NOTE May be breaking module blacklist
-# . $SCRIPTS/apt/aide/up.sh
-
 # Lynis install package apt-show-versions for patch management purposes [PKGS-7394]
 apt install apt-show-versions --no-install-recommends -y        # <--- 1 Point
 
@@ -556,6 +552,10 @@ if ! [[ "$DEV_TYPE" == "$(uname -m)" ]] && ! [[ "$DESKTOP" == "true" ]]; then
     update-initramfs -u
 
 fi
+
+# Lynis FINT-4350 File Integrity
+# NOTE May be breaking module blacklist. Moved after. aideinit may need a reboot to kick in update-initramfs -u before moduleblack list
+. $SCRIPTS/apt/aide/up.sh
 
 ### Clean up 
 # Remove foregn man pages
