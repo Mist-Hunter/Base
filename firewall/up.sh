@@ -132,6 +132,8 @@ Description=Network Pre-Up Script
 Type=oneshot
 ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-pre-up.d/lan-nic"
 
+
+
 [Install]
 WantedBy=network-pre.target
 EOT
@@ -146,6 +148,9 @@ After=network-online.target
 [Service]
 Type=oneshot
 ExecStart=$(which bash) -c "source $ENV_GLOBAL && /etc/network/if-up.d/lan-nic"
+
+Type=oneshot
+
 
 [Install]
 WantedBy=multi-user.target

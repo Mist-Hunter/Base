@@ -1,47 +1,42 @@
 #!/bin/bash
 source $ENV_SMTP
 
-read -p "apt, updaterservice.sh: Create an APT updater SystemD job? " input 
-case $input in
-    [yY][eE][sS]|[yY])
-echo "Yes"
-echo    # (optional) move to a new line
+read -p "Create APT updater systemd timer? (y/N): " input
+[[ "${input,,}" =~ ^y(es)?$ ]] || exit 0
 
-# Check if unattended-upgrades.service is present / enabled 
-#TODO: FIXME: Not sure best way to work with Unattended-Upgrades yet. See: /usr/share/unattended-upgrades
-if systemctl is-enabled unattended-upgrades.service >/dev/null 2>&1; then
-    echo "unattended-upgrades.service exists and is enabled. Disabling..."
-    apt remove unattended-upgrades -y # 300mb Disk
-    # TODO: Remove unattended-timers
-    # systemctl disable unattended-upgrades # 13-20mb RAM
-else
-    echo "unattended-upgrades.service does not exist or is not enabled."
+# Remove unattended-upgrades if present (replaced by our timer)
+if systemctl is-enabled unattended-upgrades.service &>/dev/null; then
+    echo "Removing unattended-upgrades..."
+    apt remove -y unattended-upgrades
 fi
 
-# Backups -------------------------------------------------------
-# Restic backup refference: https://restic.readthedocs.io/en/stable/040_backup.html
-# By specifying the option --one-file-system you can instruct restic to only backup files from the file systems the initially specified files or directories reside on. 
-read -p "apt, debian, updaterservice.sh: Please enter administrator email [$ADMIN_EMAIL]: " EMAIL
+# Get configuration
+read -p "Administrator email [$ADMIN_EMAIL]: " EMAIL
 EMAIL=${EMAIL:-$ADMIN_EMAIL}
-read -p "apt, debian, updaterservice.sh: Please enter frequency: monthly,weekly,daily,hourly [weekly,wed,midnight]: " freq
+read -p "Schedule [Wed *-*-* 12:00:00]: " freq
 freq=${freq:-Wed *-*-* 12:00:00}
 
-# Backup +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-echo "apt, debian, updaterservice.sh: Creating SystemD Updater Unit"
 SERVICE=apt-updater
-cat << EOT > /etc/systemd/system/$SERVICE.service
-# Created by $SCRIPTS/docker/incBackSystemD.sh
+
+# Create service unit
+cat > /etc/systemd/system/$SERVICE.service << EOF
 [Unit]
-Description=APT updater services
-After=local-fs.target
+Description=APT package updater
+After=network-online.target
+Wants=network-online.target
 
 [Service]
-ExecStart=$SCRIPTS/base/debian/update.sh
 Type=oneshot
-EOT
+ExecStart=$SCRIPTS/base/debian/update.sh
+# Lynis BOOT-5264: Conservative hardening for timer-triggered service
+PrivateTmp=yes
+NoNewPrivileges=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+EOF
 
-cat << EOT > /etc/systemd/system/$SERVICE.timer
-# Created by $SCRIPTS/docker/incBackSystemD.sh
+# Create timer unit
+cat > /etc/systemd/system/$SERVICE.timer << EOF
 [Unit]
 Description=APT updater timer
 
@@ -51,18 +46,9 @@ Persistent=true
 
 [Install]
 WantedBy=timers.target
-EOT
-systemctl enable $SERVICE.timer
-systemctl start $SERVICE.timer
+EOF
 
 systemctl daemon-reload
-
- ;;
-    [nN][oO]|[nN])
- echo "No"
-       ;;
-    *)
- echo "Invalid input..."
- exit 1
- ;;
-esac
+systemctl enable --now $SERVICE.timer
+echo "✓ APT updater timer created: $freq"
+systemctl list-timers $SERVICE.timer

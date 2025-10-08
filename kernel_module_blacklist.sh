@@ -206,3 +206,45 @@ apply_module_blacklist() {
     echo -e "\n🔄 Updating initramfs..."
     update-initramfs -u
 }
+
+# ───────────────────────────────────────────────
+# Verify current module blacklist status
+# ───────────────────────────────────────────────
+verify_blacklist_status() {
+    local file="${1:-$MOD_BLACKLIST}"
+
+    echo -e "\n🔍 Verifying module blacklist status..."
+    echo "File: $file"
+    echo "---------------------------------------------"
+
+    if [[ ! -f "$file" ]]; then
+        echo "❌ Error: Blacklist file not found at $file"
+        return 1
+    fi
+
+    # Extract module names from 'blacklist <mod>' lines
+    local modules
+    modules=$(grep -E "^blacklist[[:space:]]+" "$file" | awk '{print $2}')
+
+    if [[ -z "$modules" ]]; then
+        echo "No blacklisted modules found in $file"
+        return 0
+    fi
+
+    # Check each module against currently loaded kernel modules
+    while IFS= read -r module; do
+        if [[ -z "$module" ]]; then
+            continue
+        fi
+
+        if lsmod | grep -qw "$module"; then
+            echo "⚠️  LOADED   → $module"
+        else
+            echo "✅ Unloaded → $module"
+        fi
+    done <<< "$modules"
+
+    echo "---------------------------------------------"
+    echo "✅ Verification complete."
+}
+
