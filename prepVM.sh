@@ -434,11 +434,11 @@ source "$SCRIPTS/base/sysctl_profiles.sh"
 case "$DEV_TYPE" in
     kvm|vmware|virtualbox|qemu)
         apply_module_blacklist "headless_vm"
-        apply_sysctl_profile "virtual-docker-host"
+        # NOTE DEBUG ipset break. apply_sysctl_profile "virtual-docker-host"
         ;;
     x86_64|amd64)
         apply_module_blacklist "physical_server"
-        apply_sysctl_profile "physical-web-server"
+        # NOTE DEBUG ipset break. apply_sysctl_profile "physical-web-server"
         ;;
 esac
 
