@@ -160,15 +160,8 @@ EOT
 
 sysctl --system
 
-# Lynis Configure password hashing rounds in /etc/login.defs [AUTH-9230] 
-#                                   <--- 0 Points
-sed -i 's|# SHA_CRYPT_|SHA_CRYPT_|g' /etc/login.defs 
-
 # Lynis Install a PAM module for password strength testing like pam_cracklib or pam_passwdqc [AUTH-9262] #TODO: Neither are present in Debian 12?
 apt install libpam-passwdqc --no-install-recommends -y      # <-- 1 point from Lynis, but not relevant to my generated passwords. 
-
-# Lynis Default umask in /etc/login.defs could be more strict like 027 [AUTH-9328] 
-sed -i '/UMASK/s/022/027/g' /etc/login.defs
 
 # Lynis Enable auditd to collect audit information [ACCT-9628]
 # apt install auditd -y #<-- 2MB of RAM, No points from Lynis
@@ -380,10 +373,6 @@ echo "needrestart configured for automatic, non-interactive mode"
 # Lynis set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122]
 # Goal: Password protect editing GRUB, but allow normal booting. https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Password_protection_of_GRUB_menu
 #                                   # <--- 1 Point
-
-# Lynis set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122]
-# Goal: Password protect editing GRUB, but allow normal booting. https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Password_protection_of_GRUB_menu
-
 # Update GRUB configuration to allow unrestricted booting
 sed -i 's|--class os"|--class os --unrestricted"|g' /etc/grub.d/10_linux
 
