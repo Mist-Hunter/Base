@@ -2,20 +2,17 @@
 set -euo pipefail
 
 # This script manages sysctl settings by applying composable profiles.
-# The settings for each component are stored in heredocs for clarity
+# The settings for each component are stored in variables for clarity
 # and portability, removing the need for separate snippet files.
 
 # The final, managed configuration file that this script will create.
 SYSCTL_PROFILE_CONF="/etc/sysctl.d/10-sysctl-profile.conf"
 
 # -----------------------------------------------------------------------------
-# HEREDOC DEFINITIONS: Sysctl setting "snippets" are defined here.
+# VARIABLE DEFINITIONS: Sysctl setting "snippets" are defined here.
 # -----------------------------------------------------------------------------
 
-# <<< MODIFIED >>> Contains expanded security hardening settings.
-# Lynis  [KRNL-5820] if not required, consider explicit disabling of core dump in /etc/security/limits.conf file
-read -r -d '' BASE_SECURITY <<'EOF'
-# --- Base Security Settings ---
+BASE_SECURITY='# --- Base Security Settings ---
 kernel.dmesg_restrict = 1
 kernel.kptr_restrict = 2
 kernel.yama.ptrace_scope = 1
@@ -33,13 +30,10 @@ net.ipv6.conf.all.accept_redirects = 0
 net.ipv6.conf.default.accept_redirects = 0
 net.ipv4.conf.all.send_redirects = 0
 fs.suid_dumpable = 0
-kernel.core_pattern = |/bin/false
 dev.tty.ldisc_autoload = 0
-EOF
+kernel.core_pattern = |/bin/false'
 
-# <<< MODIFIED >>> Contains expanded settings for virtual machine environments.
-read -r -d '' VM_TUNING <<'EOF'
-# --- Virtual Memory & Swap Management ---
+VM_TUNING='# --- Virtual Memory & Swap Management ---
 vm.swappiness = 2
 vm.vfs_cache_pressure = 50
 vm.dirty_background_ratio = 5
@@ -51,12 +45,9 @@ vm.dirty_bytes = 33554432
 vm.dirty_background_bytes = 16777216
 vm.dirty_expire_centisecs = 3000
 vm.dirty_writeback_centisecs = 500
-vm.oom_kill_allocating_task = 0
-EOF
+vm.oom_kill_allocating_task = 0'
 
-# <<< MODIFIED >>> Contains expanded network stack settings.
-read -r -d '' NETWORK_HEAVY <<'EOF'
-# --- High-Performance Network Tuning ---
+NETWORK_HEAVY='# --- High-Performance Network Tuning ---
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
 net.core.somaxconn = 2048
@@ -74,59 +65,41 @@ net.ipv4.tcp_slow_start_after_idle = 0
 net.ipv4.tcp_max_tw_buckets = 1440000
 net.ipv4.tcp_fin_timeout = 15
 net.ipv4.neigh.default.gc_stale_time = 120
-net.ipv4.tcp_mtu_probing = 1
-EOF
+net.ipv4.tcp_mtu_probing = 1'
 
-# <<< NEW >>> Contains TCP Keepalive settings.
-read -r -d '' TCP_KEEPALIVE <<'EOF'
-# --- TCP Keepalive Optimization ---
+TCP_KEEPALIVE='# --- TCP Keepalive Optimization ---
 net.ipv4.tcp_keepalive_time = 600
 net.ipv4.tcp_keepalive_intvl = 60
-net.ipv4.tcp_keepalive_probes = 5
-EOF
+net.ipv4.tcp_keepalive_probes = 5'
 
-# <<< NEW >>> Contains File System and I/O settings.
-read -r -d '' FS_IO_TUNING <<'EOF'
-# --- File System and I/O Optimization ---
+FS_IO_TUNING='# --- File System and I/O Optimization ---
 fs.file-max = 2097152
 fs.may_detach_mounts = 1
 fs.inotify.max_queued_events = 1048576
-fs.aio-max-nr = 1048576
-EOF
+fs.aio-max-nr = 1048576'
 
-# <<< NEW >>> Contains Kernel resource management settings.
-read -r -d '' KERNEL_RESOURCES <<'EOF'
-# --- Kernel Resource Management ---
+KERNEL_RESOURCES='# --- Kernel Resource Management ---
 kernel.pid_max = 4194304
 kernel.threads-max = 4194304
 kernel.keys.root_maxkeys = 1000000
 kernel.keys.root_maxbytes = 25000000
 kernel.panic_on_oom = 0
-kernel.printk = 3 4 1 3
-EOF
+kernel.printk = 3 4 1 3'
 
-# <<< NEW >>> Contains Inter-Process Communication (IPC) settings.
-read -r -d '' IPC_TUNING <<'EOF'
-# --- Inter-Process Communication Settings ---
+IPC_TUNING='# --- Inter-Process Communication Settings ---
 kernel.msgmax = 65536
 kernel.msgmnb = 65536
 kernel.msgmni = 32768
 kernel.sem = 250 256000 32 1024
 kernel.shmall = 33554432
-kernel.shmmax = 68719476736
-EOF
+kernel.shmmax = 68719476736'
 
-# <<< NEW >>> Contains IPv6 disabling settings.
-read -r -d '' IPV6_DISABLE <<'EOF'
-# --- IPv6 Disabling ---
+IPV6_DISABLE='# --- IPv6 Disabling ---
 net.ipv6.conf.all.disable_ipv6 = 1
 net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-EOF
+net.ipv6.conf.lo.disable_ipv6 = 1'
 
-# <<< MODIFIED >>> Contains expanded settings for hosting Docker/containers.
-read -r -d '' DOCKER_HOST <<'EOF'
-# --- Docker & Container Host Tuning ---
+DOCKER_HOST='# --- Docker & Container Host Tuning ---
 net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
@@ -134,8 +107,7 @@ net.bridge.bridge-nf-call-arptables = 1
 fs.inotify.max_user_watches = 524288
 fs.inotify.max_user_instances = 8192
 kernel.unprivileged_userns_clone = 1
-user.max_user_namespaces = 15000
-EOF
+user.max_user_namespaces = 15000'
 
 # -----------------------------------------------------------------------------
 # FUNCTION: Applies a sysctl profile by composing the snippets defined above.
@@ -148,7 +120,6 @@ apply_sysctl_profile() {
 
     case "$profile" in
         virtual-docker-host)
-            # <<< MODIFIED >>> This profile now includes all new and updated snippets.
             echo "Building profile from all available tuning snippets..."
             snippets_to_apply=(
                 BASE_SECURITY
@@ -186,12 +157,21 @@ apply_sysctl_profile() {
             ;;
     esac
 
+    # Backup existing config if present
+    if [[ -f "$SYSCTL_PROFILE_CONF" ]]; then
+        local backup="${SYSCTL_PROFILE_CONF}.$(date +'%Y%m%d%H%M%S').bak"
+        mv "$SYSCTL_PROFILE_CONF" "$backup"
+        echo "Backed up existing config to $backup"
+    fi
+
+    # Create new config with header
     {
-        echo "# This file is auto-generated by a script. DO NOT EDIT MANUALLY."
+        echo "# This file is auto-generated by sysctl_profiles.sh. DO NOT EDIT MANUALLY."
         echo "# Profile applied: $profile on $(date)"
         echo ""
     } > "$SYSCTL_PROFILE_CONF"
 
+    # Append each snippet
     for snippet_var in "${snippets_to_apply[@]}"; do
         echo "  -> Appending settings from $snippet_var"
         printf '%s\n\n' "${!snippet_var}" >> "$SYSCTL_PROFILE_CONF"
@@ -200,13 +180,20 @@ apply_sysctl_profile() {
     echo "✅ Sysctl profile file created at $SYSCTL_PROFILE_CONF"
     echo "Applying new sysctl settings..."
     sysctl --system
-    echo "Sysctl profile application complete."
+    echo "✅ Sysctl profile application complete."
 }
 
+# -----------------------------------------------------------------------------
+# Only auto-execute if run directly (not sourced)
+# -----------------------------------------------------------------------------
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     if [[ -z "${1-}" ]]; then
         echo "Usage: $0 <profile_name>"
-        echo "Available profiles: virtual-docker-host, physical-web-server, minimal-vm"
+        echo ""
+        echo "Available profiles:"
+        echo "  virtual-docker-host   - Complete VM tuning for Docker hosts"
+        echo "  physical-web-server   - Physical server with network optimization"
+        echo "  minimal-vm            - Minimal VM with basic security"
         exit 1
     fi
     apply_sysctl_profile "$1"
