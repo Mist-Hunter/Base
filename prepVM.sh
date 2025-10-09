@@ -280,13 +280,10 @@ echo "needrestart configured for automatic, non-interactive mode"
 # # <--- 1 Point. Moved to /atp/snmp/up.sh
 
 # Lynis Consider using a tool to automatically apply upgrades [PKGS-7420] 
-# apt install unattended-upgrades -y                            # <--- 1 Point <-- Runs all the time eating 20M of ram, already have a solution. Skipping.
+apt install unattended-upgrades -y                            # <--- 1 Point <-- Runs all the time eating 20M of ram, already have a solution. Skipping.
 
 # Lynis Enable sysstat to collect accounting (no results) [ACCT-9626], https://www.crybit.com/sysstat-sar-on-ubuntu-debian/
 # apt install sysstat -y                                        # No points from Lynis, fulfilled by SNMP anyways (probably)
-
-# Lynis Consider disabling unused kernel modules [FILE-6430] added some modules to the list below.
-# Multiple points!
 
 # Lynis set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122]
 # Goal: Password protect editing GRUB, but allow normal booting. https://wiki.archlinux.org/title/GRUB/Tips_and_tricks#Password_protection_of_GRUB_menu
@@ -334,6 +331,9 @@ echo "GRUB configuration updated successfully."
 # Display the password and wait for user acknowledgment
 present_secrets "GRUB Password:$new_password"
 
+# Lynis Consider disabling unused kernel modules [FILE-6430] added some modules to the list below.
+# Multiple points!
+
 # Kernel Module Blacklisting & Sysctl Settings
 source "$SCRIPTS/base/kernel_module_blacklist.sh"
 source "$SCRIPTS/base/sysctl_profiles.sh"
@@ -374,10 +374,9 @@ else
 fi
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
-# FIXME is this breaking and rebooting the system?
-# . $SCRIPTS/apt/auditd/up.sh
+. $SCRIPTS/apt/auditd/up.sh
 
 # Lynis FINT-4350 File Integrity, 2.3 MB of ram
 # FIXME still breaking module blacklisting. 
 # NOTE May be breaking module blacklist. Moved after. aideinit may need a reboot to kick in update-initramfs -u before moduleblack list
-# . $SCRIPTS/apt/aide/up.sh # <---- 0 points?
+. $SCRIPTS/apt/aide/up.sh # <---- 0 points?

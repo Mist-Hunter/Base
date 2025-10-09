@@ -25,6 +25,7 @@ declare -A FS_MODULES=(
 )
 
 # FIXME the modules below break booting.
+# NOTE Required for efi booting.
 # [vfat]="FAT filesystem (vfat)"
 # [fat]="FAT filesystem core"
 # [nls_ascii]="FAT NLS ascii"
