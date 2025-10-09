@@ -163,7 +163,8 @@ then
 fi
 
 # Start services AFTER options have been selected.
-systemctl start network-pre-up.service
-systemctl start network-up.service
+# NOTE DEBUG comments
+# systemctl start network-pre-up.service
+# systemctl start network-up.service
 
 echo "[up.sh] script complete."
