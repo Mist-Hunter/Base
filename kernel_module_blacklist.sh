@@ -115,7 +115,8 @@ blacklist_module() {
         return
     fi
 
-    # FIXME DEBUG: modprobe -r "$mod" 2>/dev/null || true
+    # FIXME Live module unloading causes hard reboot @ +44 seconds.
+    #modprobe -r "$mod" 2>/dev/null || true
 
     printf "# %s\nblacklist %s\ninstall %s /bin/true\n\n" \
         "$desc" "$mod" "$mod" >> "$MOD_BLACKLIST"
