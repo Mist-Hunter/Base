@@ -72,7 +72,7 @@ fi
 # . $SCRIPTS/apt/fastfetch/up.sh
 
 # Setup Update Service
-. $SCRIPTS/base/debian/updaterservice.sh
+# NOTE DEBUG . $SCRIPTS/base/debian/updaterservice.sh
 
 # Pseudo-Cron
 # . $SCRIPTS/apt/cron/systemd_pesudo_cron_install.sh
