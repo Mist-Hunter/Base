@@ -334,14 +334,9 @@ echo "GRUB configuration updated successfully."
 # Display the password and wait for user acknowledgment
 present_secrets "GRUB Password:$new_password"
 
-# FIXME DEBUG
-read -p "SCRIPT PAUSED. prepVM.sh @ 338. Press [Enter] to continue..."
-
 # Kernel Module Blacklisting & Sysctl Settings
 source "$SCRIPTS/base/kernel_module_blacklist.sh"
 source "$SCRIPTS/base/sysctl_profiles.sh"
-
-read -p "SCRIPT PAUSED. prepVM.sh @ 344. Press [Enter] to continue..."
 
 case "$DEV_TYPE" in
     kvm|vmware|virtualbox|qemu)
@@ -353,9 +348,6 @@ case "$DEV_TYPE" in
         apply_sysctl_profile "physical-web-server"
         ;;
 esac
-
-# FIXME 44 Seconds after Above
-read -p "SCRIPT PAUSED. prepVM.sh @ 357. Press [Enter] to continue..."
 
 ### Clean up 
 # Remove foregn man pages
