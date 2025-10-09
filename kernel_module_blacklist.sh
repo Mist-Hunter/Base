@@ -115,7 +115,7 @@ blacklist_module() {
         return
     fi
 
-    modprobe -r "$mod" 2>/dev/null || true
+    # FIXME DEBUG: modprobe -r "$mod" 2>/dev/null || true
 
     printf "# %s\nblacklist %s\ninstall %s /bin/true\n\n" \
         "$desc" "$mod" "$mod" >> "$MOD_BLACKLIST"
