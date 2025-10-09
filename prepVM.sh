@@ -335,9 +335,7 @@ echo "GRUB configuration updated successfully."
 present_secrets "GRUB Password:$new_password"
 
 # FIXME DEBUG
-pause() {
-  read -p "SCRIPT PAUSED. prepVM.sh @ 339. Press [Enter] to continue..."
-}
+read -p "SCRIPT PAUSED. prepVM.sh @ 338. Press [Enter] to continue..."
 
 # Kernel Module Blacklisting & Sysctl Settings
 source "$SCRIPTS/base/kernel_module_blacklist.sh"
@@ -379,9 +377,7 @@ else
 fi
 
 # FIXME DEBUG
-pause() {
-  read -p "SCRIPT PAUSED. prepVM.sh @ 383. Press [Enter] to continue..."
-}
+read -p "SCRIPT PAUSED. prepVM.sh @ 380. Press [Enter] to continue..."
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
 # FIXME is this breaking and rebooting the system?
