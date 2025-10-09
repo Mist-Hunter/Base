@@ -334,6 +334,11 @@ echo "GRUB configuration updated successfully."
 # Display the password and wait for user acknowledgment
 present_secrets "GRUB Password:$new_password"
 
+# FIXME DEBUG
+pause() {
+  read -p "SCRIPT PAUSED. prepVM.sh @ 339. Press [Enter] to continue..."
+}
+
 # Kernel Module Blacklisting & Sysctl Settings
 source "$SCRIPTS/base/kernel_module_blacklist.sh"
 source "$SCRIPTS/base/sysctl_profiles.sh"
@@ -372,6 +377,11 @@ if systemctl is-enabled ssh.service >/dev/null 2>&1; then
 else
     echo "ssh.service does not exist or is not enabled."
 fi
+
+# FIXME DEBUG
+pause() {
+  read -p "SCRIPT PAUSED. prepVM.sh @ 383. Press [Enter] to continue..."
+}
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
 # FIXME is this breaking and rebooting the system?
