@@ -269,6 +269,9 @@ $nrconf{restart} = 'a';
 
 # Don't ask about restarting kernel (just notify)
 $nrconf{kernelhints} = -1;
+
+# CRITICAL: Never auto-reboot, even if kernel outdated
+$nrconf{autoreboot} = 0;
 EOF
 
 echo "needrestart configured for automatic, non-interactive mode"
