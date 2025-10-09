@@ -341,6 +341,8 @@ read -p "SCRIPT PAUSED. prepVM.sh @ 338. Press [Enter] to continue..."
 source "$SCRIPTS/base/kernel_module_blacklist.sh"
 source "$SCRIPTS/base/sysctl_profiles.sh"
 
+read -p "SCRIPT PAUSED. prepVM.sh @ 344. Press [Enter] to continue..."
+
 case "$DEV_TYPE" in
     kvm|vmware|virtualbox|qemu)
         apply_module_blacklist "headless_vm"
@@ -351,6 +353,8 @@ case "$DEV_TYPE" in
         apply_sysctl_profile "physical-web-server"
         ;;
 esac
+
+read -p "SCRIPT PAUSED. prepVM.sh @ 357. Press [Enter] to continue..."
 
 ### Clean up 
 # Remove foregn man pages
@@ -377,7 +381,7 @@ else
 fi
 
 # FIXME DEBUG
-read -p "SCRIPT PAUSED. prepVM.sh @ 380. Press [Enter] to continue..."
+read -p "SCRIPT PAUSED. prepVM.sh @ 384. Press [Enter] to continue..."
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
 # FIXME is this breaking and rebooting the system?
