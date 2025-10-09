@@ -354,6 +354,7 @@ case "$DEV_TYPE" in
         ;;
 esac
 
+# FIXME 44 Seconds after Above
 read -p "SCRIPT PAUSED. prepVM.sh @ 357. Press [Enter] to continue..."
 
 ### Clean up 
@@ -379,9 +380,6 @@ if systemctl is-enabled ssh.service >/dev/null 2>&1; then
 else
     echo "ssh.service does not exist or is not enabled."
 fi
-
-# FIXME DEBUG
-read -p "SCRIPT PAUSED. prepVM.sh @ 384. Press [Enter] to continue..."
 
 # Auditd Enable auditd to collect audit information [ACCT-9628] 
 # FIXME is this breaking and rebooting the system?
