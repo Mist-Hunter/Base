@@ -49,29 +49,32 @@ for env_file in "${all_env_files[@]}"; do
                     # FIXME dig +short _nodes.github.com returns a fqnd 'github.github.io' 
                     ip_list=$(dig +short _nodes.github.com 2>/dev/null; dig +short github.com 2>/dev/null | sort -u | tr '\n' ' ')
                 elif [[ "$fqdn_value" == *"gmail.com"* || "$fqdn_value" == *"google.com"* ]]; then
-                    # First get the specific IP for the domain
-                    specific_ips=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
-                    
-                    # Then get all Google netblocks
-                    # https://www.sourceonetechnology.com/gmail-ip-address-ranges/
-                    all_netblocks=$(for domain in "spf.google.com" "_netblocks.google.com" "_netblocks2.google.com" "_netblocks3.google.com"; do
-                        dig +short TXT "$domain" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?'
-                    done)
-                    
-                    # Filter netblocks to only include those containing our specific IPs, example 173.194.0.0/16 from 173.194.203.108
-                    ip_list=$(echo "$specific_ips" | while read -r ip; do
-                        echo "$all_netblocks" | while read -r netblock; do
-                            if [[ -n "$ip" && -n "$netblock" ]] && grepcidr "$netblock" <(echo "$ip") >/dev/null 2>&1; then
-                                echo "$netblock"
-                            fi
-                        done
-                    done | sort -u | tr '\n' ' ')
+                    # Wrap Google resolution in a subshell to prevent it from crashing the script
+                     ip_list=$( (
+                        # First get the specific IP for the domain
+                        specific_ips=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
+                        
+                        # Then get all Google netblocks
+                        # https://www.sourceonetechnology.com/gmail-ip-address-ranges/
+                        all_netblocks=$(for domain in "spf.google.com" "_netblocks.google.com" "_netblocks2.google.com" "_netblocks3.google.com"; do
+                            dig +short TXT "$domain" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?'
+                        done)
+                        
+                        # Filter netblocks to only include those containing our specific IPs, example 173.194.0.0/16 from 173.194.203.108
+                        echo "$specific_ips" | while read -r ip; do
+                            echo "$all_netblocks" | while read -r netblock; do
+                                if [[ -n "$ip" && -n "$netblock" ]] && grepcidr "$netblock" <(echo "$ip") >/dev/null 2>&1; then
+                                    echo "$netblock"
+                                fi
+                            done
+                        done | sort -u
+                    ) | tr '\n' ' ' )
                                    
                     # Check if ip_list is empty
                     if [ -z "$ip_list" ]; then
                         # Catch empty ipset if specific_ips is outside of any all_netblocks, Ref: https://support.google.com/mail/thread/77689665/ip-addresses-of-smtp-gmail-com-from-google-s-designated-nameservers-are-outside-google-s-netblocks?hl=en
                         echo "No netblocks found for $fqdn_value. Using specific IPs."
-                        ip_list="$specific_ips"
+                        ip_list=$(dig +short "$fqdn_value" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | tr '\n' ' ')
                     else
                         hash_type="net"  # Use net if we have netblocks
                     fi
