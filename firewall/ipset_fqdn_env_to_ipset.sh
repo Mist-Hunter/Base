@@ -6,7 +6,6 @@ ENV_GLOBAL="/root/.config/global.env"
 source $ENV_GLOBAL
 
 # NOTE Troubleshoot via logs @ cat /var/log/syslog | grep if-up
-
 echo "Starting ipset manager"
 
 if ! command -v grepcidr &> /dev/null; then
