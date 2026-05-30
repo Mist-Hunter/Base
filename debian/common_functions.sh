@@ -128,9 +128,9 @@ present_secrets() {
     local secrets=("$@")
     # Tries to determine terminal width, falling back to 80 if tput fails
     local term_width=$(tput cols 2>/dev/null || echo 80) 
-    term_width=$((term_width - 5))  # Subtract 5 for border space
+    term_width=$((term_width - 5)) # Subtract 5 for border space
     local separator_line=""
-    local padding=2  # Padding on each side of the content
+    local padding=2 # Padding on each side of the content
 
     # Log the action (using the new wrappers)
     log_warn "Displaying sensitive information securely. Press [ENTER] to continue after review."
